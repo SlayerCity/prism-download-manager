@@ -57,8 +57,8 @@ function composedClosest(el: Element, selector: string): Element | null {
  * belongs to: the first single-post link of its <article>, so the app reads that post and not the
  * page. Undefined when the page itself is the post, or the video isn't inside a post.
  */
-function postUrlOf(v: HTMLVideoElement, pageUrl: string): string | undefined {
-  if (postUrl(pageUrl, pageUrl)) return undefined;
+function postUrlOf(v: HTMLVideoElement, pageUrl: string, includeOnPostPage = false): string | undefined {
+  if (!includeOnPostPage && postUrl(pageUrl, pageUrl)) return undefined;
   // A grid tile that links to its post (Instagram Explore, profile grids).
   const tile = postUrl((composedClosest(v, 'a[href]') as HTMLAnchorElement | null)?.href, pageUrl);
   if (tile) return tile;
@@ -129,18 +129,23 @@ export class VideoButton {
   private host: HTMLDivElement | null = null;
   private wrap!: HTMLDivElement;
   private pill!: HTMLButtonElement;
+  private controls!: HTMLDivElement;
   private menu!: HTMLDivElement;
   private videos = new Set<HTMLVideoElement>();
   /** Videos currently intersecting the viewport (only these are hit-tested). */
   private visible = new Set<HTMLVideoElement>();
   private io: IntersectionObserver | null = null;
   private current: HTMLVideoElement | null = null;
+  /** Page-lifetime choices: keep a post hidden across feed rerenders, without retaining nodes. */
+  private dismissed = new Set<string>();
+  private dismissedWithoutSource = new WeakSet<HTMLVideoElement>();
   private hideTimer: ReturnType<typeof setTimeout> | undefined;
   private rafPending = false;
   private lastX = -1;
   private lastY = -1;
   private overUi = false;
   private menuOpen = false;
+  private menuRequest = 0;
   private enabled = false;
   private compact = false;
   private positions = new WeakMap<HTMLVideoElement, { x: number; y: number }>();
@@ -281,14 +286,33 @@ export class VideoButton {
     }
     this.wrap = document.createElement('div');
     this.wrap.className = this.compact ? 'wrap compact' : 'wrap';
+    this.wrap.inert = true;
     this.wrap.innerHTML = `
+      <div class="controls">
       <button class="pill glass" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Download this video with Prism" title="Download this video with Prism">
         ${prismMark(18)}<span class="label">Download</span><span class="chev">${icons.chevronDown(14)}</span>
       </button>
+      <button class="dismiss glass" type="button" aria-label="Hide download button for this video" title="Hide for this video until the page is reloaded">${icons.close(14)}</button>
+      </div>
       <div class="menu glass" role="menu"></div>`;
     root.append(this.wrap);
     this.pill = this.wrap.querySelector('.pill')!;
+    this.controls = this.wrap.querySelector('.controls')!;
     this.menu = this.wrap.querySelector('.menu')!;
+    const dismiss = this.wrap.querySelector<HTMLButtonElement>('.dismiss')!;
+    dismiss.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+    });
+    dismiss.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!e.isTrusted || !this.current) return;
+      const key = this.dismissalKey(this.current);
+      if (key) this.dismissed.add(key);
+      else this.dismissedWithoutSource.add(this.current);
+      this.overUi = false;
+      this.hide(true);
+    });
     // Only the user's own clicks (isTrusted): the shadow root is open, and a page script must not
     // open the menu or start a download with the page's cookies through synthetic events.
     this.pill.addEventListener('pointerdown', this.startDrag);
@@ -305,7 +329,7 @@ export class VideoButton {
     this.pill.addEventListener('pointerenter', (e) => {
       if (e.isTrusted) this.prefetch();
     });
-    for (const el of [this.pill, this.menu]) {
+    for (const el of [this.controls, this.menu]) {
       el.addEventListener('pointerenter', () => {
         this.overUi = true;
         clearTimeout(this.hideTimer);
@@ -349,7 +373,7 @@ export class VideoButton {
   private endDrag = (e: PointerEvent): void => {
     if (!e.isTrusted || e.pointerId !== this.drag?.pointer) return;
     this.clearDrag();
-    this.overUi = this.pill.matches(':hover') || this.menu.matches(':hover');
+    this.overUi = this.controls.matches(':hover') || this.menu.matches(':hover');
     this.hitTest();
   };
 
@@ -358,6 +382,20 @@ export class VideoButton {
     this.drag = null;
     this.wrap.classList.remove('dragging');
     if (pointer !== undefined && this.pill.hasPointerCapture(pointer)) this.pill.releasePointerCapture(pointer);
+  }
+
+  private dismissalKey(v: HTMLVideoElement): string | undefined {
+    const post = postUrlOf(v, location.href, true) ?? postUrl(location.href, location.href);
+    if (post) return `post:${post}`;
+    // Prefer the declared source: currentSrc can still describe the previous video while
+    // a virtualized feed reuses its element and the new source has not loaded yet.
+    const src = v.getAttribute('src') ? v.src : v.querySelector<HTMLSourceElement>('source[src]')?.src || v.currentSrc;
+    return src ? `source:${src}` : undefined;
+  }
+
+  private isDismissed(v: HTMLVideoElement): boolean {
+    const key = this.dismissalKey(v);
+    return key ? this.dismissed.has(key) : this.dismissedWithoutSource.has(v);
   }
 
   private onMove = (e: PointerEvent): void => {
@@ -390,6 +428,7 @@ export class VideoButton {
       const r = t.getBoundingClientRect();
       if (!inside(r, x, y)) continue;
       if (!eligible(v, v.getBoundingClientRect())) continue;
+      if (this.isDismissed(v)) continue;
       found = v;
       break;
     }
@@ -419,6 +458,7 @@ export class VideoButton {
     }, 400);
     this.resetPill();
     this.position();
+    this.wrap.inert = false;
     this.wrap.classList.add('show');
   }
 
@@ -435,8 +475,11 @@ export class VideoButton {
     clearTimeout(this.prefetchTimer);
     if (!force && (this.menuOpen || this.overUi || this.drag)) return;
     this.clearDrag();
+    clearTimeout(this.hideTimer);
+    this.hideTimer = undefined;
     this.closeMenu();
     this.wrap.classList.remove('show');
+    this.wrap.inert = true;
     this.current = null;
   }
 
@@ -449,10 +492,13 @@ export class VideoButton {
     const vw = document.documentElement.clientWidth || innerWidth;
     const vh = document.documentElement.clientHeight || innerHeight;
     if (r.bottom < 40 || r.top > vh - 40 || r.right < 60 || r.left > vw - 60) {
-      if (!this.menuOpen) this.wrap.classList.remove('show');
+      if (!this.menuOpen) {
+        this.wrap.classList.remove('show');
+        this.wrap.inert = true;
+      }
       return;
     }
-    const pw = this.pill.offsetWidth || 118;
+    const pw = this.controls.offsetWidth || 154;
     const ph = this.pill.offsetHeight || 32;
     const saved = this.positions.get(v);
     const clamp = (n: number, min: number, max: number): number => Math.max(min, Math.min(n, max));
@@ -470,7 +516,10 @@ export class VideoButton {
     this.wrap.style.setProperty('--y', `${y}px`);
     // Open the menu upwards when there's no room below.
     this.menu.classList.toggle('up', y + ph + 360 > vh && y > 360);
-    if (this.menuOpen || this.wrap.classList.contains('show') || this.current) this.wrap.classList.add('show');
+    if (this.menuOpen || this.wrap.classList.contains('show') || this.current) {
+      this.wrap.inert = false;
+      this.wrap.classList.add('show');
+    }
   }
 
   private onFullscreen = (): void => {
@@ -565,6 +614,7 @@ export class VideoButton {
 
   private closeMenu(): void {
     if (!this.host) return;
+    this.menuRequest++;
     this.menuOpen = false;
     this.menu.classList.remove('open');
     this.pill.setAttribute('aria-expanded', 'false');
@@ -576,6 +626,7 @@ export class VideoButton {
       return;
     }
     this.menuOpen = true;
+    const request = ++this.menuRequest;
     this.pill.setAttribute('aria-expanded', 'true');
     this.menu.classList.add('open');
     this.position();
@@ -586,7 +637,7 @@ export class VideoButton {
     const best = this.bestTarget(ctx);
     if (best) this.addBestQuality(ctx.title, best);
     const res = await this.options();
-    if (!this.menuOpen) return;
+    if (!this.menuOpen || request !== this.menuRequest) return;
     this.renderMenu(ctx.title, res);
     if (best && !res?.options.some((o) => o.group === 'video')) this.addBestQuality(ctx.title, best);
   }
