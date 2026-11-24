@@ -1197,5 +1197,8 @@
   "Use separate BitTorrent speed limits": "Separate BitTorrent-Geschwindigkeitslimits verwenden",
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Wenn deaktiviert, folgen Torrents dem globalen Downloadlimit. Setze ein Limit auf 0 für unbegrenzt.",
   "Download rate": "Downloadrate",
-  "Upload rate": "Uploadrate"
+  "Upload rate": "Uploadrate",
+  "Try automatic router port forwarding (UPnP)": "Automatische Router-Portweiterleitung (UPnP) versuchen",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism bittet einen kompatiblen Router, den eingehenden BitTorrent-Port weiterzuleiten. Zum Anwenden Prism neu starten; standardmäßig deaktiviert.",
+  "Incoming connections": "Eingehende Verbindungen"
 }

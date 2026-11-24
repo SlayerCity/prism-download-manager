@@ -105,6 +105,7 @@ async fn private_torrent_never_announces_to_session_public_trackers() {
         dir.path().join("downloads"),
         &|_| true,
         vec![public_tracker],
+        false,
     )
     .await
     .unwrap();
@@ -143,6 +144,7 @@ async fn public_torrent_still_uses_session_public_trackers() {
         dir.path().join("downloads"),
         &|_| true,
         vec![public_tracker],
+        false,
     )
     .await
     .unwrap();

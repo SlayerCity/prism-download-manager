@@ -1174,5 +1174,8 @@
   "Use separate BitTorrent speed limits": "Gunakan batas kecepatan BitTorrent terpisah",
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Jika mati, torrent mengikuti batas unduhan global. Isi 0 untuk tanpa batas.",
   "Download rate": "Kecepatan unduh",
-  "Upload rate": "Kecepatan unggah"
+  "Upload rate": "Kecepatan unggah",
+  "Try automatic router port forwarding (UPnP)": "Coba penerusan port router otomatis (UPnP)",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk. Mulai ulang Prism agar berlaku; nonaktif secara default.",
+  "Incoming connections": "Koneksi masuk"
 }

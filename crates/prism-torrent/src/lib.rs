@@ -8,8 +8,9 @@ use anyhow::{Context, Result};
 use librqbit::api::TorrentIdOrHash;
 use librqbit::limits::LimitsConfig;
 use librqbit::{
-    AddTorrent, AddTorrentOptions, AddTorrentResponse, ByteBufOwned, ManagedTorrent, Session,
-    SessionOptions, SessionPersistenceConfig, TorrentStatsState, ValidatedTorrentMetaV1Info,
+    AddTorrent, AddTorrentOptions, AddTorrentResponse, ByteBufOwned, ListenerOptions,
+    ManagedTorrent, Session, SessionOptions, SessionPersistenceConfig, TorrentStatsState,
+    ValidatedTorrentMetaV1Info,
 };
 use std::str::FromStr;
 
@@ -102,6 +103,7 @@ impl TorrentEngine {
         default_output: PathBuf,
         keep: &(dyn Fn(&str) -> bool + Send + Sync),
         public_trackers: Vec<String>,
+        enable_upnp_port_forwarding: bool,
     ) -> Result<Self> {
         std::fs::create_dir_all(state_dir).context("create torrent state dir")?;
         forget_saved(state_dir, keep);
@@ -114,6 +116,10 @@ impl TorrentEngine {
             .collect();
         let opts = SessionOptions {
             trackers,
+            listen: Some(ListenerOptions {
+                enable_upnp_port_forwarding,
+                ..Default::default()
+            }),
             fastresume: true,
             persistence: Some(SessionPersistenceConfig::Json {
                 folder: Some(state_dir.to_path_buf()),

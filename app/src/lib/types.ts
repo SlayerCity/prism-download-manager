@@ -230,6 +230,7 @@ export interface Settings {
     publicTrackers: string[];
     /** Keep completed torrents active for seeding across restarts. */
     seedCompleted: boolean;
+    enableUpnpPortForwarding: boolean;
     separateSpeedLimits: boolean;
     downloadLimit: number;
     uploadLimit: number;

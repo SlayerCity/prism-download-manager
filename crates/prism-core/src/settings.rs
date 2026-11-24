@@ -250,6 +250,8 @@ pub struct TorrentSettings {
     pub public_trackers: Vec<String>,
     /// Keep completed torrents active for seeding, including after Prism restarts.
     pub seed_completed: bool,
+    /// Ask compatible routers to forward the incoming BitTorrent port (opt-in).
+    pub enable_upnp_port_forwarding: bool,
     /// Use BitTorrent-specific limits instead of following the global download limiter.
     pub separate_speed_limits: bool,
     /// BitTorrent download cap in bytes/s (0 = unlimited), when separate limits are enabled.
@@ -634,6 +636,7 @@ mod tests {
         assert!(s.capture.extensions.iter().any(|e| e == "png"));
         assert!(s.capture.mime_types.iter().any(|m| m == "image/"));
         assert!(s.torrent.public_trackers.is_empty());
+        assert!(!s.torrent.enable_upnp_port_forwarding);
         assert!(
             !s.torrent.seed_completed,
             "seeding stays opt-in for older settings"
@@ -657,6 +660,17 @@ mod tests {
         assert_eq!(encoded["torrent"]["uploadLimit"], 0);
         s.torrent.download_limit = u32::MAX as u64 + 1;
         assert!(s.validate().is_err());
+    }
+
+    #[test]
+    fn upnp_port_forwarding_setting_roundtrips_as_opt_in() {
+        let mut s = Settings::default();
+        assert!(!s.torrent.enable_upnp_port_forwarding);
+        s.apply_patch(&serde_json::json!({"torrent": {"enableUpnpPortForwarding": true}}))
+            .unwrap();
+        assert!(s.torrent.enable_upnp_port_forwarding);
+        let encoded = serde_json::to_value(&s).unwrap();
+        assert_eq!(encoded["torrent"]["enableUpnpPortForwarding"], true);
     }
 
     #[test]

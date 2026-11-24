@@ -307,6 +307,9 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
           <Group title={t("Seeding")}>
             <Toggle title={t("Keep completed torrents seeding")} hint={t("Restart Prism after changing this. Active seeds hold files open and can restore deleted data.")} value={s.torrent.seedCompleted} onChange={(v) => save({ torrent: { seedCompleted: v } })} />
           </Group>
+          <Group title={t("Incoming connections")}>
+            <Toggle title={t("Try automatic router port forwarding (UPnP)")} hint={t("When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.")} value={s.torrent.enableUpnpPortForwarding} onChange={(v) => save({ torrent: { enableUpnpPortForwarding: v } })} />
+          </Group>
           <Group title={t("Speed limits")}>
             <Toggle title={t("Use separate BitTorrent speed limits")} hint={t("When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.")} value={s.torrent.separateSpeedLimits} onChange={(v) => save({ torrent: { separateSpeedLimits: v } })} />
             {s.torrent.separateSpeedLimits && <>

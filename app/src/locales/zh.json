@@ -1174,5 +1174,8 @@
   "Use separate BitTorrent speed limits": "使用单独的 BitTorrent 速度限制",
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "关闭时，种子遵循全局下载速度限制。设为 0 表示不限速。",
   "Download rate": "下载速度",
-  "Upload rate": "上传速度"
+  "Upload rate": "上传速度",
+  "Try automatic router port forwarding (UPnP)": "尝试自动路由器端口转发（UPnP）",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
+  "Incoming connections": "传入连接"
 }
