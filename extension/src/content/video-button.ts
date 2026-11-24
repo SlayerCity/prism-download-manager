@@ -7,7 +7,7 @@ import { sendInternal } from '../shared/api';
 import { icons, prismMark } from '../shared/icons';
 import { normalizeVideoButtonOpacity } from '../shared/settings';
 import { type ElementSource, elementSources, linkedinCommentaryPath, linkedinPostPath, postUrl } from '../shared/media';
-import { siteMatches } from '../shared/rules';
+import { isExcluded, siteMatches } from '../shared/rules';
 import type { ActionResult, VideoOption, VideoOptionsResult } from '../shared/messages';
 import { VIDEO_BUTTON_CSS } from './styles';
 
@@ -163,6 +163,7 @@ export class VideoButton {
   private drag: { pointer: number; x: number; y: number; grabX: number; grabY: number; moved: boolean } | null = null;
   private suppressPointerClick = false;
   private videoSites: string[] = [];
+  private excludedSites: string[] = [];
   private prefetchTimer: ReturnType<typeof setTimeout> | undefined;
   private restPrefetch: Promise<void> | undefined;
   private observer: MutationObserver | null = null;
@@ -187,6 +188,16 @@ export class VideoButton {
 
   setVideoSites(sites: string[]): void {
     this.videoSites = sites;
+  }
+
+  setExcludedSites(sites: string[]): void {
+    this.excludedSites = sites;
+    if (this.isPageExcluded()) this.hide(true);
+    else this.hitTest();
+  }
+
+  private isPageExcluded(): boolean {
+    return isExcluded([location.href], this.excludedSites);
   }
 
   setEnabled(on: boolean): void {
@@ -452,6 +463,10 @@ export class VideoButton {
   };
 
   private hitTest(): void {
+    if (this.isPageExcluded()) {
+      this.hide(true);
+      return;
+    }
     if (!this.enabled || document.fullscreenElement || this.menuOpen || this.overUi || this.drag) return;
     const x = this.lastX;
     const y = this.lastY;
@@ -587,7 +602,7 @@ export class VideoButton {
   openForContextMenu(): boolean {
     const c = this.contextVideo;
     this.contextVideo = null;
-    if (!this.enabled || !c || Date.now() - c.at > 60_000 || !c.v.isConnected || !rendered(c.v) || !targetOf(c.v)) return false;
+    if (!this.enabled || this.isPageExcluded() || !c || Date.now() - c.at > 60_000 || !c.v.isConnected || !rendered(c.v) || !targetOf(c.v)) return false;
     if (document.fullscreenElement) return false;
     this.hide(true);
     this.show(c.v);

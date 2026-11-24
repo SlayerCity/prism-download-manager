@@ -73,6 +73,15 @@ try {
   };
 
   await fresh();
+  await page.evaluate(() => window.__testButton.setExcludedSites(['127.0.0.1']));
+  await hover();
+  assert.equal(await shown(), false, 'Never capture from must also suppress the video overlay');
+  await page.evaluate(() => { window.__testButton.contextVideo = { v: document.querySelector('#first video'), at: Date.now() }; });
+  assert.equal(await page.evaluate(() => window.__testButton.openForContextMenu()), false, 'excluded sites must not open the explicit video menu');
+  await page.evaluate(() => window.__testButton.setExcludedSites([]));
+  await hover();
+  await expectShown();
+  console.log('PASS: excluded sites suppress hover and context-menu video handoff');
   const overlayOpacity = () => ui.locator('.wrap').evaluate((el) => getComputedStyle(el).opacity);
   await page.waitForFunction(() => Math.abs(Number(getComputedStyle(document.querySelector('[data-prism-video-button]').shadowRoot.querySelector('.wrap')).opacity) - 0.55) < 0.01);
   await page.evaluate(() => window.__testButton.setOpacity(80));
