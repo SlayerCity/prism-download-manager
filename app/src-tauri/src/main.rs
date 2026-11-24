@@ -79,7 +79,7 @@ fn main() {
                         || label == "details"
                         || windows::REMEMBER_POSITION.contains(&label)
                 });
-            // Dialogs get only their position back, from `windows::create` (#92).
+            // Dialog geometry is restored selectively from `windows::create` (#92, #102).
             for kind in windows::REMEMBER_POSITION {
                 state = state.skip_initial_state(kind);
             }

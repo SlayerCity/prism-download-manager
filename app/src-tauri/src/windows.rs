@@ -66,8 +66,8 @@ fn spec(kind: &str) -> Spec {
 }
 
 /// Windows (#92): dialogs that open where they were last closed instead of in the middle of the
-/// screen. Only their position comes back: their size is the app's (a later version may change
-/// it). Elsewhere they open centered as before (shown at once, they would jump).
+/// screen. Progress also restores its size (#102); other dialogs keep their built-in sizes.
+/// Elsewhere they open centered as before (shown at once, they would jump).
 pub const REMEMBER_POSITION: &[&str] = if cfg!(windows) {
     &[
         "capture", "batch", "video", "complete", "progress", "torrent", "model", "tools", "addurl",
@@ -221,9 +221,15 @@ fn create(app: &AppHandle, kind: &str, label: &str, route: &str) -> tauri::Resul
         // thread: the plugin holds its state's lock while it moves the window, and its own event
         // handlers take that lock on the main thread, so from here the two waited on each other.
         let w = window.clone();
+        let remember_size = kind == "progress";
         let _ = app.run_on_main_thread(move || {
             use tauri_plugin_window_state::{StateFlags, WindowExt};
-            let _ = w.restore_state(StateFlags::POSITION);
+            let flags = if remember_size {
+                StateFlags::POSITION | StateFlags::SIZE
+            } else {
+                StateFlags::POSITION
+            };
+            let _ = w.restore_state(flags);
         });
     }
     if matches!(kind, "mini" | "dropzone") {
