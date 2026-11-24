@@ -1,5 +1,6 @@
 import { MotionConfig } from "motion/react";
 import { lazy, Suspense, useEffect, useState } from "react";
+import { LightningEasterEgg } from "./components/LightningEasterEgg";
 import { MenuHost } from "./components/MenuHost";
 import { ToastHost } from "./components/ToastHost";
 import { TooltipHost } from "./components/TooltipHost";
@@ -88,6 +89,7 @@ export function App() {
       <TooltipHost />
       <MenuHost />
       <ToastHost />
+      {ready && route.name === "main" && <LightningEasterEgg reduced={reduced === "reduced"} />}
     </MotionConfig>
   );
 }

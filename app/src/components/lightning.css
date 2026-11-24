@@ -1,0 +1,34 @@
+.prism-lightning {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: var(--z-max);
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.prism-lightning__bolt {
+  --bolt-color: #8977ff;
+  --bolt-delay: 0ms;
+  animation: prism-lightning-strike 550ms var(--bolt-delay) ease-out both;
+}
+
+.prism-lightning__bolt--1 { --bolt-color: #52c9ff; --bolt-delay: 65ms; }
+.prism-lightning__bolt--2 { --bolt-color: #c183ff; --bolt-delay: 120ms; }
+.prism-lightning__halo { stroke: var(--bolt-color); stroke-width: 12px; filter: blur(6px); opacity: 0.58; }
+.prism-lightning__rim { stroke: var(--bolt-color); stroke-width: 4px; }
+.prism-lightning__core { stroke: #edf5ff; stroke-width: 1.45px; }
+
+/* One fading strike per arc, without strobing or changing the window background. */
+@keyframes prism-lightning-strike {
+  0%, 100% { opacity: 0; }
+  7% { opacity: 0.95; }
+  35% { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prism-lightning { display: none; }
+}
