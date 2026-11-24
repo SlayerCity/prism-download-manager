@@ -607,7 +607,7 @@ async fn a_quality_picked_from_a_stream_downloads_that_variant() {
     let item = core
         .confirm_capture(CaptureDecision {
             id: info.id,
-            file_name: Some("Picked.ts".into()),
+            file_name: Some("Picked.mp4".into()),
             save_dir: Some(dl.clone()),
             conflict: Some(ConflictAction::Overwrite),
             mode: StartMode::Now,
@@ -615,6 +615,7 @@ async fn a_quality_picked_from_a_stream_downloads_that_variant() {
         })
         .unwrap();
     let path = wait_completed(&mut rx, &item.id).await;
+    // The user-selected name is `.mp4`, but this test disables FFmpeg so the bytes remain TS.
     assert_eq!(path, dl.join("Picked.ts"));
     assert_eq!(
         sha256_file(&path),

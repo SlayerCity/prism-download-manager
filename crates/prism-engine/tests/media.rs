@@ -60,6 +60,28 @@ async fn hls_plain_variant_selection() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn hls_unremuxed_output_uses_primary_track_extension() {
+    let fixture = HlsFixture::synthetic(2, 8, 32_000, 3);
+    let srv = server(ServerConfig {
+        hls: Some(fixture.clone()),
+        ..Default::default()
+    })
+    .await;
+    let dir = tempfile::tempdir().unwrap();
+    let mut req = media_request(&srv.url("/hls/master.m3u8"), dir.path(), false);
+    req.destination.file_name = Some("Picked.mp4".into());
+
+    let done = wait(&engine().start_media(req, None, vec![]), 60)
+        .await
+        .unwrap();
+    assert_eq!(done.path, dir.path().join("Picked.ts"));
+    assert_eq!(
+        sha256_file(&done.path),
+        sha256(&fixture.expected_variant_bytes(1))
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn hls_aes128_byte_ranges_and_audio_rendition() {
     for (explicit_iv, byte_ranges) in [(None, false), (Some([9u8; 16]), true)] {
         let mut fixture = HlsFixture::synthetic(2, 10, 50_000, 2);

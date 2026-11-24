@@ -727,14 +727,22 @@ async fn run_inner(
             (r.final_path, m.work_dir, done)
         }
         None => {
-            let ext = match (can_remux, kind) {
-                (true, _) | (false, MediaKind::Dash) => "mp4",
-                _ => "ts",
+            let ext = if can_remux {
+                "mp4"
+            } else {
+                plan.tracks.first().map_or("bin", |track| track.ext)
             };
-            let name = match &req.destination.file_name {
+            let mut name = match &req.destination.file_name {
                 Some(n) if !n.trim().is_empty() => filename::sanitize(n),
                 _ => filename::sanitize(&format!("{}.{ext}", plan.name)),
             };
+            if !can_remux {
+                // The caller may have chosen a remuxed `.mp4` name, but without remuxing the
+                // primary file is the original track. Keep the filename honest about its bytes.
+                let mut path = std::path::PathBuf::from(name);
+                path.set_extension(ext);
+                name = path.to_string_lossy().into_owned();
+            }
             std::fs::create_dir_all(&req.destination.dir)
                 .map_err(|e| fail(EngineError::from_io(&e, 0)))?;
             let (final_path, work_dir) = claim_work_dir(

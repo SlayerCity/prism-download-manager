@@ -289,8 +289,9 @@ pub struct MediaRequest {
     /// Proxy; `None` = engine default.
     #[serde(default)]
     pub proxy: Option<ProxyConfig>,
-    /// Where to save. `file_name` should carry the desired final extension (`.mp4`); when
-    /// absent the name is derived from the URL.
+    /// Where to save. `file_name` supplies the preferred name; its extension is adjusted to the
+    /// actual primary-track format when remuxing is unavailable. When absent the name is derived
+    /// from the URL.
     pub destination: Destination,
     /// Parallel segment downloads (0 = engine default).
     #[serde(default)]
