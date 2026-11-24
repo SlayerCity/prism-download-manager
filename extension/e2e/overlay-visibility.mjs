@@ -74,7 +74,33 @@ try {
   assert.equal(await pill.getAttribute('aria-expanded'), 'false');
   await page.keyboard.press('Enter');
   assert.equal(await pill.getAttribute('aria-expanded'), 'true', 'keyboard activation still works');
-  console.log('Passed: hidden players, fullscreen, compact layout, bounded drag, and click/keyboard activation.');
+
+  // YouTube homepage hover previews use small, muted, looping players within feed cards.
+  const youtube = await browser.newPage();
+  await youtube.route('https://www.youtube.com/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'text/html',
+    body: `<!doctype html><title>Home - YouTube</title><style>
+      ytd-rich-item-renderer { display:block; width:320px; height:180px; }
+      #unrelated { display:block; width:320px; height:180px; }
+    </style><ytd-rich-item-renderer></ytd-rich-item-renderer><video id="unrelated" muted autoplay loop></video>
+    <script>document.querySelector('ytd-rich-item-renderer').attachShadow({ mode: 'open' });</script>`,
+  }));
+  await youtube.goto('https://www.youtube.com/');
+  await youtube.addScriptTag({ content: script.text });
+  await youtube.evaluate(() => {
+    document.querySelector('ytd-rich-item-renderer').shadowRoot.innerHTML =
+      '<style>.html5-video-player, video { display:block; width:320px; height:180px; }</style><div class="html5-video-player"><video id="preview" muted autoplay loop></video></div>';
+  });
+  const previewBox = await youtube.locator('#preview').boundingBox();
+  await youtube.mouse.move(previewBox.x + 40, previewBox.y + 40);
+  const youtubeShowing = youtube.locator('[data-prism-video-button] .wrap.show');
+  await youtubeShowing.waitFor({ state: 'attached' });
+  const unrelatedBox = await youtube.locator('#unrelated').boundingBox();
+  await youtube.mouse.move(unrelatedBox.x + 40, unrelatedBox.y + 40);
+  await youtube.waitForFunction(() => !document.querySelector('[data-prism-video-button] .wrap.show'));
+  await youtube.close();
+  console.log('Passed: hidden players, fullscreen, compact layout, bounded drag, click/keyboard activation, and YouTube feed hover preview.');
 } finally {
   await browser.close();
 }

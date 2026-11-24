@@ -22,8 +22,11 @@ function esc(s: string): string {
 /** The element whose box the pill attaches to (YouTube: the player, not the raw <video>). */
 function targetOf(v: HTMLVideoElement): Element | null {
   if (IS_YOUTUBE) {
-    // Only the main/Shorts players — not the muted hover previews on feeds.
-    return v.closest('#movie_player, #shorts-player, ytd-reel-video-renderer .html5-video-player') ?? null;
+    // YouTube's Polymer cards use open shadow roots. Walk through them so feed
+    // previews remain scoped to recognized cards, not arbitrary inline videos.
+    const player = composedClosest(v, '.html5-video-player');
+    if (player && composedClosest(player, 'ytd-reel-video-renderer, ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer')) return player;
+    return composedClosest(v, '#movie_player, #shorts-player');
   }
   return v;
 }
@@ -36,8 +39,14 @@ function rendered(v: HTMLVideoElement): boolean {
 function eligible(v: HTMLVideoElement, r: DOMRect): boolean {
   if (r.width < MIN_W || r.height < MIN_H) return false;
   if (!rendered(v)) return false;
-  // Small muted autoplay loops without controls are decorative/ads.
-  if (v.muted && v.autoplay && v.loop && !v.controls && (r.width < 400 || r.height < 225)) return false;
+  // Small muted autoplay loops are usually decorative/ads. YouTube's recognized
+  // feed-card preview is the exception: the pill is only exposed while its player is hovered.
+  const player = IS_YOUTUBE ? composedClosest(v, '.html5-video-player') : null;
+  const youtubeFeedPreview = !!player && !!composedClosest(
+    player,
+    'ytd-rich-item-renderer, ytd-video-renderer, ytd-compact-video-renderer',
+  );
+  if (!youtubeFeedPreview && v.muted && v.autoplay && v.loop && !v.controls && (r.width < 400 || r.height < 225)) return false;
   return true;
 }
 
@@ -157,6 +166,7 @@ export class VideoButton {
   private observer: MutationObserver | null = null;
   private cache = new Map<string, { at: number; res: Promise<VideoOptionsResult | undefined> }>();
   private scanQueued = false;
+  private scanRoots = new Set<ParentNode>();
   /** The video under the last right-click (for the context menu's "Download with Prism"). */
   private contextVideo: { v: HTMLVideoElement; at: number } | null = null;
 
@@ -187,18 +197,20 @@ export class VideoButton {
         else this.visible.delete(v);
       }
     });
-    this.scan(document);
     this.observer = new MutationObserver((records) => {
+      let removed = false;
       for (const r of records) {
         for (const n of r.addedNodes) {
           if (n.nodeType === 1 && ((n as Element).tagName === 'VIDEO' || (n as Element).firstElementChild)) {
-            this.queueScan();
-            return;
+            this.queueScan(n as Element);
           }
         }
+        removed ||= r.removedNodes.length > 0;
       }
+      if (removed) this.queueScan(null);
     });
     this.observer.observe(document.documentElement, { childList: true, subtree: true });
+    this.scan(document);
     window.addEventListener('pointermove', this.onMove, { capture: true, passive: true });
     window.addEventListener('scroll', this.onScroll, { capture: true, passive: true });
     window.addEventListener('resize', this.onScroll, { passive: true });
@@ -236,27 +248,44 @@ export class VideoButton {
     this.videos.clear();
   }
 
-  private queueScan(): void {
+  private queueScan(root: ParentNode | null = document): void {
+    if (root) this.scanRoots.add(root);
     if (this.scanQueued) return;
     this.scanQueued = true;
     requestAnimationFrame(() => {
       this.scanQueued = false;
-      this.scan(document);
+      const roots = [...this.scanRoots];
+      this.scanRoots.clear();
+      roots.forEach((scope) => this.scan(scope));
+      for (const v of this.videos) {
+        if (v.isConnected) continue;
+        this.videos.delete(v);
+        this.visible.delete(v);
+        this.io?.unobserve(v);
+      }
     });
   }
 
   private scan(root: ParentNode): void {
-    root.querySelectorAll('video').forEach((v) => {
+    const register = (v: HTMLVideoElement): void => {
       if (this.videos.has(v)) return;
       this.videos.add(v);
       this.io?.observe(v);
-    });
-    for (const v of this.videos) {
-      if (v.isConnected) continue;
-      this.videos.delete(v);
-      this.visible.delete(v);
-      this.io?.unobserve(v);
-    }
+    };
+    const visit = (scope: ParentNode): void => {
+      if (scope instanceof HTMLVideoElement) register(scope);
+      scope.querySelectorAll('video').forEach(register);
+      const hosts = scope instanceof Element && scope.shadowRoot
+        ? [scope, ...scope.querySelectorAll('*')].filter((el): el is Element => !!el.shadowRoot)
+        : [...scope.querySelectorAll('*')].filter((el) => !!el.shadowRoot);
+      for (const host of hosts) {
+        const shadow = host.shadowRoot;
+        if (!shadow) continue;
+        this.observer?.observe(shadow, { childList: true, subtree: true });
+        visit(shadow);
+      }
+    };
+    visit(root);
   }
 
   // ---- DOM -----------------------------------------------------------------
