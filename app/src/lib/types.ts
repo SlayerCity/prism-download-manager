@@ -64,6 +64,15 @@ export interface DownloadItem {
   media?: MediaInfo | null;
 }
 
+export interface TrackerProgress {
+  tracker: string;
+  state: string;
+  intervalSecs?: number | null;
+  seeders?: number | null;
+  leechers?: number | null;
+  error?: string | null;
+}
+
 export interface Progress {
   id: string;
   status: Status;
@@ -77,6 +86,7 @@ export interface Progress {
   detail?: string | null;
   /** Share done (0–1) while the size isn't known (a part of a video being cut). */
   fraction?: number | null;
+  trackers?: TrackerProgress[] | null;
 }
 
 export interface SegmentInfo {

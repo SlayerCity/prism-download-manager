@@ -87,6 +87,7 @@ pub enum TorrentState {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TorrentProgress {
+    pub trackers: Vec<librqbit::TrackerAnnounceStatus>,
     pub state: TorrentState,
     pub downloaded: u64,
     pub uploaded: u64,
@@ -319,6 +320,7 @@ impl TorrentEngine {
         let download_speed = live.map(|l| mib(l.download_speed.mbps)).unwrap_or(0);
         let remaining = stats.total_bytes.saturating_sub(stats.progress_bytes);
         Some(TorrentProgress {
+            trackers: stats.tracker_status.clone(),
             state,
             downloaded: stats.progress_bytes,
             uploaded: stats.uploaded_bytes,

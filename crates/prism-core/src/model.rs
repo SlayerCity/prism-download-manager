@@ -193,6 +193,18 @@ pub struct MediaInfo {
     pub section: Option<prism_video::Section>,
 }
 
+/// Per-tracker announce status, safe to expose without URL secrets.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TrackerProgress {
+    pub tracker: String,
+    pub state: String,
+    pub interval_secs: Option<u64>,
+    pub seeders: Option<u64>,
+    pub leechers: Option<u64>,
+    pub error: Option<String>,
+}
+
 /// Live, non-persisted progress of a running item (sent ~4×/s to the UI).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(rename_all = "camelCase")]
@@ -215,6 +227,8 @@ pub struct Progress {
     /// ffmpeg): the bar follows it instead of `downloaded / size`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fraction: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub trackers: Option<Vec<TrackerProgress>>,
 }
 
 /// Segment layout for the details window visualization.

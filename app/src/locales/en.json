@@ -1,4 +1,5 @@
 {
+  "Trackers": "Trackers",
   "{count} segments": {
     "one": "{count} segment",
     "other": "{count} segments"

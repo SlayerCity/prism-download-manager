@@ -141,6 +141,22 @@ function InfoTab({ id }: { id: string }) {
   const queue = useApp((s) => s.queues.find((q) => q.id === item?.queueId)?.name);
   if (!item) return null;
   const p = progressOf(item, progress);
+  const trackerStatus = progress?.trackers?.length ? (
+    <div className="tracker-status-list">
+      {progress.trackers.map((tracker) => (
+        <div key={tracker.tracker} className="tracker-status-list__item">
+          <div className="t-mono">{tracker.tracker}</div>
+          <div>
+            {tracker.state}
+            {tracker.intervalSecs != null ? ` · ${tracker.intervalSecs}s` : ""}
+            {tracker.seeders != null ? ` · ${tracker.seeders} seeds` : ""}
+            {tracker.leechers != null ? ` · ${tracker.leechers} leeches` : ""}
+          </div>
+          {tracker.error && <div className="tracker-status-list__error">{tracker.error}</div>}
+        </div>
+      ))}
+    </div>
+  ) : null;
   const rows: [string, ReactNode, string?][] = [
     [t("Address"), item.url, item.url],
     ...(item.finalUrl && item.finalUrl !== item.url ? ([[t("Final address"), item.finalUrl, item.finalUrl]] as [string, ReactNode, string][]) : []),
@@ -153,6 +169,7 @@ function InfoTab({ id }: { id: string }) {
     [t("Resume"), item.resumable === false ? t("Not supported — restarts from zero") : item.resumable ? t("Supported") : t("Unknown")],
     [t("Category"), cat ?? item.category],
     [t("Queue"), queue ?? "—"],
+    ...(trackerStatus ? [[t("Trackers"), trackerStatus] as [string, ReactNode]] : []),
     [t("Connections"), String(item.connections)],
     [t("Speed limit"), item.speedLimit ? `${formatBytes(item.speedLimit)}/s` : t("None")],
     [t("Added"), formatDate(item.addedAt)],

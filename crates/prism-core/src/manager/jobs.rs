@@ -100,6 +100,7 @@ impl Job {
                     upload_speed: None,
                     detail,
                     fraction: None,
+                    trackers: None,
                 }
             }
             Job::Video(j) => j.progress(item),
@@ -808,6 +809,7 @@ impl VideoJob {
             upload_speed: None,
             detail: st.detail.clone(),
             fraction,
+            trackers: None,
         }
     }
 
@@ -1631,6 +1633,19 @@ fn torrent_progress(item: &DownloadItem, p: prism_torrent::TorrentProgress) -> P
             _ => format!("{} peers", p.peers),
         }),
         fraction: None,
+        trackers: Some(
+            p.trackers
+                .into_iter()
+                .map(|tracker| crate::model::TrackerProgress {
+                    tracker: tracker.tracker,
+                    state: tracker.state,
+                    interval_secs: tracker.interval_secs,
+                    seeders: tracker.seeders,
+                    leechers: tracker.leechers,
+                    error: tracker.error,
+                })
+                .collect(),
+        ),
     }
 }
 
@@ -1901,6 +1916,7 @@ mod tests {
                 finished: true,
                 error: None,
                 name: Some("test".into()),
+                trackers: vec![],
             },
         );
         assert_eq!(progress.status, Status::Completed);

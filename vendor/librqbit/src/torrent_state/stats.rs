@@ -70,6 +70,8 @@ impl std::fmt::Display for TorrentStatsState {
 
 #[derive(Serialize, Debug)]
 pub struct TorrentStats {
+    #[serde(default)]
+    pub tracker_status: Vec<tracker_comms::TrackerAnnounceStatus>,
     // Flattens into `{ "state": "initializing", "paused": <bool> }` etc., so
     // `state` stays a plain string on the wire and `paused` only appears for
     // the `initializing` variant.
@@ -148,6 +150,7 @@ mod tests {
     fn sample(state: TorrentStatsState) -> TorrentStats {
         TorrentStats {
             state,
+            tracker_status: vec![],
             file_progress: vec![],
             error: None,
             progress_bytes: 10,

@@ -1321,6 +1321,7 @@ impl Session {
         } = add_res;
 
         let private = metadata.as_ref().is_some_and(|m| m.info.info().private);
+        let tracker_status = Arc::new(parking_lot::RwLock::new(std::collections::HashMap::new()));
 
         let make_peer_rx = || {
             self.make_peer_rx(
@@ -1330,6 +1331,7 @@ impl Session {
                 opts.force_tracker_interval,
                 opts.initial_peers.clone().unwrap_or_default(),
                 private,
+                tracker_status.clone(),
             )
         };
 
@@ -1432,6 +1434,7 @@ impl Session {
             let peer_opts = self.merge_peer_opts(opts.peer_opts);
             let metadata = Arc::new(metadata);
             let minfo = Arc::new(ManagedTorrentShared {
+                tracker_status: tracker_status.clone(),
                 id,
                 span,
                 info_hash,
@@ -1614,6 +1617,7 @@ impl Session {
             t.shared().options.force_tracker_interval,
             t.shared().options.initial_peers.clone(),
             is_private,
+            t.shared().tracker_status.clone(),
         )
     }
 
@@ -1626,6 +1630,7 @@ impl Session {
         force_tracker_interval: Option<Duration>,
         initial_peers: Vec<SocketAddr>,
         is_private: bool,
+        tracker_status: tracker_comms::TrackerStatusStore,
     ) -> Option<PeerStream> {
         let dht_rx = if is_private {
             None
@@ -1667,6 +1672,7 @@ impl Session {
             self.announce_port().unwrap_or(4240),
             self.reqwest_client.clone(),
             self.udp_tracker_client.clone(),
+            tracker_status,
         );
 
         let initial_peers_rx = if initial_peers.is_empty() {

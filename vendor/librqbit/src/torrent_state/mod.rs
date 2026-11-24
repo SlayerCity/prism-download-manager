@@ -178,6 +178,7 @@ impl TorrentMetadata {
 // ManagedTorrent contains the current torrent state, which in turn needs access to a bunch
 // of stuff, but it shouldn't access the state.
 pub struct ManagedTorrentShared {
+    pub(crate) tracker_status: tracker_comms::TrackerStatusStore,
     pub id: TorrentId,
     pub info_hash: Id20,
     pub(crate) spawner: BlockingSpawner,
@@ -516,6 +517,11 @@ impl ManagedTorrent {
     pub fn stats(&self) -> TorrentStats {
         use stats::TorrentStatsState as S;
         let mut resp = TorrentStats {
+            tracker_status: {
+                let mut statuses: Vec<_> = self.shared.tracker_status.read().values().cloned().collect();
+                statuses.sort_by(|a, b| a.tracker.cmp(&b.tracker));
+                statuses
+            },
             total_bytes: self
                 .metadata
                 .load()
