@@ -496,7 +496,7 @@ export class VideoButton {
     this.cache.set(c.key, { at: Date.now(), res });
     // Don't cache failures/empties for long.
     void res.then((r) => {
-      if (!r || !r.options.length) this.cache.delete(c.key);
+      if ((!r || !r.options.length || r.notice) && this.cache.get(c.key)?.res === res) this.cache.delete(c.key);
     });
     return res;
   }
@@ -526,20 +526,23 @@ export class VideoButton {
     // On a video site's single post / video page "Best quality" works right away: the app picks
     // the best format (within the preferred quality) once it has read the page.
     const best = this.bestTarget(ctx);
-    if (best) {
-      this.menu.insertAdjacentHTML(
-        'beforeend',
-        `<button class="item" role="menuitem" data-id="best"><span class="ic">${icons.film(18)}</span><span class="tx"><span class="l">Best quality</span><span class="d">Download now, without waiting for the list</span></span><span class="go">${icons.download(16)}</span></button>`,
-      );
-      this.menu.querySelector<HTMLButtonElement>('.item[data-id="best"]')!.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (!e.isTrusted) return;
-        void this.choose({ id: 'fmt:best', label: 'Best quality', group: 'video', formatId: 'best' }, ctx.title, best);
-      });
-    }
+    if (best) this.addBestQuality(ctx.title, best);
     const res = await this.options();
     if (!this.menuOpen) return;
     this.renderMenu(ctx.title, res);
+    if (best && !res?.options.some((o) => o.group === 'video')) this.addBestQuality(ctx.title, best);
+  }
+
+  private addBestQuality(title: string, target: string): void {
+    this.menu.insertAdjacentHTML(
+      'beforeend',
+      `<button class="item" role="menuitem" data-id="best"><span class="ic">${icons.film(18)}</span><span class="tx"><span class="l">Best quality</span><span class="d">Let Prism choose the format</span></span><span class="go">${icons.download(16)}</span></button>`,
+    );
+    this.menu.querySelector<HTMLButtonElement>('.item[data-id="best"]')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!e.isTrusted) return;
+      void this.choose({ id: 'fmt:best', label: 'Best quality', group: 'video', formatId: 'best' }, title, target);
+    });
   }
 
   private renderMenu(title: string, res: VideoOptionsResult | undefined): void {

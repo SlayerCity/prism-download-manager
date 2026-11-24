@@ -55,7 +55,7 @@ async function expandStream(m: MediaItem, group: VideoOption['group'], pageUrl: 
         pageUrl,
         userAgent: userAgent(),
       },
-      { timeoutMs: EXPAND_TIMEOUT_MS },
+      { noLaunch: true, timeoutMs: EXPAND_TIMEOUT_MS },
     );
     return variantOptions(base, m.kind, reply.variants ?? []) ?? [base];
   } catch {
@@ -73,7 +73,7 @@ function noticeFor(err: NativeError): string {
       return 'The browser couldn’t start the Prism helper — showing streams found on this page.';
     case 'app_not_running':
     case 'app_unreachable':
-      return "Prism isn't running — showing streams found on this page.";
+      return 'Prism isn’t running. Choose a download to start it, or open Prism to see more formats.';
     case 'timeout':
       return 'Prism took too long to read this page — showing streams found on this page.';
     case 'not_a_video_page':
@@ -109,7 +109,7 @@ export async function videoOptions(
     try {
       const reply = await native.request(
         { type: 'probeVideo', pageUrl, cookies: await cookieHeaderFor(pageUrl, !!tab?.incognito), userAgent: userAgent() },
-        { timeoutMs: 60_000 },
+        { noLaunch: true, timeoutMs: 60_000 },
       );
       const options: VideoOption[] = (reply.formats ?? []).map((f) => ({
         id: `fmt:${f.id}`,
