@@ -54,7 +54,7 @@ of them can win, so disable them while using Prism.
   are cleared on navigation, and the badge shows the count.
 * **Floating video button** — Shadow-DOM pill above the top-right of a hovered `<video>` (YouTube
   player / Shorts aware, skips players < 200×120 and small muted autoplay loops, follows
-  scroll/resize, moves into the fullscreen element, handles `yt-navigate-finish`, `popstate`,
+  scroll/resize, skips hidden players, hides in player fullscreen, handles `yt-navigate-finish`, `popstate`,
   Navigation API and DOM mutations). On `videoSites` (YouTube, Vimeo, …) the menu shows the app's
   `probeVideo` formats — on a feed, profile or listing (X, Instagram, Facebook, Reddit, TikTok,
   LinkedIn…) for the hovered post (the tile's link, the single-post link of its `<article>`, or
@@ -256,4 +256,4 @@ testing with a real browser.
 * Opera/Vivaldi/Brave use Chrome's registration; Opera's Linux/macOS directories are unverified.
 * Partitioned (CHIPS) cookies are only included when the browser sent them on the captured request.
 * Downloads started by `<a download>` on `blob:`/`data:` URLs, and POST form downloads, always stay in the browser.
-* The video button cannot overlay a `<video>` element that is itself fullscreen (it hides then).
+* The floating video button stays hidden while the page has a fullscreen element.

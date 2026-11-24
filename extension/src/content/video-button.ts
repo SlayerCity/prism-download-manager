@@ -28,8 +28,14 @@ function targetOf(v: HTMLVideoElement): Element | null {
   return v;
 }
 
+/** IntersectionObserver also reports layout boxes for invisible players. */
+function rendered(v: HTMLVideoElement): boolean {
+  return v.checkVisibility({ opacityProperty: true, visibilityProperty: true });
+}
+
 function eligible(v: HTMLVideoElement, r: DOMRect): boolean {
   if (r.width < MIN_W || r.height < MIN_H) return false;
+  if (!rendered(v)) return false;
   // Small muted autoplay loops without controls are decorative/ads.
   if (v.muted && v.autoplay && v.loop && !v.controls && (r.width < 400 || r.height < 225)) return false;
   return true;
@@ -291,14 +297,7 @@ export class VideoButton {
       });
     }
     this.host = host;
-    this.attachHost();
-  }
-
-  private attachHost(): void {
-    if (!this.host) return;
-    const fs = document.fullscreenElement;
-    const parent = fs && fs.tagName !== 'VIDEO' ? fs : document.documentElement;
-    if (this.host.parentNode !== parent) parent.appendChild(this.host);
+    document.documentElement.appendChild(host);
   }
 
   // ---- show / hide / position -------------------------------------------------
@@ -320,7 +319,7 @@ export class VideoButton {
   };
 
   private hitTest(): void {
-    if (this.menuOpen || this.overUi) return;
+    if (!this.enabled || document.fullscreenElement || this.menuOpen || this.overUi) return;
     const x = this.lastX;
     const y = this.lastY;
     let found: HTMLVideoElement | null = null;
@@ -346,10 +345,8 @@ export class VideoButton {
   }
 
   private show(v: HTMLVideoElement): void {
-    const fs = document.fullscreenElement;
-    if (fs && fs.tagName === 'VIDEO') return; // can't overlay a fullscreen <video>
+    if (document.fullscreenElement) return;
     this.ensureHost();
-    this.attachHost();
     this.current = v;
     // Start reading the qualities while the pointer rests on the video, so the menu is ready
     // (or nearly) when it opens. A short wait skips videos merely crossed on the way; one at a
@@ -388,7 +385,7 @@ export class VideoButton {
     const v = this.current;
     if (!v || !this.host) return;
     const t = targetOf(v);
-    if (!v.isConnected || !t) return this.hide(true);
+    if (document.fullscreenElement || !v.isConnected || !t || !rendered(v)) return this.hide(true);
     const r = t.getBoundingClientRect();
     const vw = document.documentElement.clientWidth || innerWidth;
     const vh = document.documentElement.clientHeight || innerHeight;
@@ -398,10 +395,9 @@ export class VideoButton {
     }
     const pw = this.pill.offsetWidth || 118;
     const ph = this.pill.offsetHeight || 32;
-    const inFs = !!document.fullscreenElement;
     const x = Math.max(8, Math.min(r.right, vw) - pw - 10);
     // Above the player's top-right edge when there is room, else just inside it.
-    const y = !inFs && r.top >= ph + 14 ? r.top - ph - 6 : Math.max(r.top, 0) + 10;
+    const y = r.top >= ph + 14 ? r.top - ph - 6 : Math.max(r.top, 0) + 10;
     this.wrap.style.setProperty('--x', `${x}px`);
     this.wrap.style.setProperty('--y', `${y}px`);
     // Open the menu upwards when there's no room below.
@@ -410,10 +406,11 @@ export class VideoButton {
   }
 
   private onFullscreen = (): void => {
-    this.attachHost();
-    const fs = document.fullscreenElement;
-    if (fs && fs.tagName === 'VIDEO') this.hide(true);
-    else if (this.current) this.position();
+    clearTimeout(this.hideTimer);
+    this.hideTimer = undefined;
+    this.overUi = false;
+    this.hide(true);
+    if (!document.fullscreenElement) this.hitTest();
   };
 
   private onNavigate = (): void => {
@@ -426,7 +423,7 @@ export class VideoButton {
   // controls on top) the visible video under the pointer.
   private onContextMenu = (e: MouseEvent): void => {
     const own = e.composedPath().find((n): n is HTMLVideoElement => n instanceof HTMLVideoElement);
-    const under = [...this.visible].find((v) => v.isConnected && targetOf(v) && inside(targetOf(v)!.getBoundingClientRect(), e.clientX, e.clientY));
+    const under = [...this.visible].find((v) => v.isConnected && rendered(v) && targetOf(v) && inside(targetOf(v)!.getBoundingClientRect(), e.clientX, e.clientY));
     const v = own ?? under;
     this.contextVideo = v ? { v, at: Date.now() } : null;
   };
@@ -435,9 +432,8 @@ export class VideoButton {
   openForContextMenu(): boolean {
     const c = this.contextVideo;
     this.contextVideo = null;
-    if (!this.enabled || !c || Date.now() - c.at > 60_000 || !c.v.isConnected || !targetOf(c.v)) return false;
-    const fs = document.fullscreenElement;
-    if (fs && fs.tagName === 'VIDEO') return false;
+    if (!this.enabled || !c || Date.now() - c.at > 60_000 || !c.v.isConnected || !rendered(c.v) || !targetOf(c.v)) return false;
+    if (document.fullscreenElement) return false;
     this.hide(true);
     this.show(c.v);
     void this.toggleMenu();
