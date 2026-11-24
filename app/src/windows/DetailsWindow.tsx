@@ -143,8 +143,8 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
           {status === "completed" ? (
             <>
               <p className="lanes__empty">{t("Download complete.")}</p>
-              {inTauri && !item.trashed && /\.(png|jpe?g|webp)$/i.test(item.fileName) && (
-                <FilePreview key={JSON.stringify([id, item.saveDir, item.fileName, item.finishedAt])} id={id} />
+              {inTauri && !item.trashed && /\.(png|jpe?g|webp|mp4|m4v|mov|mkv|webm)$/i.test(item.fileName) && (
+                <FilePreview key={JSON.stringify([id, item.saveDir, item.fileName, item.finishedAt])} id={id} video={/\.(mp4|m4v|mov|mkv|webm)$/i.test(item.fileName)} />
               )}
             </>
           ) : <ConnectionLanes segments={segments} max={12} unit={unit} />}
@@ -219,7 +219,7 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
   );
 }
 
-function FilePreview({ id }: { id: string }) {
+function FilePreview({ id, video }: { id: string; video: boolean }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -236,15 +236,15 @@ function FilePreview({ id }: { id: string }) {
         try {
           setPreview(await api.previewItem(id));
         } catch (e) {
-          setError(typeof e === "string" ? e : t("Could not preview the image"));
+          setError(typeof e === "string" ? e : video ? t("Could not preview the video") : t("Could not preview the image"));
         } finally {
           setLoading(false);
         }
       }}>
-        {loading ? t("Loading preview…") : preview ? t("Hide preview") : t("Preview image")}
+        {loading ? t("Loading preview…") : preview ? t("Hide preview") : video ? t("Preview video frame") : t("Preview image")}
       </button>
       {error && <p role="status" className="text-danger">{error}</p>}
-      {preview && <img src={preview} alt={t("Downloaded image preview")} />}
+      {preview && <img src={preview} alt={video ? t("Frame from the downloaded video") : t("Downloaded image preview")} />}
     </div>
   );
 }

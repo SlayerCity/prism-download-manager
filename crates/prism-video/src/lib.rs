@@ -199,6 +199,11 @@ impl VideoService {
 
     // ------------------------------------------------------------------ tools
 
+    /// Resolve FFmpeg using Prism's configured, managed, and system paths without running it.
+    pub fn ffmpeg_path(&self) -> Option<PathBuf> {
+        tools::resolve(Tool::Ffmpeg, &self.inner.tools_dir, &self.options()).0
+    }
+
     /// Path, version and source of every tool (versions are cached per file).
     pub async fn tool_status(&self) -> ToolStatus {
         let o = self.options();

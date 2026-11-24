@@ -1764,6 +1764,11 @@ impl Core {
         serde_json::to_value(self.0.video.tool_status().await).unwrap_or_default()
     }
 
+    /// Resolve FFmpeg for optional local previews without installing tools.
+    pub fn preview_ffmpeg_path(&self) -> Option<std::path::PathBuf> {
+        self.0.video.ffmpeg_path()
+    }
+
     pub async fn ensure_tools(&self) -> Result<serde_json::Value> {
         let c = self.clone();
         let status = self

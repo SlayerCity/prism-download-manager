@@ -484,6 +484,12 @@ pub async fn preview_item(core: State<'_, Core>, id: String) -> CmdResult<String
         return Err("Only completed downloads can be previewed".into());
     }
     let path = item.path();
+    if crate::file_preview::is_video(&path) {
+        let ffmpeg = core
+            .preview_ffmpeg_path()
+            .ok_or("Video previews need FFmpeg. Set it up under Settings → Video.")?;
+        return crate::file_preview::video_thumbnail(&path, &ffmpeg).await;
+    }
     tokio::task::spawn_blocking(move || crate::file_preview::thumbnail(&path))
         .await
         .map_err(err)?
