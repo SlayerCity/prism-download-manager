@@ -1166,5 +1166,8 @@
   "Append trackers to public torrents": "Tambahkan pelacak ke torrent publik",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Satu URL pelacak HTTP, HTTPS, atau UDP per baris. Torrent privat dikecualikan. Mulai ulang Prism setelah mengubah daftar ini.",
   "Public tracker URLs": "URL pelacak publik",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "Statistik BitTorrent langsung",
+  "Uploaded this session": "Diunggah dalam sesi ini",
+  "Upload speed": "Kecepatan unggah"
 }

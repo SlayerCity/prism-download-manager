@@ -1189,5 +1189,8 @@
   "Append trackers to public torrents": "Genel torrentlere izleyici ekle",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Her satıra bir HTTP, HTTPS veya UDP izleyici URL’si yazın. Özel torrentler hariç tutulur. Bu listeyi değiştirdikten sonra Prism’i yeniden başlatın.",
   "Public tracker URLs": "Genel izleyici URL’leri",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "Canlı BitTorrent istatistikleri",
+  "Uploaded this session": "Bu oturumda yüklenen",
+  "Upload speed": "Yükleme hızı"
 }

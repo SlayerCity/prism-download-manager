@@ -1235,5 +1235,8 @@
   "Append trackers to public torrents": "Přidat trackery k veřejným torrentům",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Jedna URL HTTP, HTTPS nebo UDP na řádek. Soukromé torrenty jsou vyloučeny. Po změně tohoto seznamu restartujte Prism.",
   "Public tracker URLs": "URL veřejných trackerů",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "Živé statistiky BitTorrentu",
+  "Uploaded this session": "Odesláno v této relaci",
+  "Upload speed": "Rychlost odesílání"
 }

@@ -201,6 +201,11 @@ pub struct Progress {
     pub speed: u64,
     pub eta_secs: Option<u64>,
     pub connections: u32,
+    /// BitTorrent upload counters are live session statistics, not durable lifetime totals.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uploaded: Option<u64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub upload_speed: Option<u64>,
     /// Human-readable detail: "Muxing", "Retrying in 4 s", ...
     pub detail: Option<String>,
     /// Share done (0–1) when the size isn't known until the end (a part of a video, cut by

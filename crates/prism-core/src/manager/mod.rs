@@ -921,7 +921,12 @@ impl Core {
             segments: job
                 .map(|j| j.segments())
                 .unwrap_or_else(|| jobs::stored_segments(&item)),
-            progress: job.map(|j| j.progress(&item)),
+            progress: job.map(|j| j.progress(&item)).or_else(|| {
+                (st.settings.torrent.seed_completed)
+                    .then(|| self.0.torrent.get())
+                    .flatten()
+                    .and_then(|engine| jobs::completed_torrent_progress(&item, engine))
+            }),
             speed_history: st
                 .speed_history
                 .get(id)
@@ -1003,6 +1008,29 @@ impl Core {
                 }
                 st.dirty.insert(id.clone());
                 out.push(p);
+            }
+            // Completed items normally stop producing progress. When persistent seeding is
+            // enabled, retain live upload counters for finished torrents without changing their
+            // completed row state or persisting session-only rates/counters.
+            if st.settings.torrent.seed_completed
+                && let Some(engine) = self.0.torrent.get()
+            {
+                let seeds: Vec<DownloadItem> = st
+                    .items
+                    .values()
+                    .filter(|item| {
+                        item.status == Status::Completed
+                            && item.kind == ItemKind::Torrent
+                            && !item.trashed
+                            && !st.jobs.contains_key(&item.id)
+                    })
+                    .cloned()
+                    .collect();
+                out.extend(
+                    seeds
+                        .iter()
+                        .filter_map(|item| jobs::completed_torrent_progress(item, engine)),
+                );
             }
             out
         };

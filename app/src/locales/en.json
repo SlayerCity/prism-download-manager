@@ -97,5 +97,8 @@
   "Mirror URLs": "Mirror URLs",
   "One HTTP(S) URL per line": "One HTTP(S) URL per line",
   "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.",
-  "Mirrors can’t be used with a password-protected download.": "Mirrors can’t be used with a password-protected download."
+  "Mirrors can’t be used with a password-protected download.": "Mirrors can’t be used with a password-protected download.",
+  "Live BitTorrent stats": "Live BitTorrent stats",
+  "Uploaded this session": "Uploaded this session",
+  "Upload speed": "Upload speed"
 }

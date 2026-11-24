@@ -70,6 +70,8 @@ export interface Progress {
   speed: number;
   etaSecs?: number | null;
   connections: number;
+  uploaded?: number | null;
+  uploadSpeed?: number | null;
   detail?: string | null;
   /** Share done (0–1) while the size isn't known (a part of a video being cut). */
   fraction?: number | null;

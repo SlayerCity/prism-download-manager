@@ -44,6 +44,7 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
   const speed = progress?.speed ?? 0;
   const samples = history.length ? [...history.slice(0, -1), speed || history[history.length - 1]] : [];
   const avg = history.length ? history.reduce((a, b) => a + b, 0) / history.length : 0;
+  const torrentStats = item.kind === "torrent" && progress?.uploaded != null ? progress : null;
 
   const setLimit = (bps: number) => {
     setLimitDraft(bps);
@@ -133,6 +134,12 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
           <div className="banner banner--danger">
             <Icon name="status-error" size={16} />
             <span>{item.error}</span>
+          </div>
+        )}
+        {torrentStats && (
+          <div className="torrent-stats" role="group" aria-label={t("Live BitTorrent stats")}>
+            <div><div className="kpi__k">{t("Uploaded this session")}</div><div className="kpi__v tnum">{formatBytes(torrentStats.uploaded)}</div></div>
+            <div><div className="kpi__k">{t("Upload speed")}</div><div className="kpi__v tnum">{formatSpeed(torrentStats.uploadSpeed)}</div></div>
           </div>
         )}
       </div>

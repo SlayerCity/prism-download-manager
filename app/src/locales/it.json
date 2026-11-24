@@ -1212,5 +1212,8 @@
   "Append trackers to public torrents": "Aggiungi tracker ai torrent pubblici",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Un URL tracker HTTP, HTTPS o UDP per riga. I torrent privati sono esclusi. Riavvia Prism dopo aver modificato questo elenco.",
   "Public tracker URLs": "URL dei tracker pubblici",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "Statistiche BitTorrent in tempo reale",
+  "Uploaded this session": "Caricati in questa sessione",
+  "Upload speed": "Velocità di upload"
 }

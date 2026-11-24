@@ -1166,5 +1166,8 @@
   "Append trackers to public torrents": "为公开 torrent 添加 tracker",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "每行一个 HTTP、HTTPS 或 UDP tracker URL。私有 torrent 不会使用这些 tracker。更改此列表后请重启 Prism。",
   "Public tracker URLs": "公共 tracker URL",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "BitTorrent 实时统计",
+  "Uploaded this session": "本次会话已上传",
+  "Upload speed": "上传速度"
 }

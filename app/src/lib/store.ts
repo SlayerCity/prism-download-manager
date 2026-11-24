@@ -151,7 +151,11 @@ export function handleEvent(e: CoreEvent) {
       const progress = { ...st.progress };
       for (const p of e.payload) {
         const item = st.items[p.id];
-        if (!item || isActive(item.status)) progress[p.id] = p;
+        if (
+          !item ||
+          isActive(item.status) ||
+          (item.kind === "torrent" && item.status === "completed" && p.uploaded != null)
+        ) progress[p.id] = p;
       }
       useApp.setState({ progress });
       break;

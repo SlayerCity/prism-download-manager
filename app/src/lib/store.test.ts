@@ -36,6 +36,17 @@ describe("live progress (#41)", () => {
     expect(useApp.getState().items.a.status).toBe("completed");
   });
 
+  it("retained completed torrents keep their live seeding counters", () => {
+    const torrent = { ...item("completed"), kind: "torrent" as const };
+    handleEvent({ type: "itemUpdated", payload: torrent });
+    handleEvent({
+      type: "progress",
+      payload: [{ ...progress(1000), status: "completed", uploaded: 4096, uploadSpeed: 128 }],
+    });
+    expect(useApp.getState().items.a.status).toBe("completed");
+    expect(useApp.getState().progress.a?.uploaded).toBe(4096);
+  });
+
   it("a download started again shows its progress", () => {
     handleEvent({ type: "itemUpdated", payload: item("completed") });
     handleEvent({ type: "itemUpdated", payload: item("connecting") });

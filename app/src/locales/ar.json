@@ -1281,5 +1281,8 @@
   "Append trackers to public torrents": "إضافة متعقبات إلى ملفات التورنت العامة",
   "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "عنوان URL واحد لمتعقب HTTP أو HTTPS أو UDP في كل سطر. تُستثنى ملفات التورنت الخاصة. أعد تشغيل Prism بعد تغيير هذه القائمة.",
   "Public tracker URLs": "عناوين URL للمتعقبات العامة",
-  "BitTorrent": "BitTorrent"
+  "BitTorrent": "BitTorrent",
+  "Live BitTorrent stats": "إحصاءات BitTorrent المباشرة",
+  "Uploaded this session": "تم رفعه في هذه الجلسة",
+  "Upload speed": "سرعة الرفع"
 }

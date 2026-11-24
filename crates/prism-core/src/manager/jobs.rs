@@ -96,6 +96,8 @@ impl Job {
                     speed: s.speed,
                     eta_secs: s.eta.map(|d| d.as_secs()),
                     connections: s.active_connections,
+                    uploaded: None,
+                    upload_speed: None,
                     detail,
                     fraction: None,
                 }
@@ -802,6 +804,8 @@ impl VideoJob {
             speed,
             eta_secs: eta,
             connections: conns,
+            uploaded: None,
+            upload_speed: None,
             detail: st.detail.clone(),
             fraction,
         }
@@ -1504,25 +1508,7 @@ impl TorrentJob {
     fn progress(&self, item: &DownloadItem) -> Progress {
         let last = self.last.lock().clone();
         match last {
-            Some(p) => Progress {
-                id: item.id.clone(),
-                status: match p.state {
-                    prism_torrent::TorrentState::Initializing => Status::Connecting,
-                    _ => Status::Downloading,
-                },
-                downloaded: p.downloaded,
-                size: Some(p.total).filter(|t| *t > 0).or(item.size),
-                speed: p.download_speed,
-                eta_secs: p.eta_secs,
-                connections: p.peers,
-                detail: Some(match p.state {
-                    prism_torrent::TorrentState::Initializing => {
-                        "Checking existing data".to_string()
-                    }
-                    _ => format!("{} peers", p.peers),
-                }),
-                fraction: None,
-            },
+            Some(p) => torrent_progress(item, p),
             None => Progress {
                 id: item.id.clone(),
                 status: Status::Connecting,
@@ -1616,6 +1602,50 @@ impl TorrentJob {
             }
         }
     }
+}
+
+/// Convert the engine's live counters into the common progress event. Upload totals are
+/// session counters; callers must not present them as durable lifetime stats.
+fn torrent_progress(item: &DownloadItem, p: prism_torrent::TorrentProgress) -> Progress {
+    Progress {
+        id: item.id.clone(),
+        status: if p.finished && item.status == Status::Completed {
+            Status::Completed
+        } else if p.state == prism_torrent::TorrentState::Initializing {
+            Status::Connecting
+        } else {
+            Status::Downloading
+        },
+        downloaded: p.downloaded,
+        size: Some(p.total).filter(|t| *t > 0).or(item.size),
+        speed: p.download_speed,
+        eta_secs: p.eta_secs,
+        connections: p.peers,
+        uploaded: Some(p.uploaded),
+        upload_speed: Some(p.upload_speed),
+        detail: Some(match p.state {
+            prism_torrent::TorrentState::Initializing => "Checking existing data".to_string(),
+            prism_torrent::TorrentState::Seeding => "Seeding".to_string(),
+            _ => format!("{} peers", p.peers),
+        }),
+        fraction: None,
+    }
+}
+
+/// Returns live stats for a completed torrent retained by the opt-in seeding setting.
+pub(crate) fn completed_torrent_progress(
+    item: &DownloadItem,
+    engine: &prism_torrent::TorrentEngine,
+) -> Option<Progress> {
+    if item.kind != ItemKind::Torrent || item.status != Status::Completed || item.trashed {
+        return None;
+    }
+    let hash = torrent_hash(item)?;
+    let p = engine.progress(&hash)?;
+    if !p.finished {
+        return None;
+    }
+    Some(torrent_progress(item, p))
 }
 
 // ----- video probing for the UI & tools -----------------------------------------------------
@@ -1845,6 +1875,36 @@ mod tests {
         let needed = merge_space_needed([u64::MAX, 1]);
         assert_eq!(needed, u64::MAX);
         assert!(room_to_merge(needed, Some(5_000_000_000)).is_err());
+    }
+
+    #[test]
+    fn torrent_progress_exposes_session_upload_stats_without_changing_completed_status() {
+        let item = DownloadItem {
+            id: "torrent-1".into(),
+            kind: ItemKind::Torrent,
+            status: Status::Completed,
+            ..Default::default()
+        };
+        let progress = torrent_progress(
+            &item,
+            prism_torrent::TorrentProgress {
+                state: prism_torrent::TorrentState::Seeding,
+                downloaded: 1_000,
+                uploaded: 2_500,
+                total: 1_000,
+                download_speed: 0,
+                upload_speed: 128,
+                peers: 3,
+                eta_secs: None,
+                finished: true,
+                error: None,
+                name: Some("test".into()),
+            },
+        );
+        assert_eq!(progress.status, Status::Completed);
+        assert_eq!(progress.uploaded, Some(2_500));
+        assert_eq!(progress.upload_speed, Some(128));
+        assert_eq!(progress.connections, 3);
     }
 
     #[test]
