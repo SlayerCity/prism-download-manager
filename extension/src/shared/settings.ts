@@ -121,6 +121,14 @@ export interface StoredState {
 export const STATE_KEY = 'prism.state';
 // Extension-only preference: it must not override capture rules synchronized from the app.
 export const COMPACT_VIDEO_BUTTON_KEY = 'prism.compactVideoButton';
+export const VIDEO_BUTTON_OPACITY_KEY = 'prism.videoButtonOpacity';
+
+/** Saved extension-local overlay opacity, as an integer percentage. */
+export function normalizeVideoButtonOpacity(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.max(20, Math.min(100, Math.round(value / 5) * 5))
+    : 100;
+}
 
 export function defaultState(): StoredState {
   return { settings: { ...DEFAULT_SETTINGS }, paused: false, settingsSource: 'app' };

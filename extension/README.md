@@ -79,8 +79,8 @@ of them can win, so disable them while using Prism.
 * **Context menus** — Download with Prism (link/image/video/audio; a video that plays a `blob:`
   stream opens the Prism menu over it, or the app's video window without the in-page button), Download selection links,
   all links, all images, all videos (collected in every frame with `scripting.executeScript`).
-* **Options** — capture on/off, video button, bypass key, extension list, MIME list, min size,
-  excluded sites, video sites, *Sync from Prism*.
+* **Options** — capture on/off, video button and its locally saved opacity (20–100%), bypass key,
+  extension list, MIME list, min size, excluded sites, video sites, *Sync from Prism*.
 * **Native port** — one lazy `connectNative('dev.prism.host')` port kept open (keeps the MV3
   worker alive), id-correlated requests with timeouts, reconnect on demand (5 s back-off when the
   host is missing), one-shot `sendNativeMessage` fallback if the port dies mid-request, 1-min

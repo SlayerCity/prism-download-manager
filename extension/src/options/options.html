@@ -33,6 +33,11 @@
           <label class="switch"><input type="checkbox" id="compactVideoButton" /><span></span></label>
         </section>
         <section class="field">
+          <label for="videoButtonOpacity">Floating video button opacity <output id="videoButtonOpacityValue">100%</output></label>
+          <p class="muted small">Adjust the visibility of the floating button and its menu. This preference is saved immediately in this browser.</p>
+          <input id="videoButtonOpacity" type="range" min="20" max="100" step="5" value="100" />
+        </section>
+        <section class="field">
           <label for="bypassKey">Bypass key</label>
           <p class="muted small">Hold this key while clicking a link to let the browser download it.</p>
           <select id="bypassKey">

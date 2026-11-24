@@ -13,7 +13,7 @@ export const VIDEO_BUTTON_CSS = `
   pointer-events: none;
   -webkit-font-smoothing: antialiased;
 }
-.wrap.show { opacity: 1; transform: translate3d(var(--x, 0px), var(--y, 0px), 0) scale(1); }
+.wrap.show { opacity: var(--button-opacity, 1); transform: translate3d(var(--x, 0px), var(--y, 0px), 0) scale(1); }
 .wrap.dragging { transition: none; }
 .wrap.show .pill, .wrap.show .dismiss, .wrap.show .menu { pointer-events: auto; }
 .controls { display: flex; align-items: center; gap: 4px; }

@@ -16,6 +16,7 @@ const { outputFiles } = await build({
     contents: `import { VideoButton } from './src/content/video-button';
       const start = () => {
         window.__testButton = new VideoButton();
+        window.__testButton.setOpacity(55);
         window.__testButton.setEnabled(true);
       };
       if (document.documentElement) start();
@@ -72,6 +73,12 @@ try {
   };
 
   await fresh();
+  const overlayOpacity = () => ui.locator('.wrap').evaluate((el) => getComputedStyle(el).opacity);
+  await page.waitForFunction(() => Math.abs(Number(getComputedStyle(document.querySelector('[data-prism-video-button]').shadowRoot.querySelector('.wrap')).opacity) - 0.55) < 0.01);
+  await page.evaluate(() => window.__testButton.setOpacity(80));
+  await page.waitForFunction(() => Math.abs(Number(getComputedStyle(document.querySelector('[data-prism-video-button]').shadowRoot.querySelector('.wrap')).opacity) - 0.8) < 0.01);
+  assert.ok(Math.abs(Number(await overlayOpacity()) - 0.8) < 0.01, 'changing opacity should update an already-open overlay');
+  await page.evaluate(() => window.__testButton.setOpacity(55));
   await ui.locator('.dismiss').evaluate((el) => el.click());
   assert.equal(await shown(), true, 'page scripts must not dismiss the button with a synthetic click');
   await dismiss();

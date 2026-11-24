@@ -5,6 +5,7 @@
  */
 import { sendInternal } from '../shared/api';
 import { icons, prismMark } from '../shared/icons';
+import { normalizeVideoButtonOpacity } from '../shared/settings';
 import { type ElementSource, elementSources, linkedinCommentaryPath, linkedinPostPath, postUrl } from '../shared/media';
 import { siteMatches } from '../shared/rules';
 import type { ActionResult, VideoOption, VideoOptionsResult } from '../shared/messages';
@@ -157,6 +158,7 @@ export class VideoButton {
   private menuRequest = 0;
   private enabled = false;
   private compact = false;
+  private opacity = 100;
   private positions = new WeakMap<HTMLVideoElement, { x: number; y: number }>();
   private drag: { pointer: number; x: number; y: number; grabX: number; grabY: number; moved: boolean } | null = null;
   private suppressPointerClick = false;
@@ -176,6 +178,11 @@ export class VideoButton {
       this.wrap.classList.toggle('compact', on);
       this.position();
     }
+  }
+
+  setOpacity(percent: number): void {
+    this.opacity = normalizeVideoButtonOpacity(percent);
+    if (this.wrap) this.wrap.style.setProperty('--button-opacity', String(this.opacity / 100));
   }
 
   setVideoSites(sites: string[]): void {
@@ -315,6 +322,7 @@ export class VideoButton {
     }
     this.wrap = document.createElement('div');
     this.wrap.className = this.compact ? 'wrap compact' : 'wrap';
+    this.wrap.style.setProperty('--button-opacity', String(this.opacity / 100));
     this.wrap.inert = true;
     this.wrap.innerHTML = `
       <div class="controls">

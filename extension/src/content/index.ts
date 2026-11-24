@@ -1,6 +1,6 @@
 /** Content script (all frames, document_start): bypass modifier + video button. */
 import { api } from '../shared/api';
-import { COMPACT_VIDEO_BUTTON_KEY, STATE_KEY, normalizeState } from '../shared/settings';
+import { COMPACT_VIDEO_BUTTON_KEY, STATE_KEY, VIDEO_BUTTON_OPACITY_KEY, normalizeState, normalizeVideoButtonOpacity } from '../shared/settings';
 import { initBypass, setBypassKey } from './bypass';
 import { VideoButton } from './video-button';
 
@@ -25,15 +25,17 @@ if (!window.__prismContentLoaded) {
   };
 
   api.storage.local
-    .get([STATE_KEY, COMPACT_VIDEO_BUTTON_KEY])
+    .get([STATE_KEY, COMPACT_VIDEO_BUTTON_KEY, VIDEO_BUTTON_OPACITY_KEY])
     .then((r) => {
       button.setCompact(r[COMPACT_VIDEO_BUTTON_KEY] === true);
+      button.setOpacity(normalizeVideoButtonOpacity(r[VIDEO_BUTTON_OPACITY_KEY]));
       apply(r[STATE_KEY]);
     })
     .catch(() => apply(undefined));
   api.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     if (changes[COMPACT_VIDEO_BUTTON_KEY]) button.setCompact(changes[COMPACT_VIDEO_BUTTON_KEY].newValue === true);
+    if (changes[VIDEO_BUTTON_OPACITY_KEY]) button.setOpacity(normalizeVideoButtonOpacity(changes[VIDEO_BUTTON_OPACITY_KEY].newValue));
     if (changes[STATE_KEY]) apply(changes[STATE_KEY].newValue);
   });
   // Context menu "Download with Prism" on a video that has no downloadable URL (blob:).

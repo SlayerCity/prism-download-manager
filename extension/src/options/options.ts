@@ -1,7 +1,7 @@
 import { api, sendInternal } from '../shared/api';
 import { prismMark } from '../shared/icons';
 import type { CaptureSettings } from '../shared/protocol';
-import { COMPACT_VIDEO_BUTTON_KEY, DEFAULT_SETTINGS, STATE_KEY, type StoredState, normalizeState } from '../shared/settings';
+import { COMPACT_VIDEO_BUTTON_KEY, DEFAULT_SETTINGS, STATE_KEY, VIDEO_BUTTON_OPACITY_KEY, normalizeState, normalizeVideoButtonOpacity, type StoredState } from '../shared/settings';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const form = $<HTMLFormElement>('form');
@@ -46,6 +46,13 @@ function read(): Partial<CaptureSettings> {
 }
 
 const compactVideoButton = $<HTMLInputElement>('compactVideoButton');
+const videoButtonOpacity = $<HTMLInputElement>('videoButtonOpacity');
+const videoButtonOpacityValue = $<HTMLOutputElement>('videoButtonOpacityValue');
+const setOpacityValue = (value: unknown): void => {
+  const opacity = normalizeVideoButtonOpacity(value);
+  videoButtonOpacity.value = String(opacity);
+  videoButtonOpacityValue.value = `${opacity}%`;
+};
 compactVideoButton.addEventListener('change', async () => {
   const checked = compactVideoButton.checked;
   compactVideoButton.disabled = true;
@@ -59,9 +66,28 @@ compactVideoButton.addEventListener('change', async () => {
   }
 });
 
+videoButtonOpacity.addEventListener('input', () => setOpacityValue(Number(videoButtonOpacity.value)));
+let savedOpacity = 100;
+videoButtonOpacity.addEventListener('change', async () => {
+  const opacity = normalizeVideoButtonOpacity(Number(videoButtonOpacity.value));
+  videoButtonOpacity.disabled = true;
+  try {
+    await api.storage.local.set({ [VIDEO_BUTTON_OPACITY_KEY]: opacity });
+    savedOpacity = opacity;
+    setStatus('Saved.', 'ok');
+  } catch {
+    setOpacityValue(savedOpacity);
+    setStatus('Could not save video button opacity.', 'bad');
+  } finally {
+    videoButtonOpacity.disabled = false;
+  }
+});
+
 async function load(): Promise<void> {
-  const r = await api.storage.local.get([STATE_KEY, COMPACT_VIDEO_BUTTON_KEY]);
+  const r = await api.storage.local.get([STATE_KEY, COMPACT_VIDEO_BUTTON_KEY, VIDEO_BUTTON_OPACITY_KEY]);
   compactVideoButton.checked = r[COMPACT_VIDEO_BUTTON_KEY] === true;
+  savedOpacity = normalizeVideoButtonOpacity(r[VIDEO_BUTTON_OPACITY_KEY]);
+  setOpacityValue(savedOpacity);
   const st = normalizeState(r[STATE_KEY]);
   fill(st.settings, st);
 }
