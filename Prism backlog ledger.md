@@ -2,7 +2,7 @@
 
 Scope: all 42 issues open in the live November 24, 2026 snapshot (including #117, opened at 08:00 UTC). Each has a disposition below. The branch fixes or partially addresses some issues; the other issues are not resolved.
 
-The latest code commit, `a3d09c3`, is pushed to [work/prism-backlog](https://github.com/SlayerCity/prism-download-manager/tree/work/prism-backlog), based on `feat/ctrl-lightning` (`e21cf7e`). It includes the macOS window-controls/Gatekeeper updates from `bcf81a1` and a longer native-host startup budget for captured downloads; earlier overlay fixes and the Ctrl effect remain intact. No changes were sent upstream.
+The latest code commit, `8f529f0`, is pushed to [work/prism-backlog](https://github.com/SlayerCity/prism-download-manager/tree/work/prism-backlog), based on `feat/ctrl-lightning` (`e21cf7e`). It adds opt-in persistent seeding for completed torrents; earlier macOS window-controls/Gatekeeper updates, native-host startup budget, overlay fixes and Ctrl effect remain intact. No changes were sent upstream.
 
 | Upstream issue | State | Work or next verification |
 | --- | --- | --- |
