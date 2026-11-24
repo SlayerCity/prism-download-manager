@@ -3,7 +3,7 @@
 //! The layout must stay in sync with `prism-native-host`, which reads `ipc.json`
 //! from the same directory to find the running app.
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Environment variable that overrides the data directory (tests, portable mode).
 pub const DATA_DIR_ENV: &str = "PRISM_DATA_DIR";
@@ -32,8 +32,21 @@ pub fn data_dir() -> PathBuf {
 
 fn portable_dir() -> Option<PathBuf> {
     let exe = std::env::current_exe().ok()?;
+    portable_root(&exe).map(|dir| dir.join("data"))
+}
+
+fn portable_root(exe: &Path) -> Option<&Path> {
     let dir = exe.parent()?;
-    dir.join("portable.txt").exists().then(|| dir.join("data"))
+    dir.join("portable.txt").exists().then_some(dir)
+}
+
+/// The built-in portable destination follows the executable, not the host profile.
+pub(crate) fn portable_download_dir() -> Option<PathBuf> {
+    portable_download_dir_for(&std::env::current_exe().ok()?)
+}
+
+fn portable_download_dir_for(exe: &Path) -> Option<PathBuf> {
+    portable_root(exe).map(|dir| dir.join("Downloads"))
 }
 
 pub fn database_path() -> PathBuf {
@@ -56,7 +69,8 @@ pub fn tools_dir() -> PathBuf {
 /// Default folder for finished downloads (`~/Downloads/Prism` style is avoided:
 /// IDM users expect category sub-folders directly under Downloads).
 pub fn default_download_dir() -> PathBuf {
-    dirs::download_dir()
+    portable_download_dir()
+        .or_else(dirs::download_dir)
         .or_else(|| dirs::home_dir().map(|h| h.join("Downloads")))
         .unwrap_or_else(|| PathBuf::from("."))
 }
@@ -66,4 +80,28 @@ pub fn ensure_dirs() -> std::io::Result<()> {
     std::fs::create_dir_all(logs_dir())?;
     std::fs::create_dir_all(tools_dir())?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn portable_download_default_follows_the_executable() {
+        let home = tempfile::tempdir().unwrap();
+        let from = home.path().join("before");
+        let to = home.path().join("after");
+        std::fs::create_dir(&from).unwrap();
+        assert_eq!(portable_download_dir_for(&from.join("prism.exe")), None);
+        std::fs::write(from.join("portable.txt"), "portable").unwrap();
+        assert_eq!(
+            portable_download_dir_for(&from.join("prism.exe")),
+            Some(from.join("Downloads"))
+        );
+        std::fs::rename(&from, &to).unwrap();
+        assert_eq!(
+            portable_download_dir_for(&to.join("prism.exe")),
+            Some(to.join("Downloads"))
+        );
+    }
 }

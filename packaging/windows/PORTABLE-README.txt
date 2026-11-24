@@ -12,3 +12,8 @@ Prism — portable edition
 3. Settings -> Browser integration shows the status and repairs it in one click.
 
 Requires the Microsoft Edge WebView2 runtime (preinstalled on Windows 10/11).
+
+New portable setups default to the Downloads folder next to prism.exe.
+The default follows the portable folder when it moves. Existing explicit
+download paths and paths in download history are not rewritten. This zip
+is not a PortableApps Format installer.

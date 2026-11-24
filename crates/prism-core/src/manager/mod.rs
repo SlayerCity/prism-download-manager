@@ -377,7 +377,7 @@ impl Core {
         };
         self.0
             .db
-            .set_setting("settings", &serde_json::to_string(&settings)?)?;
+            .set_setting("settings", &settings.for_database()?)?;
         self.apply_runtime_settings();
         self.emit(CoreEvent::SettingsChanged(Box::new(settings.clone())));
         Ok(settings)

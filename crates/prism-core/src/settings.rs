@@ -29,6 +29,31 @@ pub struct Settings {
     pub last_seen_version: String,
 }
 
+impl Settings {
+    /// Omit the built-in portable destination on disk so defaults are recalculated
+    /// after the portable folder moves. Explicit custom paths remain unchanged.
+    pub(crate) fn for_database(&self) -> serde_json::Result<String> {
+        let portable_default = crate::paths::portable_download_dir();
+        self.serialize_for_database(portable_default.as_deref())
+    }
+
+    fn serialize_for_database(
+        &self,
+        portable_default: Option<&std::path::Path>,
+    ) -> serde_json::Result<String> {
+        let mut value = serde_json::to_value(self)?;
+        if portable_default == Some(self.downloads.default_dir.as_path()) {
+            if let Some(downloads) = value
+                .get_mut("downloads")
+                .and_then(serde_json::Value::as_object_mut)
+            {
+                downloads.remove("defaultDir");
+            }
+        }
+        serde_json::to_string(&value)
+    }
+}
+
 /// Downloading models from Hugging Face (see `crate::huggingface`).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[serde(default, rename_all = "camelCase")]
@@ -539,5 +564,37 @@ mod tests {
         assert_eq!(s.appearance.theme, Theme::Light);
         assert!(s.downloads.speed_limiter_enabled);
         assert_eq!(s.appearance.accent, "prism");
+    }
+}
+
+#[cfg(test)]
+mod portable_download_tests {
+    use super::*;
+
+    #[test]
+    fn database_omits_only_the_built_in_portable_destination() {
+        let mut settings = Settings::default();
+        let default = PathBuf::from("portable").join("Downloads");
+        settings.downloads.default_dir = default.clone();
+        let encode = |settings: &Settings, path: Option<&std::path::Path>| {
+            serde_json::from_str::<serde_json::Value>(
+                &settings.serialize_for_database(path).unwrap(),
+            )
+            .unwrap()
+        };
+        assert!(encode(&settings, Some(&default))["downloads"]
+            .get("defaultDir")
+            .is_none());
+        assert!(encode(&settings, None)["downloads"]
+            .get("defaultDir")
+            .is_some());
+        assert!(serde_json::to_value(&settings).unwrap()["downloads"]
+            .get("defaultDir")
+            .is_some());
+        settings.downloads.default_dir = PathBuf::from("custom");
+        assert_eq!(
+            encode(&settings, Some(&default))["downloads"]["defaultDir"],
+            "custom"
+        );
     }
 }
