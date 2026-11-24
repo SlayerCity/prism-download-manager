@@ -1169,5 +1169,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "BitTorrent 实时统计",
   "Uploaded this session": "本次会话已上传",
-  "Upload speed": "上传速度"
+  "Upload speed": "上传速度",
+  "Speed limits": "速度限制",
+  "Use separate BitTorrent speed limits": "使用单独的 BitTorrent 速度限制",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "关闭时，种子遵循全局下载速度限制。设为 0 表示不限速。",
+  "Download rate": "下载速度",
+  "Upload rate": "上传速度"
 }

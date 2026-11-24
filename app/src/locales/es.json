@@ -1215,5 +1215,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Estadísticas de BitTorrent en directo",
   "Uploaded this session": "Subido en esta sesión",
-  "Upload speed": "Velocidad de subida"
+  "Upload speed": "Velocidad de subida",
+  "Speed limits": "Límites de velocidad",
+  "Use separate BitTorrent speed limits": "Usar límites de velocidad independientes para BitTorrent",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Si está desactivado, los torrents siguen el límite global de descarga. Usa 0 para no limitar.",
+  "Download rate": "Velocidad de descarga",
+  "Upload rate": "Velocidad de subida"
 }

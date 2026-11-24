@@ -230,6 +230,9 @@ export interface Settings {
     publicTrackers: string[];
     /** Keep completed torrents active for seeding across restarts. */
     seedCompleted: boolean;
+    separateSpeedLimits: boolean;
+    downloadLimit: number;
+    uploadLimit: number;
   };
   connection: {
     userAgent: string;

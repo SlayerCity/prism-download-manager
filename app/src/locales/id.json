@@ -1169,5 +1169,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Statistik BitTorrent langsung",
   "Uploaded this session": "Diunggah dalam sesi ini",
-  "Upload speed": "Kecepatan unggah"
+  "Upload speed": "Kecepatan unggah",
+  "Speed limits": "Batas kecepatan",
+  "Use separate BitTorrent speed limits": "Gunakan batas kecepatan BitTorrent terpisah",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Jika mati, torrent mengikuti batas unduhan global. Isi 0 untuk tanpa batas.",
+  "Download rate": "Kecepatan unduh",
+  "Upload rate": "Kecepatan unggah"
 }

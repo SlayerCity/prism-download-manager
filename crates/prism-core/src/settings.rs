@@ -250,6 +250,23 @@ pub struct TorrentSettings {
     pub public_trackers: Vec<String>,
     /// Keep completed torrents active for seeding, including after Prism restarts.
     pub seed_completed: bool,
+    /// Use BitTorrent-specific limits instead of following the global download limiter.
+    pub separate_speed_limits: bool,
+    /// BitTorrent download cap in bytes/s (0 = unlimited), when separate limits are enabled.
+    pub download_limit: u64,
+    /// BitTorrent upload cap in bytes/s (0 = unlimited), when separate limits are enabled.
+    pub upload_limit: u64,
+}
+
+impl TorrentSettings {
+    /// Effective session limits, preserving the legacy global-limiter behavior by default.
+    pub fn effective_speed_limits(&self, global_limit: u64) -> (u64, u64) {
+        if self.separate_speed_limits {
+            (self.download_limit, self.upload_limit)
+        } else {
+            (global_limit, global_limit)
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -558,6 +575,11 @@ impl Settings {
         if self.torrent.public_trackers.len() > 100 {
             anyhow::bail!("Use no more than 100 public tracker URLs");
         }
+        if self.torrent.download_limit > u32::MAX as u64
+            || self.torrent.upload_limit > u32::MAX as u64
+        {
+            anyhow::bail!("BitTorrent speed limits must be at most 4 GiB/s");
+        }
         let mut seen = std::collections::HashSet::new();
         let mut normalized = Vec::new();
         for raw in &self.torrent.public_trackers {
@@ -616,6 +638,25 @@ mod tests {
             !s.torrent.seed_completed,
             "seeding stays opt-in for older settings"
         );
+    }
+
+    #[test]
+    fn torrent_speed_limits_preserve_global_defaults_and_allow_separate_caps() {
+        let mut s: Settings = serde_json::from_str(r#"{"torrent": {}}"#).unwrap();
+        assert_eq!(s.torrent.effective_speed_limits(5_000), (5_000, 5_000));
+        s.apply_patch(&serde_json::json!({
+            "torrent": {"separateSpeedLimits": true, "downloadLimit": 2_000, "uploadLimit": 700}
+        }))
+        .unwrap();
+        assert_eq!(s.torrent.effective_speed_limits(5_000), (2_000, 700));
+        s.torrent.upload_limit = 0;
+        assert_eq!(s.torrent.effective_speed_limits(5_000), (2_000, 0));
+        s.validate().unwrap();
+        let encoded = serde_json::to_value(&s).unwrap();
+        assert_eq!(encoded["torrent"]["downloadLimit"], 2_000);
+        assert_eq!(encoded["torrent"]["uploadLimit"], 0);
+        s.torrent.download_limit = u32::MAX as u64 + 1;
+        assert!(s.validate().is_err());
     }
 
     #[test]

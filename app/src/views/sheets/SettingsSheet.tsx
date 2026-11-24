@@ -307,6 +307,17 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
           <Group title={t("Seeding")}>
             <Toggle title={t("Keep completed torrents seeding")} hint={t("Restart Prism after changing this. Active seeds hold files open and can restore deleted data.")} value={s.torrent.seedCompleted} onChange={(v) => save({ torrent: { seedCompleted: v } })} />
           </Group>
+          <Group title={t("Speed limits")}>
+            <Toggle title={t("Use separate BitTorrent speed limits")} hint={t("When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.")} value={s.torrent.separateSpeedLimits} onChange={(v) => save({ torrent: { separateSpeedLimits: v } })} />
+            {s.torrent.separateSpeedLimits && <>
+              <Row title={t("Download rate")}>
+                <RateField value={s.torrent.downloadLimit} onCommit={(v) => save({ torrent: { downloadLimit: v } })} label={t("Download rate")} />
+              </Row>
+              <Row title={t("Upload rate")}>
+                <RateField value={s.torrent.uploadLimit} onCommit={(v) => save({ torrent: { uploadLimit: v } })} label={t("Upload rate")} />
+              </Row>
+            </>}
+          </Group>
           <Group title={t("Public trackers")}>
             <Row title={t("Append trackers to public torrents")} hint={t("One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.")} align="start">
               <ListField value={s.torrent.publicTrackers} onCommit={(v) => save({ torrent: { publicTrackers: v } })} label={t("Public tracker URLs")} placeholder="udp://tracker.example:6969/announce" rows={5} />

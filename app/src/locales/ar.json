@@ -1284,5 +1284,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "إحصاءات BitTorrent المباشرة",
   "Uploaded this session": "تم رفعه في هذه الجلسة",
-  "Upload speed": "سرعة الرفع"
+  "Upload speed": "سرعة الرفع",
+  "Speed limits": "حدود السرعة",
+  "Use separate BitTorrent speed limits": "استخدام حدود سرعة منفصلة لـ BitTorrent",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "عند إيقافه، تتبع التورنتات حد التنزيل العام. أدخل 0 لعدم التحديد.",
+  "Download rate": "معدل التنزيل",
+  "Upload rate": "معدل الرفع"
 }

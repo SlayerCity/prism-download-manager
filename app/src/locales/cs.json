@@ -1238,5 +1238,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Živé statistiky BitTorrentu",
   "Uploaded this session": "Odesláno v této relaci",
-  "Upload speed": "Rychlost odesílání"
+  "Upload speed": "Rychlost odesílání",
+  "Speed limits": "Rychlostní limity",
+  "Use separate BitTorrent speed limits": "Používat samostatné rychlostní limity BitTorrentu",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Když je vypnuto, torrenty se řídí globálním limitem stahování. Hodnota 0 znamená bez omezení.",
+  "Download rate": "Rychlost stahování",
+  "Upload rate": "Rychlost odesílání"
 }

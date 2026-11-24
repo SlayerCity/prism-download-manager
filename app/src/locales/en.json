@@ -100,5 +100,10 @@
   "Mirrors can’t be used with a password-protected download.": "Mirrors can’t be used with a password-protected download.",
   "Live BitTorrent stats": "Live BitTorrent stats",
   "Uploaded this session": "Uploaded this session",
-  "Upload speed": "Upload speed"
+  "Upload speed": "Upload speed",
+  "Speed limits": "Speed limits",
+  "Use separate BitTorrent speed limits": "Use separate BitTorrent speed limits",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.",
+  "Download rate": "Download rate",
+  "Upload rate": "Upload rate"
 }

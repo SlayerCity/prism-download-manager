@@ -1192,5 +1192,10 @@
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Canlı BitTorrent istatistikleri",
   "Uploaded this session": "Bu oturumda yüklenen",
-  "Upload speed": "Yükleme hızı"
+  "Upload speed": "Yükleme hızı",
+  "Speed limits": "Hız sınırları",
+  "Use separate BitTorrent speed limits": "Ayrı BitTorrent hız sınırları kullan",
+  "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Kapalıyken torrentler genel indirme hız sınırını izler. Sınırsız için 0 girin.",
+  "Download rate": "İndirme hızı",
+  "Upload rate": "Yükleme hızı"
 }

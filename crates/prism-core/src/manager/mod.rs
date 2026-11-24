@@ -458,7 +458,8 @@ impl Core {
         self.apply_engine_config();
         self.0.video.set_options(jobs::video_options(&s));
         if let Some(t) = self.0.torrent.get() {
-            t.set_limits(global, global);
+            let (download, upload) = s.torrent.effective_speed_limits(global);
+            t.set_limits(download, upload);
         }
     }
 
@@ -1252,7 +1253,8 @@ impl Core {
         } else {
             0
         };
-        engine.set_limits(global, global);
+        let (download, upload) = s.torrent.effective_speed_limits(global);
+        engine.set_limits(download, upload);
         Ok(engine)
     }
 
