@@ -233,7 +233,7 @@ export function SchedulerSheet({ initial }: { initial?: string }) {
                     </button>
                   ))}
                 </div>
-                <div className="hint">{t("Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish")}</div>
+                <div className="hint">{t("At stop time, unfinished files are paused and the selected after-queue action runs")}</div>
                 {s.onComplete.type === "command" && (
                   <div style={{ marginTop: 8 }}>
                     <TextField

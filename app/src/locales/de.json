@@ -475,7 +475,7 @@
   "Wake the computer to start": "Computer zum Start aufwecken",
   "Lock screen": "Bildschirm sperren",
   "When finished": "Nach Abschluss",
-  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "Bei Erreichen der Stoppzeit werden unfertige Dateien pausiert, ohne Aktionen nach der Warteschlange auszuführen; diese laufen erst, wenn alle Downloads abgeschlossen sind.",
+  "At stop time, unfinished files are paused and the selected after-queue action runs": "Zum Stoppzeitpunkt werden unfertige Dateien pausiert und die ausgewählte Aktion nach der Warteschlange ausgeführt.",
   "Run command": "Befehl ausführen",
   "Command to run": "Auszuführender Befehl",
   "e.g. {command}": "z. B. {command}",

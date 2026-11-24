@@ -379,7 +379,7 @@ impl Core {
                     starts.push(q.id.clone());
                 }
                 if due.stop && q.running {
-                    stops.push(q.id.clone());
+                    stops.push((q.id.clone(), q.schedule.on_complete.clone()));
                 }
             }
             (starts, stops)
@@ -388,9 +388,15 @@ impl Core {
             tracing::info!(queue = %id, "schedule: starting queue");
             self.start_queue(&id);
         }
-        for id in stops {
+        for (id, action) in stops {
             tracing::info!(queue = %id, "schedule: stopping queue");
             self.stop_queue(&id);
+            // A stop-time run has ended its scheduled work even when unfinished files were
+            // paused. Honor the queue's selected after-queue action here; stop_queue clears
+            // queue_was_busy, so detect_finished_queues will not run it a second time.
+            if action != PostAction::None {
+                self.run_post_action(action);
+            }
         }
         self.admit();
         self.detect_finished_queues();
@@ -521,5 +527,84 @@ impl Core {
                 let _ = platform::schedule_wake(local.timestamp() - 30);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod schedule_stop_tests {
+    use super::*;
+    use crate::manager::CoreOptions;
+
+    #[tokio::test]
+    async fn scheduled_stop_runs_selected_after_queue_action_after_pausing_work() {
+        let tmp = tempfile::tempdir().unwrap();
+        let core = Core::start(CoreOptions {
+            data_dir: tmp.path().to_path_buf(),
+            ipc: false,
+            clipboard: false,
+        })
+        .await
+        .unwrap();
+
+        let now = chrono::Local::now().naive_local();
+        let stop_at = now - chrono::Duration::minutes(1);
+        let previous_tick = now - chrono::Duration::minutes(2);
+        let mut queue = core.queues().into_iter().find(|q| q.id == "main").unwrap();
+        queue.schedule.enabled = true;
+        queue.schedule.stop_time = Some(stop_at.format("%H:%M").to_string());
+        queue.schedule.on_complete = PostAction::Shutdown;
+        core.upsert_queue(queue).unwrap();
+        {
+            let mut state = core.0.state.lock();
+            state.last_schedule_tick = previous_tick;
+            state
+                .queues
+                .iter_mut()
+                .find(|q| q.id == "main")
+                .unwrap()
+                .running = true;
+            state.items.insert(
+                "queued-at-stop".into(),
+                DownloadItem {
+                    id: "queued-at-stop".into(),
+                    file_name: "queued.bin".into(),
+                    queue_id: Some("main".into()),
+                    status: Status::Queued,
+                    ..Default::default()
+                },
+            );
+        }
+
+        let mut events = core.subscribe();
+        core.queue_tick();
+
+        assert!(
+            !core
+                .queues()
+                .iter()
+                .find(|q| q.id == "main")
+                .unwrap()
+                .running
+        );
+        assert_eq!(core.item("queued-at-stop").unwrap().status, Status::Idle);
+        let event = tokio::time::timeout(Duration::from_secs(1), async {
+            loop {
+                match events.recv().await {
+                    Ok(
+                        event @ CoreEvent::PostActionPending {
+                            action: PostAction::Shutdown,
+                            seconds: POST_ACTION_GRACE_SECS,
+                        },
+                    ) => break event,
+                    Ok(_) | Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {}
+                    Err(error) => panic!("event channel closed: {error}"),
+                }
+            }
+        })
+        .await
+        .expect("scheduled stop should announce the configured shutdown action");
+        assert!(matches!(event, CoreEvent::PostActionPending { .. }));
+        core.cancel_post_action();
+        core.shutdown().await;
     }
 }

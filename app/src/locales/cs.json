@@ -501,7 +501,7 @@
   "Wake the computer to start": "Probudit počítač ke spuštění",
   "Lock screen": "Zamknout obrazovku",
   "When finished": "Po dokončení",
-  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "V čase zastavení se nedokončené soubory pozastaví bez spuštění akcí po dokončení fronty; ty se spustí až po dokončení všech stahování.",
+  "At stop time, unfinished files are paused and the selected after-queue action runs": "V čase zastavení se nedokončené soubory pozastaví a spustí se vybraná akce po dokončení fronty.",
   "Run command": "Spustit příkaz",
   "Command to run": "Příkaz ke spuštění",
   "e.g. {command}": "např. {command}",

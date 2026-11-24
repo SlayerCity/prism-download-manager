@@ -475,7 +475,7 @@
   "Wake the computer to start": "Başlatmak için bilgisayarı uyandır",
   "Lock screen": "Ekranı kilitle",
   "When finished": "Tamamlanınca",
-  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "Durdurma zamanı tamamlanmamış dosyaları duraklatır ve kuyruk sonrası işlemleri çalıştırmaz; bu işlemler ancak tüm indirmeler bitince çalışır.",
+  "At stop time, unfinished files are paused and the selected after-queue action runs": "Durdurma zamanında tamamlanmamış dosyalar duraklatılır ve seçilen kuyruk sonrası işlem çalıştırılır.",
   "Run command": "Komut çalıştır",
   "Command to run": "Çalıştırılacak komut",
   "e.g. {command}": "örn. {command}",

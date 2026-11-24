@@ -488,7 +488,7 @@
   "Wake the computer to start": "Réveiller l’ordinateur pour démarrer",
   "Lock screen": "Verrouiller l’écran",
   "When finished": "À la fin",
-  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "À l’heure d’arrêt, les fichiers inachevés sont mis en pause sans lancer les actions de fin de file ; celles-ci ne s’exécutent qu’une fois tous les téléchargements terminés.",
+  "At stop time, unfinished files are paused and the selected after-queue action runs": "À l’heure d’arrêt, les fichiers inachevés sont mis en pause et l’action de fin de file sélectionnée est exécutée.",
   "Run command": "Exécuter une commande",
   "Command to run": "Commande à exécuter",
   "e.g. {command}": "p. ex. {command}",
