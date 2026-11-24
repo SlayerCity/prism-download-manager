@@ -4749,6 +4749,7 @@ dependencies = [
  "fs4",
  "futures-util",
  "http-auth",
+ "httpdate",
  "libunftp",
  "m3u8-rs",
  "md-5 0.11.0",

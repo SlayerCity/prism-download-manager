@@ -1154,3 +1154,55 @@ async fn remote_file_reads_parts_and_continues_where_it_stopped() {
         EngineError::ValidatorMismatch
     );
 }
+
+#[tokio::test]
+async fn server_modified_time_is_opt_in_and_requires_a_header() {
+    let srv = default_server().await;
+    let dir = tempfile::tempdir().unwrap();
+    let server_time = std::time::UNIX_EPOCH + Duration::from_secs(1_700_000_000);
+    for (file, enabled, header) in [
+        ("keep", true, true),
+        ("default", false, true),
+        ("missing", true, false),
+    ] {
+        let url = srv.url(&format!(
+            "/file/{file}.bin?size=32768&lm={}",
+            u8::from(header)
+        ));
+        let mut req = request(&url, dir.path(), 1);
+        req.preserve_server_modified_time = enabled;
+        let h = engine().start(req, None, vec![]);
+        let done = wait(&h, 30).await.unwrap();
+        let modified = std::fs::metadata(done.path).unwrap().modified().unwrap();
+        assert_eq!(modified == server_time, enabled && header, "{file}");
+    }
+}
+
+/// A quick diagnostic for #113, not a CI speed assertion. Keep the payload and server
+/// fixed and change only the per-connection limit and requested segment count.
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+#[ignore = "reports environment-dependent loopback throughput"]
+async fn compare_single_and_segmented_loopback_throughput() {
+    let srv = default_server().await;
+    let dir = tempfile::tempdir().unwrap();
+    let size = 16 * MIB;
+    let digest = expected_sha256(23, size);
+    for throttle in ["0", "4M"] {
+        let url = srv.url(&format!(
+            "/file/compare.bin?size={size}&seed=23&throttle={throttle}"
+        ));
+        for connections in [1, 8] {
+            for trial in 1..=3 {
+                let started = Instant::now();
+                let h = engine().start(request(&url, dir.path(), connections), None, vec![]);
+                let done = wait(&h, 45).await.unwrap();
+                let speed = size as f64 / MIB as f64 / started.elapsed().as_secs_f64();
+                assert_eq!(sha256_file(&done.path), digest);
+                std::fs::remove_file(&done.path).unwrap();
+                println!(
+                    "throttle={throttle} connections={connections} trial={trial}: {speed:.1} MiB/s"
+                );
+            }
+        }
+    }
+}

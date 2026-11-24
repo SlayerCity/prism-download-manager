@@ -1,4 +1,8 @@
 {
+  "Keep the server’s file modification time": "Conserver la date de modification du serveur",
+  "For new HTTP downloads when the server provides a modification date": "Pour les nouveaux téléchargements HTTP si le serveur indique une date de modification",
+  "Interface scale": "Échelle de l’interface",
+  "100% follows system scaling": "100 % suit l’échelle du système",
   "Prism could not start": "Impossible de démarrer Prism",
   "Decrease {label}": "Diminuer {label}",
   "Increase {label}": "Augmenter {label}",

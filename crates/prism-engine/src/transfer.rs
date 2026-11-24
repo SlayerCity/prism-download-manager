@@ -174,6 +174,7 @@ pub(crate) async fn finalize(
     expected_size: Option<u64>,
     conflict: ConflictPolicy,
     checksum: Option<&ExpectedChecksum>,
+    modified_time: Option<std::time::SystemTime>,
     transferred: u64,
     run_started: Instant,
 ) -> Result<Completed, EngineError> {
@@ -200,6 +201,17 @@ pub(crate) async fn finalize(
         }
         None => None,
     };
+    if let Some(modified_time) = modified_time
+        && actual
+            .as_ref()
+            .is_none_or(|(expected, actual)| expected == actual)
+        && let Err(err) = std::fs::OpenOptions::new()
+            .write(true)
+            .open(part_path)
+            .and_then(|file| file.set_times(std::fs::FileTimes::new().set_modified(modified_time)))
+    {
+        tracing::warn!(%err, "failed to keep the server modification time");
+    }
     let path = place_file(part_path, final_path, conflict)?;
     {
         let mut m = job.meta();
@@ -245,6 +257,19 @@ pub(crate) async fn end_job(
     let total = job.meta().total;
     match outcome {
         Ok(Outcome::Completed) => {
+            let modified_time = if req.preserve_server_modified_time
+                && matches!(req.url.scheme(), "http" | "https")
+                && req.method == crate::HttpMethod::Get
+                && req.window.is_none()
+                && req.mirrors.is_empty()
+            {
+                job.meta()
+                    .last_modified
+                    .as_deref()
+                    .and_then(|value| httpdate::parse_http_date(value).ok())
+            } else {
+                None
+            };
             let r = finalize(
                 job,
                 writer,
@@ -253,6 +278,7 @@ pub(crate) async fn end_job(
                 total,
                 req.destination.conflict,
                 req.checksum.as_ref(),
+                modified_time,
                 transferred,
                 run_started,
             )

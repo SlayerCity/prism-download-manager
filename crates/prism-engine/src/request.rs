@@ -181,6 +181,9 @@ pub struct DownloadRequest {
     /// Optional checksum verified after completion.
     #[serde(default)]
     pub checksum: Option<ExpectedChecksum>,
+    /// Keep the server-provided modification time for complete single-source HTTP GETs.
+    #[serde(default)]
+    pub preserve_server_modified_time: bool,
     /// Per-download speed limit in bytes/s (0 = unlimited).
     #[serde(default)]
     pub speed_limit: u64,
@@ -223,6 +226,7 @@ impl DownloadRequest {
             connections: 0,
             http: HttpPreference::Http1Only,
             checksum: None,
+            preserve_server_modified_time: false,
             speed_limit: 0,
             max_retries: None,
             max_request_size: None,

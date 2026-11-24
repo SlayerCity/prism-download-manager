@@ -1,4 +1,8 @@
 {
+  "Keep the server’s file modification time": "保留服务器提供的文件修改时间",
+  "For new HTTP downloads when the server provides a modification date": "适用于服务器提供修改日期的新 HTTP 下载",
+  "Interface scale": "界面缩放",
+  "100% follows system scaling": "100% 跟随系统缩放",
   "Prism could not start": "Prism 无法启动",
   "Decrease {label}": "减少{label}",
   "Increase {label}": "增加{label}",

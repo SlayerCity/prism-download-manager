@@ -1,4 +1,8 @@
 {
+  "Keep the server’s file modification time": "الاحتفاظ بوقت تعديل الملف من الخادم",
+  "For new HTTP downloads when the server provides a modification date": "لتنزيلات HTTP الجديدة عندما يوفّر الخادم تاريخ التعديل",
+  "Interface scale": "مقياس الواجهة",
+  "100% follows system scaling": "يتبع 100٪ مقياس النظام",
   "Prism could not start": "تعذّر بدء تشغيل Prism",
   "Decrease {label}": "تقليل {label}",
   "Increase {label}": "زيادة {label}",

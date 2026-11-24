@@ -1,4 +1,8 @@
 {
+  "Keep the server’s file modification time": "Zachovat čas změny souboru ze serveru",
+  "For new HTTP downloads when the server provides a modification date": "Pro nové stažené soubory přes HTTP, pokud server uvede datum změny",
+  "Interface scale": "Měřítko rozhraní",
+  "100% follows system scaling": "100 % odpovídá měřítku systému",
   "Prism could not start": "Prism se nepodařilo spustit",
   "Decrease {label}": "Snížit {label}",
   "Increase {label}": "Zvýšit {label}",

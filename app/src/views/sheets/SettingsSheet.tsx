@@ -277,6 +277,7 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
             </Row>
             <Toggle title={t("Start downloads automatically")} value={s.downloads.autoStart} onChange={(v) => save({ downloads: { autoStart: v } })} />
             <Toggle title={t("Verify checksums when known")} value={s.downloads.verifyChecksums} onChange={(v) => save({ downloads: { verifyChecksums: v } })} />
+            <Toggle title={t("Keep the server’s file modification time")} hint={t("For new HTTP downloads when the server provides a modification date")} value={s.downloads.preserveServerModifiedTime} onChange={(v) => save({ downloads: { preserveServerModifiedTime: v } })} />
           </Group>
         </>
       );
@@ -557,6 +558,9 @@ function Appearance({ s }: { s: Settings }) {
           </Row>
         </Group>
         <Group title={t("Layout")}>
+          <Row title={t("Interface scale")} hint={t("100% follows system scaling")}>
+            <NumberField value={s.appearance.interfaceScale ?? 100} min={80} max={150} suffix="%" label={t("Interface scale")} onCommit={(v) => save({ appearance: { interfaceScale: v } })} width={90} />
+          </Row>
           <Toggle title={t("Compact view")} hint={t("Just the download list, without the sidebar, details pane and tips")} value={s.appearance.compactView} onChange={(v) => save({ appearance: { compactView: v } })} />
           <Row title={t("Row density")} hint={t("Compact fits ~45% more rows")}>
             <Segmented

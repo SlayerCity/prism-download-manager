@@ -7,7 +7,7 @@ import { TooltipHost } from "./components/TooltipHost";
 import { setLanguage, t } from "./lib/i18n";
 import { applyPreviewParams } from "./lib/previewParams";
 import { type Route, parseRoute } from "./lib/route";
-import { api } from "./lib/api";
+import { api, inTauri } from "./lib/api";
 import { useApp } from "./lib/store";
 import { attempt } from "./lib/ui";
 import { MainWindow } from "./views/MainWindow";
@@ -60,6 +60,7 @@ export function App() {
   const [route, setRoute] = useState(() => parseRoute(location.hash));
   const ready = useApp((s) => s.ready);
   const reduced = useApp((s) => s.settings?.appearance.motion);
+  const scale = useApp((s) => s.settings?.appearance.interfaceScale ?? 100);
   // Set before the views render; changing the language remounts them in the new one.
   const lang = setLanguage(useApp((s) => s.settings?.general.language));
 
@@ -73,6 +74,20 @@ export function App() {
   useEffect(() => {
     document.documentElement.dataset.window = route.name;
   }, [route.name]);
+
+  useEffect(() => {
+    if (!ready) return;
+    const zoom = Math.max(80, Math.min(150, scale)) / 100;
+    if (!inTauri) {
+      document.documentElement.style.zoom = String(zoom);
+      return;
+    }
+    let disposed = false;
+    void import("@tauri-apps/api/webview").then(({ getCurrentWebview }) => {
+      if (!disposed) return getCurrentWebview().setZoom(zoom);
+    }).catch((error) => console.error("Could not set Prism interface scale", error));
+    return () => { disposed = true; };
+  }, [ready, scale]);
 
   // The tray menu and notifications follow the language the main window uses.
   useEffect(() => {

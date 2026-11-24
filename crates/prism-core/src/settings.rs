@@ -130,6 +130,8 @@ pub struct Appearance {
     pub visible_columns: Vec<String>,
     /// Just the download list: no sidebar, details pane or tips (like a classic download manager).
     pub compact_view: bool,
+    /// Desktop webview zoom, in percent of the platform default.
+    pub interface_scale: u16,
 }
 
 impl Default for Appearance {
@@ -148,6 +150,7 @@ impl Default for Appearance {
             .map(String::from)
             .collect(),
             compact_view: false,
+            interface_scale: 100,
         }
     }
 }
@@ -176,6 +179,8 @@ pub struct Downloads {
     pub speed_limit: u64,
     pub speed_limiter_enabled: bool,
     pub verify_checksums: bool,
+    /// Set the file modification time from a valid HTTP Last-Modified header.
+    pub preserve_server_modified_time: bool,
     /// Start downloads added from the browser immediately when no dialog is shown.
     pub auto_start: bool,
 }
@@ -192,6 +197,7 @@ impl Default for Downloads {
             speed_limit: 5 * 1024 * 1024,
             speed_limiter_enabled: false,
             verify_checksums: true,
+            preserve_server_modified_time: false,
             auto_start: true,
         }
     }

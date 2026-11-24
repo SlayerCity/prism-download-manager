@@ -205,6 +205,7 @@ export interface Settings {
     visibleColumns: string[];
     /** Just the download list: no sidebar, details pane or tips. */
     compactView: boolean;
+    interfaceScale: number;
   };
   downloads: {
     defaultDir: string;
@@ -216,6 +217,7 @@ export interface Settings {
     speedLimit: number;
     speedLimiterEnabled: boolean;
     verifyChecksums: boolean;
+    preserveServerModifiedTime: boolean;
     autoStart: boolean;
   };
   connection: {

@@ -326,7 +326,7 @@ fn parse_checksum(s: &str) -> Option<ExpectedChecksum> {
 }
 
 /// Serialized `DownloadRequest` for a new item (destination is filled in at start).
-pub(crate) fn request_json(n: &NewItem, _settings: &Settings) -> serde_json::Value {
+pub(crate) fn request_json(n: &NewItem, settings: &Settings) -> serde_json::Value {
     let Ok(url) = Url::parse(n.url.trim()) else {
         return serde_json::json!({"url": n.url});
     };
@@ -379,6 +379,7 @@ pub(crate) fn request_json(n: &NewItem, _settings: &Settings) -> serde_json::Val
         _ => ConflictPolicy::Rename,
     };
     req.checksum = n.checksum.as_deref().and_then(parse_checksum);
+    req.preserve_server_modified_time = settings.downloads.preserve_server_modified_time;
     serde_json::to_value(&req).unwrap_or_default()
 }
 
@@ -1860,6 +1861,12 @@ mod tests {
         assert_eq!(req.cookies.as_deref(), Some("a=b"));
         assert!(req.auth.is_some());
         assert!(req.checksum.is_some());
+        assert!(!req.preserve_server_modified_time);
+
+        let mut settings = Settings::default();
+        settings.downloads.preserve_server_modified_time = true;
+        let req: DownloadRequest = serde_json::from_value(request_json(&n, &settings)).unwrap();
+        assert!(req.preserve_server_modified_time);
     }
 
     #[test]

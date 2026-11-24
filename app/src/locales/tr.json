@@ -1,4 +1,8 @@
 {
+  "Keep the server’s file modification time": "Sunucudaki dosya değiştirme zamanını koru",
+  "For new HTTP downloads when the server provides a modification date": "Sunucu değiştirme tarihi sağladığında yeni HTTP indirmeleri için",
+  "Interface scale": "Arayüz ölçeği",
+  "100% follows system scaling": "%100, sistem ölçeğini kullanır",
   "Prism could not start": "Prism başlatılamadı",
   "Decrease {label}": "Azalt: {label}",
   "Increase {label}": "Artır: {label}",
