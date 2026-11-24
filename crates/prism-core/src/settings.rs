@@ -256,6 +256,8 @@ pub struct TorrentSettings {
     pub max_seed_time_hours: u16,
     /// Stop retained seeds at this upload/download ratio (0 = unlimited).
     pub max_seed_ratio: u8,
+    /// TCP port for incoming BitTorrent peer connections (0 = automatic).
+    pub listen_port: u16,
     /// Ask compatible routers to forward the incoming BitTorrent port (opt-in).
     pub enable_upnp_port_forwarding: bool,
     /// Use BitTorrent-specific limits instead of following the global download limiter.
@@ -645,6 +647,7 @@ mod tests {
         assert!(s.capture.extensions.iter().any(|e| e == "png"));
         assert!(s.capture.mime_types.iter().any(|m| m == "image/"));
         assert!(s.torrent.public_trackers.is_empty());
+        assert_eq!(s.torrent.listen_port, 0);
         assert!(!s.torrent.enable_upnp_port_forwarding);
         assert!(
             !s.torrent.seed_completed,
@@ -669,6 +672,17 @@ mod tests {
         assert_eq!(encoded["torrent"]["uploadLimit"], 0);
         s.torrent.download_limit = u32::MAX as u64 + 1;
         assert!(s.validate().is_err());
+    }
+
+    #[test]
+    fn torrent_listen_port_roundtrips_and_defaults_to_automatic() {
+        let mut s = Settings::default();
+        assert_eq!(s.torrent.listen_port, 0);
+        s.apply_patch(&serde_json::json!({"torrent": {"listenPort": 51413}}))
+            .unwrap();
+        assert_eq!(s.torrent.listen_port, 51413);
+        let encoded = serde_json::to_value(&s).unwrap();
+        assert_eq!(encoded["torrent"]["listenPort"], 51413);
     }
 
     #[test]

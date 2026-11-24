@@ -12,6 +12,7 @@ use librqbit::{
     ManagedTorrent, Session, SessionOptions, SessionPersistenceConfig, TorrentStatsState,
     ValidatedTorrentMetaV1Info,
 };
+use std::net::Ipv6Addr;
 use std::str::FromStr;
 
 type ManagedTorrentHandle = Arc<ManagedTorrent>;
@@ -139,6 +140,7 @@ impl TorrentEngine {
         keep: &(dyn Fn(&str) -> bool + Send + Sync),
         public_trackers: Vec<String>,
         enable_upnp_port_forwarding: bool,
+        listen_port: u16,
     ) -> Result<Self> {
         std::fs::create_dir_all(state_dir).context("create torrent state dir")?;
         forget_saved(state_dir, keep);
@@ -152,6 +154,7 @@ impl TorrentEngine {
         let opts = SessionOptions {
             trackers,
             listen: Some(ListenerOptions {
+                listen_addr: (Ipv6Addr::UNSPECIFIED, listen_port).into(),
                 enable_upnp_port_forwarding,
                 ..Default::default()
             }),
@@ -554,6 +557,25 @@ mod serde_bytes_b64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[tokio::test]
+    async fn configured_listen_port_is_used_by_peer_listener() {
+        let reservation = std::net::TcpListener::bind((Ipv6Addr::LOCALHOST, 0)).unwrap();
+        let port = reservation.local_addr().unwrap().port();
+        drop(reservation);
+        let dir = tempfile::tempdir().unwrap();
+        let engine = TorrentEngine::start(
+            &dir.path().join("state"),
+            dir.path().join("downloads"),
+            &|_| true,
+            vec![],
+            false,
+            port,
+        )
+        .await
+        .unwrap();
+        assert_eq!(engine.session.listen_addr().unwrap().port(), port);
+    }
 
     #[test]
     fn source_roundtrip_base64() {

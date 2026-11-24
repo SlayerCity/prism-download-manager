@@ -1179,6 +1179,8 @@
   "Upload rate": "上传速度",
   "Try automatic router port forwarding (UPnP)": "尝试自动路由器端口转发（UPnP）",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
+  "Listening port": "监听端口",
+  "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "传入的节点连接使用此端口。0 表示自动选择；重启 Prism 后生效。",
   "Incoming connections": "传入连接",
   "Connected peers": "已连接节点",
   "Maximum seeding time": "最长做种时间",

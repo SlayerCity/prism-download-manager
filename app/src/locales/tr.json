@@ -1202,6 +1202,8 @@
   "Upload rate": "Yükleme hızı",
   "Try automatic router port forwarding (UPnP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
+  "Listening port": "Dinleme bağlantı noktası",
+  "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Gelen eş bağlantıları bu bağlantı noktasını kullanır. 0 otomatik seçim yapar; uygulamak için Prism’i yeniden başlatın.",
   "Incoming connections": "Gelen bağlantılar",
   "Connected peers": "Bağlı eşler",
   "Maximum seeding time": "En uzun seed süresi",

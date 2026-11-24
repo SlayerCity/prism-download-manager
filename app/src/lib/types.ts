@@ -238,6 +238,7 @@ export interface Settings {
     maxSeedTimeHours: number;
     /** Stop retained seeds at this upload/download ratio; 0 means unlimited. */
     maxSeedRatio: number;
+    listenPort: number;
     enableUpnpPortForwarding: boolean;
     separateSpeedLimits: boolean;
     downloadLimit: number;

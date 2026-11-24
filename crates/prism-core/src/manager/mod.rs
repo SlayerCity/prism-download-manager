@@ -1520,6 +1520,7 @@ impl Core {
         let default_dir = settings.downloads.default_dir;
         let public_trackers = settings.torrent.public_trackers;
         let enable_upnp_port_forwarding = settings.torrent.enable_upnp_port_forwarding;
+        let listen_port = settings.torrent.listen_port;
         let seed_completed = settings.torrent.seed_completed;
         let keep = self.torrents_to_keep(seed_completed);
         let engine = self
@@ -1532,6 +1533,7 @@ impl Core {
                     &|hash| keep(hash),
                     public_trackers,
                     enable_upnp_port_forwarding,
+                    listen_port,
                 )
                 .await
             })

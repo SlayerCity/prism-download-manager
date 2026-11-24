@@ -1179,6 +1179,8 @@
   "Upload rate": "Kecepatan unggah",
   "Try automatic router port forwarding (UPnP)": "Coba penerusan port router otomatis (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk. Mulai ulang Prism agar berlaku; nonaktif secara default.",
+  "Listening port": "Port masuk",
+  "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Koneksi peer masuk menggunakan port ini. 0 memilih port secara otomatis; mulai ulang Prism untuk menerapkan perubahan.",
   "Incoming connections": "Koneksi masuk",
   "Connected peers": "Peer terhubung",
   "Maximum seeding time": "Waktu seeding maksimum",

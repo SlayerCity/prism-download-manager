@@ -1225,6 +1225,8 @@
   "Upload rate": "Velocidad de subida",
   "Try automatic router port forwarding (UPnP)": "Intentar el reenvío automático de puertos del router (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism pedirá a un router compatible que reenvíe el puerto entrante de BitTorrent. Reinicia Prism para aplicar el cambio; desactivado por defecto.",
+  "Listening port": "Puerto de escucha",
+  "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Las conexiones entrantes entre pares usan este puerto. 0 lo elige automáticamente; reinicia Prism para aplicar el cambio.",
   "Incoming connections": "Conexiones entrantes",
   "Connected peers": "Pares conectados",
   "Maximum seeding time": "Tiempo máximo de seed",
