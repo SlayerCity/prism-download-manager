@@ -1,4 +1,8 @@
 {
+  "Download added": "İndirme eklendi",
+  "Sound for {event}": "Olay sesi: {event}",
+  "WAV files": "WAV dosyaları",
+  "Couldn't use this sound": "Bu ses kullanılamadı",
   "Could not preview the video": "Video önizlemesi oluşturulamadı",
   "Preview video frame": "Video karesini önizle",
   "Frame from the downloaded video": "İndirilen videodan bir kare",
@@ -591,8 +595,6 @@
   "Sounds": "Sesler",
   "Play sounds": "Sesleri çal",
   "Download complete": "İndirme tamamlandı",
-  "Download complete sound": "İndirme tamamlandı sesi",
-  "Plays when you pick one": "Seçtiğinizde çalar",
   "Scheduler": "Zamanlayıcı",
   "Queue finished": "Kuyruk tamamlandı",
   "Volume": "Ses düzeyi",

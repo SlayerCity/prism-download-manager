@@ -3,6 +3,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod custom_sound;
 mod file_preview;
 mod i18n;
 mod integration;
@@ -266,6 +267,7 @@ fn main() {
             commands::open_browser,
             commands::open_extension_store,
             commands::play_sound,
+            commands::validate_custom_sound,
             commands::open_details,
             commands::open_window,
             commands::toggle_mini,
@@ -693,11 +695,11 @@ fn side_effects(
         }
         // Linux plays sounds here, once, instead of in every window (#41).
         #[cfg(target_os = "linux")]
-        CoreEvent::PlaySound { kind } if settings.sounds.enabled => sound::play(
-            kind,
-            &settings.sounds.complete_sound,
-            settings.sounds.volume,
-        ),
+        CoreEvent::PlaySound { kind } if settings.sounds.enabled => {
+            if let Some((preset, custom)) = settings.sounds.selection(kind) {
+                sound::play(kind, preset, settings.sounds.volume, custom);
+            }
+        }
         CoreEvent::ShowMain => windows::show_main(app),
         CoreEvent::ExitRequested => {
             let app = app.clone();

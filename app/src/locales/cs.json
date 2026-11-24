@@ -1,4 +1,8 @@
 {
+  "Download added": "Stahování přidáno",
+  "Sound for {event}": "Zvuk události: {event}",
+  "WAV files": "Soubory WAV",
+  "Couldn't use this sound": "Tento zvuk nelze použít",
   "Could not preview the video": "Náhled videa se nepodařilo vytvořit",
   "Preview video frame": "Zobrazit snímek videa",
   "Frame from the downloaded video": "Snímek ze staženého videa",
@@ -617,8 +621,6 @@
   "Sounds": "Zvuky",
   "Play sounds": "Přehrávat zvuky",
   "Download complete": "Stahování dokončeno",
-  "Download complete sound": "Zvuk dokončení stahování",
-  "Plays when you pick one": "Přehraje se při výběru",
   "Scheduler": "Plánovač",
   "Queue finished": "Fronta dokončena",
   "Volume": "Hlasitost",

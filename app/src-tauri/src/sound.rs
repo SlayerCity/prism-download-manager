@@ -67,16 +67,17 @@ const PLAY_TIMEOUT: Duration = Duration::from_secs(10);
 /// The sound (file name without .wav) that plays for `kind`, as `soundFile` in
 /// app/src/lib/sounds.ts: an unknown complete sound falls back to the classic one.
 pub fn sound_file(kind: &str, complete_sound: &str) -> &'static str {
-    let name = match kind {
-        "failed" => "failed".to_string(),
-        "queue" => "queue".to_string(),
-        _ => format!("complete-{complete_sound}"),
+    let fallback = match kind {
+        "failed" => "failed",
+        "queue" => "queue",
+        _ => "complete",
     };
+    let name = format!("complete-{complete_sound}");
     SOUNDS
         .iter()
         .map(|(n, _)| *n)
         .find(|n| *n == name)
-        .unwrap_or("complete")
+        .unwrap_or(fallback)
 }
 
 /// The players to try, in order, for `path` at `volume` (0–1).
@@ -114,7 +115,8 @@ fn sound_path(name: &str) -> Option<PathBuf> {
 }
 
 /// Plays `kind`'s sound on a thread of its own: the first player that is installed and plays it.
-pub fn play(kind: &str, complete_sound: &str, volume: f32) {
+pub fn play(kind: &str, complete_sound: &str, volume: f32, custom_sound: &str) {
+    let custom = PathBuf::from(custom_sound);
     let name = sound_file(kind, complete_sound);
     let volume = if volume.is_finite() {
         volume.clamp(0.0, 1.0)
@@ -122,9 +124,14 @@ pub fn play(kind: &str, complete_sound: &str, volume: f32) {
         1.0
     };
     std::thread::spawn(move || {
-        let Some(path) = sound_path(name) else {
-            tracing::warn!("could not write the sound {name}");
-            return;
+        let path = if crate::custom_sound::read_wav(&custom).is_ok() {
+            custom
+        } else {
+            let Some(path) = sound_path(name) else {
+                tracing::warn!("could not write the sound {name}");
+                return;
+            };
+            path
         };
         for (exe, args) in players(&path, volume) {
             let child = Command::new(exe)
@@ -169,8 +176,10 @@ mod tests {
         assert_eq!(sound_file("complete", "kalimba"), "complete-kalimba");
         assert_eq!(sound_file("complete", "music-box"), "complete-music-box");
         assert_eq!(sound_file("complete", "nope"), "complete");
-        assert_eq!(sound_file("failed", "kalimba"), "failed");
-        assert_eq!(sound_file("queue", "pop"), "queue");
+        assert_eq!(sound_file("failed", "kalimba"), "complete-kalimba");
+        assert_eq!(sound_file("queue", "pop"), "complete-pop");
+        assert_eq!(sound_file("failed", "classic"), "failed");
+        assert_eq!(sound_file("queue", "classic"), "queue");
         for (name, bytes) in SOUNDS {
             assert!(bytes.starts_with(b"RIFF"), "{name} is a WAV file");
         }

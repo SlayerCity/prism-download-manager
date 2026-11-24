@@ -216,19 +216,34 @@ if (typeof window !== "undefined") {
 
 const soundCache: Record<string, HTMLAudioElement> = {};
 
-/** Plays `kind`'s sound; `completeSound` previews a complete sound other than the chosen one. */
-export function playSound(kind: string, completeSound?: string) {
+/** Plays the configured local sound, falling back to the built-in preset. */
+export function playSound(kind: string) {
   const s = useApp.getState().settings;
   if (!s?.sounds.enabled) return;
+  const preset = kind === "added" ? s.sounds.presetAdded
+    : kind === "failed" ? s.sounds.presetFailed
+    : kind === "queue" ? s.sounds.presetQueueDone
+    : s.sounds.completeSound;
+  const custom = kind === "added" ? s.sounds.customAdded
+    : kind === "failed" ? s.sounds.customFailed
+    : kind === "queue" ? s.sounds.customQueueDone
+    : s.sounds.customComplete;
   if (NATIVE_SOUNDS) {
-    void api.playSound(kind, completeSound).catch(() => undefined);
+    void api.playSound(kind).catch(() => undefined);
     return;
   }
-  const file = soundFile(kind, completeSound ?? s.sounds.completeSound);
-  const audio = (soundCache[file] ??= new Audio(`/sounds/${file}.wav`));
-  audio.volume = Math.max(0, Math.min(1, s.sounds.volume));
-  audio.currentTime = 0;
-  void audio.play().catch(() => undefined);
+  const file = soundFile(kind, preset);
+  const play = (audio: HTMLAudioElement) => {
+    audio.volume = Math.max(0, Math.min(1, s.sounds.volume));
+    audio.currentTime = 0;
+    return audio.play();
+  };
+  const builtIn = () => play(soundCache[file] ??= new Audio(`/sounds/${file}.wav`)).catch(() => undefined);
+  if (custom) {
+    void api.playSound(kind).then((url) => url ? play(new Audio(url)) : builtIn()).catch(builtIn);
+  } else {
+    void builtIn();
+  }
 }
 
 /** Items visible in the current view, filtered by search and sorted. */

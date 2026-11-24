@@ -372,23 +372,52 @@ impl Default for Capture {
 #[serde(default, rename_all = "camelCase")]
 pub struct Sounds {
     pub enabled: bool,
+    pub on_added: bool,
     pub on_complete: bool,
     pub on_failed: bool,
     pub on_queue_done: bool,
     pub volume: f32,
     /// The "download complete" sound: "classic" or one of the app's `complete-<id>.wav`.
     pub complete_sound: String,
+    pub preset_added: String,
+    pub preset_failed: String,
+    pub preset_queue_done: String,
+    pub custom_added: String,
+    pub custom_complete: String,
+    pub custom_failed: String,
+    pub custom_queue_done: String,
+}
+
+impl Sounds {
+    /// A single mapping for app playback and native previews.
+    pub fn selection(&self, kind: &str) -> Option<(&str, &str)> {
+        match kind {
+            "added" => Some((&self.preset_added, &self.custom_added)),
+            "complete" => Some((&self.complete_sound, &self.custom_complete)),
+            "failed" => Some((&self.preset_failed, &self.custom_failed)),
+            "queue" => Some((&self.preset_queue_done, &self.custom_queue_done)),
+            _ => None,
+        }
+    }
 }
 
 impl Default for Sounds {
     fn default() -> Self {
         Self {
             enabled: true,
+            on_added: false,
             on_complete: true,
             on_failed: true,
             on_queue_done: true,
             volume: 0.6,
             complete_sound: "classic".into(),
+            preset_added: "classic".into(),
+            preset_failed: "classic".into(),
+            preset_queue_done: "classic".into(),
+            custom_added: String::new(),
+            custom_complete: String::new(),
+            custom_failed: String::new(),
+            custom_queue_done: String::new(),
         }
     }
 }
@@ -542,6 +571,25 @@ mod tests {
         assert_eq!(s.downloads.default_connections, 16);
         assert_eq!(s.downloads.max_connections, 32);
         assert!(s.capture.extensions.iter().any(|e| e == "zip"));
+    }
+
+    #[test]
+    fn legacy_completion_preset_survives_adding_custom_sound_settings() {
+        let mut s: Settings =
+            serde_json::from_str(r#"{"sounds":{"completeSound":"kalimba","onFailed":false}}"#)
+                .unwrap();
+        assert!(!s.sounds.on_added);
+        assert!(!s.sounds.on_failed);
+        assert_eq!(s.sounds.selection("complete"), Some(("kalimba", "")));
+        assert_eq!(s.sounds.selection("failed"), Some(("classic", "")));
+        assert_eq!(s.sounds.selection("unknown"), None);
+        s.apply_patch(&serde_json::json!({"sounds":{"customAdded":"/tmp/added.wav"}}))
+            .unwrap();
+        assert_eq!(
+            s.sounds.selection("added"),
+            Some(("classic", "/tmp/added.wav"))
+        );
+        assert_eq!(s.sounds.selection("complete"), Some(("kalimba", "")));
     }
 
     #[test]

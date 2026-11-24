@@ -172,7 +172,7 @@ const settings: Settings = {
   connection: { userAgent: "", connectTimeoutSecs: 15, readTimeoutSecs: 30, httpVersion: "http1", maxConnectionsPerHost: 0 },
   proxy: { mode: "system", address: "", username: "", password: "", bypass: [] },
   capture: { enabled: true, extensions: ["zip", "rar", "7z", "exe", "msi", "iso", "mp4", "mkv", "mp3", "pdf"], mimeTypes: ["application/octet-stream"], excludedSites: ["*.update.microsoft.com"], minSizeKb: 0, bypassKey: "alt", videoButton: true, videoMinDurationSecs: 0 },
-  sounds: { enabled: true, onComplete: true, onFailed: true, onQueueDone: true, volume: 0.6, completeSound: "classic" },
+  sounds: { enabled: true, onAdded: false, onComplete: true, onFailed: true, onQueueDone: true, volume: 0.6, completeSound: "classic", presetAdded: "classic", presetFailed: "classic", presetQueueDone: "classic", customAdded: "", customComplete: "", customFailed: "", customQueueDone: "" },
   clipboard: { monitor: true, ask: true },
   grabber: { defaultDepth: 2, maxPages: 2000, concurrentRequests: 6, respectRobots: true },
   antivirus: { enabled: false, kind: "auto", command: "", args: "", extensions: [] },
@@ -639,6 +639,8 @@ function runDemoJob(j: MediaJob, estimate: number) {
 const CONVERT_RATIO: Record<string, number> = { mp3: 0.04, m4a: 0.035, wav: 0.3, flac: 0.15, ogg: 0.03, jpg: 0.6, png: 3, webp: 0.35, mp4: 0.8, webm: 0.6, gif: 1.5 };
 
 const commands: Record<string, (args: Record<string, unknown>) => unknown> = {
+  play_sound: () => null,
+  validate_custom_sound: () => undefined,
   bootstrap: (): Bootstrap => ({
     version: "1.2.5",
     items: Object.values(items),

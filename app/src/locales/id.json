@@ -1,4 +1,8 @@
 {
+  "Download added": "Unduhan ditambahkan",
+  "Sound for {event}": "Suara untuk peristiwa: {event}",
+  "WAV files": "Berkas WAV",
+  "Couldn't use this sound": "Suara ini tidak dapat digunakan",
   "Could not preview the video": "Pratinjau video tidak dapat dibuat",
   "Preview video frame": "Pratinjau bingkai video",
   "Frame from the downloaded video": "Bingkai dari video yang diunduh",
@@ -584,8 +588,6 @@
   "Sounds": "Suara",
   "Play sounds": "Putar suara",
   "Download complete": "Unduhan selesai",
-  "Download complete sound": "Suara unduhan selesai",
-  "Plays when you pick one": "Diputar saat Anda memilihnya",
   "Scheduler": "Penjadwal",
   "Queue finished": "Antrean selesai",
   "Volume": "Volume",

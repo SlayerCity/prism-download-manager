@@ -1,4 +1,8 @@
 {
+  "Download added": "أُضيف تنزيل",
+  "Sound for {event}": "صوت الحدث: {event}",
+  "WAV files": "ملفات WAV",
+  "Couldn't use this sound": "تعذر استخدام هذا الصوت",
   "Could not preview the video": "تعذّرت معاينة الفيديو",
   "Preview video frame": "معاينة إطار من الفيديو",
   "Frame from the downloaded video": "إطار من الفيديو الذي تم تنزيله",
@@ -654,8 +658,6 @@
   "Sounds": "الأصوات",
   "Play sounds": "تشغيل الأصوات",
   "Download complete": "اكتمل التنزيل",
-  "Download complete sound": "صوت اكتمال التنزيل",
-  "Plays when you pick one": "يُشغَّل عند اختياره",
   "Scheduler": "المُجدوِل",
   "Queue finished": "اكتملت قائمة الانتظار",
   "Volume": "مستوى الصوت",

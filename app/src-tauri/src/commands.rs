@@ -733,23 +733,44 @@ pub async fn open_browser(browser: String) -> CmdResult<()> {
 
 /// Opens Prism's Chrome Web Store page in `browser`, or in the default browser when that one
 /// can't be started.
-/// Linux: plays a sound through the system's player (Settings › Sounds' preview); elsewhere the
-/// window plays it itself.
+/// Reject unsupported files before a custom sound is saved.
 #[tauri::command]
-pub async fn play_sound(
-    core: State<'_, Core>,
-    kind: String,
-    complete_sound: Option<String>,
-) -> CmdResult<()> {
+pub async fn validate_custom_sound(path: String) -> CmdResult<()> {
+    tokio::task::spawn_blocking(move || crate::custom_sound::read_wav(&PathBuf::from(path)))
+        .await
+        .map_err(err)??;
+    Ok(())
+}
+
+/// Play the configured sound on Linux or return a bounded WAV for the desktop WebView.
+#[tauri::command]
+pub async fn play_sound(core: State<'_, Core>, kind: String) -> CmdResult<Option<String>> {
+    let sounds = core.settings().sounds;
+    if !sounds.enabled {
+        return Ok(None);
+    }
+    let (preset, custom) = sounds.selection(&kind).ok_or("Unknown sound event")?;
     #[cfg(target_os = "linux")]
     {
-        let s = core.settings().sounds;
-        let complete = complete_sound.unwrap_or(s.complete_sound);
-        crate::sound::play(&kind, &complete, s.volume);
+        crate::sound::play(&kind, preset, sounds.volume, custom);
+        Ok(None)
     }
     #[cfg(not(target_os = "linux"))]
-    let _ = (core, kind, complete_sound);
-    Ok(())
+    {
+        use base64::{Engine, engine::general_purpose::STANDARD};
+        let _ = preset;
+        if custom.is_empty() {
+            return Ok(None);
+        }
+        let path = PathBuf::from(custom);
+        let bytes = tokio::task::spawn_blocking(move || crate::custom_sound::read_wav(&path))
+            .await
+            .map_err(err)??;
+        Ok(Some(format!(
+            "data:audio/wav;base64,{}",
+            STANDARD.encode(bytes)
+        )))
+    }
 }
 
 #[tauri::command]

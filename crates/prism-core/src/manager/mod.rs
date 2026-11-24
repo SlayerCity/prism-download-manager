@@ -458,6 +458,12 @@ impl Core {
             }
         }
         self.emit(CoreEvent::ItemsAdded(new_items));
+        let s = self.settings();
+        if s.sounds.enabled && s.sounds.on_added {
+            self.emit(CoreEvent::PlaySound {
+                kind: "added".into(),
+            });
+        }
         Ok(())
     }
 

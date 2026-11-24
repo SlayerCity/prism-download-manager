@@ -1,4 +1,8 @@
 {
+  "Download added": "Download aggiunto",
+  "Sound for {event}": "Suono per l’evento: {event}",
+  "WAV files": "File WAV",
+  "Couldn't use this sound": "Impossibile usare questo suono",
   "Could not preview the video": "Impossibile visualizzare l’anteprima del video",
   "Preview video frame": "Mostra un fotogramma di anteprima",
   "Frame from the downloaded video": "Fotogramma del video scaricato",
@@ -604,8 +608,6 @@
   "Sounds": "Suoni",
   "Play sounds": "Riproduci suoni",
   "Download complete": "Download completato",
-  "Download complete sound": "Suono di download completato",
-  "Plays when you pick one": "Viene riprodotto quando lo scegli",
   "Scheduler": "Pianificatore",
   "Queue finished": "Coda completata",
   "Volume": "Volume",

@@ -1,4 +1,8 @@
 {
+  "Download added": "已添加下载",
+  "Sound for {event}": "事件提示音：{event}",
+  "WAV files": "WAV 文件",
+  "Couldn't use this sound": "无法使用此提示音",
   "Could not preview the video": "无法预览视频",
   "Preview video frame": "预览视频帧",
   "Frame from the downloaded video": "已下载视频中的一帧",
@@ -578,8 +582,6 @@
   "Sounds": "声音",
   "Play sounds": "播放声音",
   "Download complete": "下载完成",
-  "Download complete sound": "下载完成提示音",
-  "Plays when you pick one": "选择时会试听",
   "Scheduler": "计划程序",
   "Queue finished": "队列已完成",
   "Volume": "音量",
