@@ -1320,7 +1320,7 @@ impl Session {
             name,
         } = add_res;
 
-        let private = metadata.as_ref().is_some_and(|m| m.info.info().private);
+        let is_private = metadata.as_ref().map(|m| m.info.info().private);
         let tracker_status = Arc::new(parking_lot::RwLock::new(std::collections::HashMap::new()));
 
         let make_peer_rx = || {
@@ -1330,7 +1330,7 @@ impl Session {
                 !opts.paused && !opts.list_only,
                 opts.force_tracker_interval,
                 opts.initial_peers.clone().unwrap_or_default(),
-                private,
+                is_private,
                 tracker_status.clone(),
             )
         };
@@ -1347,24 +1347,55 @@ impl Session {
                     (metadata, peer_rx)
                 }
                 None => {
-                    let peer_rx = make_peer_rx().context(
-                        "no known way to resolve peers (no DHT, no trackers, no initial_peers)",
-                    )?;
+                    // A magnet's info-hash is not known to be public until its metadata arrives.
+                    // The initial peer stream therefore uses only its explicit `tr=` trackers;
+                    // `make_peer_rx` deliberately omits DHT and session-wide fallback trackers
+                    // while privacy is unknown. A trackerless magnet cannot be resolved through
+                    // DHT before its private flag is known.
+                    if trackers.is_empty()
+                        && opts.initial_peers.as_ref().is_none_or(Vec::is_empty)
+                    {
+                        bail!("no safe way to resolve this trackerless magnet before metadata is available; add a tracker URL to the magnet link");
+                    }
+                    let peer_rx = self
+                        .make_peer_rx(
+                            info_hash,
+                            trackers.clone(),
+                            true,
+                            opts.force_tracker_interval,
+                            opts.initial_peers.clone().unwrap_or_default(),
+                            None,
+                            tracker_status.clone(),
+                        )
+                        .context(
+                            "no safe way to resolve this magnet before metadata is available; add a tracker URL to the magnet link",
+                        )?;
                     let resolved_magnet = self
                         .resolve_magnet(info_hash, peer_rx, &trackers, opts.peer_opts)
                         .await?;
 
-                    // Add back seen_peers into the peer stream, as we consumed some peers
-                    // while resolving the magnet.
+                    // Add back peers consumed while resolving metadata. Once the info dictionary
+                    // proves the torrent public, session fallbacks and DHT are safe to use.
                     seen_peers = resolved_magnet.seen_peers.clone();
-                    let peer_rx = Some(
-                        merge_streams(
-                            resolved_magnet.peer_rx,
-                            futures::stream::iter(resolved_magnet.seen_peers),
-                        )
-                        .boxed(),
-                    );
-                    (resolved_magnet.metadata, peer_rx)
+                    let mut peer_rx: PeerStream = merge_streams(
+                        resolved_magnet.peer_rx,
+                        futures::stream::iter(resolved_magnet.seen_peers),
+                    )
+                    .boxed();
+                    if !resolved_magnet.metadata.info.info().private && !opts.paused && !opts.list_only {
+                        if let Some(public_rx) = self.make_peer_rx(
+                            info_hash,
+                            Vec::new(),
+                            true,
+                            opts.force_tracker_interval,
+                            opts.initial_peers.clone().unwrap_or_default(),
+                            Some(false),
+                            tracker_status.clone(),
+                        ) {
+                            peer_rx = merge_streams(peer_rx, public_rx).boxed();
+                        }
+                    }
+                    (resolved_magnet.metadata, Some(peer_rx))
                 }
             }
         };
@@ -1616,7 +1647,7 @@ impl Session {
             announce,
             t.shared().options.force_tracker_interval,
             t.shared().options.initial_peers.clone(),
-            is_private,
+            Some(is_private),
             t.shared().tracker_status.clone(),
         )
     }
@@ -1629,23 +1660,23 @@ impl Session {
         announce: bool,
         force_tracker_interval: Option<Duration>,
         initial_peers: Vec<SocketAddr>,
-        is_private: bool,
+        is_private: Option<bool>,
         tracker_status: tracker_comms::TrackerStatusStore,
     ) -> Option<PeerStream> {
-        let dht_rx = if is_private {
-            None
-        } else {
+        let dht_rx = if is_private == Some(false) {
             self.dht.as_ref().map(|dht| {
                 dht.get_peers(info_hash, if announce { self.announce_port } else { None })
             })
+        } else {
+            None
         };
 
-        let lsd_rx = if is_private {
-            None
-        } else {
+        let lsd_rx = if is_private == Some(false) {
             self.lsd.as_ref().map(|lsd| {
                 lsd.announce(info_hash, if announce { self.announce_port } else { None })
             })
+        } else {
+            None
         };
 
         if self.disable_trackers {
@@ -1655,7 +1686,7 @@ impl Session {
         // Session trackers are configured as public fallbacks. Never append them to
         // private torrents: doing so can leak a private info-hash to unrelated trackers.
         // Trackers explicitly present in the torrent metainfo remain available.
-        if !is_private && !self.disable_trackers {
+        if is_private == Some(false) && !self.disable_trackers {
             trackers.extend(self.trackers.iter().cloned());
         }
 

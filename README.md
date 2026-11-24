@@ -172,6 +172,15 @@ the [first-launch steps](docs/guide/installation.md#macos). If a security tool r
 leave the file blocked and follow the [reporting steps](docs/guide/installation.md#security-warnings).
 </details>
 
+<details><summary><b>Why might a trackerless magnet link not resolve?</b></summary>
+
+Prism waits for a magnet link's metadata before it can know whether the torrent is private. Until
+then, it contacts only the trackers included in that magnet link; it does not use DHT or the
+configured public-tracker list, which could expose a private torrent's info-hash. A magnet with no
+`tr=` tracker may therefore need a tracker URL or available metadata before Prism can resolve it.
+Once metadata confirms a public torrent, Prism can use DHT and the configured public trackers.
+</details>
+
 <details><summary><b>What identifies Prism to BitTorrent trackers?</b></summary>
 
 Tracker announces use a Prism-version peer-ID fingerprint (`-Pr1250-` for version 1.2.5) with a

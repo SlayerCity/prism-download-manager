@@ -113,6 +113,65 @@ fn assert_started_announce(request_line: &str, expected_left: usize) {
 }
 
 #[tokio::test]
+async fn trackerless_magnet_does_not_use_dht_or_public_session_fallbacks() {
+    let (public_tracker, public_requests) = tracker().await;
+    let dir = tempfile::tempdir().unwrap();
+    let engine = TorrentEngine::start(
+        &dir.path().join("state"),
+        dir.path().join("downloads"),
+        &|_| true,
+        vec![public_tracker],
+        false,
+        0,
+    )
+    .await
+    .unwrap();
+    let magnet =
+        TorrentSource::Url("magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567".into());
+
+    let error = engine
+        .inspect(&magnet)
+        .await
+        .expect_err("trackerless magnet must not use DHT before its private flag is known");
+    assert!(
+        error.to_string().contains("trackerless magnet"),
+        "{error:#}"
+    );
+    assert!(public_requests.lock().unwrap().requests.is_empty());
+}
+
+#[tokio::test]
+async fn unresolved_magnet_uses_its_trackers_but_not_session_public_fallbacks() {
+    let (link_tracker, link_requests) = tracker().await;
+    let (public_tracker, public_requests) = tracker().await;
+    let dir = tempfile::tempdir().unwrap();
+    let engine = TorrentEngine::start(
+        &dir.path().join("state"),
+        dir.path().join("downloads"),
+        &|_| true,
+        vec![public_tracker],
+        false,
+        0,
+    )
+    .await
+    .unwrap();
+    let magnet = TorrentSource::Url(format!(
+        "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&tr={}",
+        url::form_urlencoded::byte_serialize(link_tracker.as_bytes()).collect::<String>()
+    ));
+
+    let _ = tokio::time::timeout(Duration::from_millis(500), engine.inspect(&magnet)).await;
+    assert!(
+        !link_requests.lock().unwrap().requests.is_empty(),
+        "magnet's own tracker should be used to resolve metadata"
+    );
+    assert!(
+        public_requests.lock().unwrap().requests.is_empty(),
+        "session-wide public tracker must not see an unresolved info-hash"
+    );
+}
+
+#[tokio::test]
 async fn private_torrent_never_announces_to_session_public_trackers() {
     let (private_tracker, private_requests) = tracker().await;
     let (public_tracker, public_requests) = tracker().await;
