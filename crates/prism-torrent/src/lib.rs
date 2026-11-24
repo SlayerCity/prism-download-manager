@@ -15,6 +15,21 @@ use librqbit::{
 use std::str::FromStr;
 
 type ManagedTorrentHandle = Arc<ManagedTorrent>;
+
+/// Prism's Azureus-style identity: `-Pr<major><minor><patch>0-<random>`. The version prefix
+/// is stable for tracker allowlists; the random tail remains unique per session.
+fn prism_peer_id() -> librqbit::dht::Id20 {
+    let component = |value: &str| value.parse::<u8>().unwrap_or(0).min(63);
+    librqbit::generate_azereus_style(
+        *b"Pr",
+        (
+            component(env!("CARGO_PKG_VERSION_MAJOR")),
+            component(env!("CARGO_PKG_VERSION_MINOR")),
+            component(env!("CARGO_PKG_VERSION_PATCH")),
+            0,
+        ),
+    )
+}
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::num::NonZeroU32;
@@ -93,6 +108,26 @@ pub struct TorrentEngine {
     inspected: Mutex<HashMap<String, TorrentMeta>>,
 }
 
+#[cfg(test)]
+mod peer_id_tests {
+    use super::prism_peer_id;
+
+    #[test]
+    fn peer_id_advertises_prism_version_with_a_unique_session_tail() {
+        let first = prism_peer_id();
+        let second = prism_peer_id();
+        let expected = format!(
+            "-Pr{}{}{}0-",
+            env!("CARGO_PKG_VERSION_MAJOR"),
+            env!("CARGO_PKG_VERSION_MINOR"),
+            env!("CARGO_PKG_VERSION_PATCH")
+        );
+        assert_eq!(&first.0[..8], expected.as_bytes());
+        assert_eq!(&second.0[..8], expected.as_bytes());
+        assert_ne!(&first.0[8..], &second.0[8..]);
+    }
+}
+
 impl TorrentEngine {
     /// Start the session. `state_dir` holds persistence; `default_output` is used when
     /// a torrent is added without an explicit folder. Saved torrents for which `keep` says no
@@ -124,6 +159,8 @@ impl TorrentEngine {
             persistence: Some(SessionPersistenceConfig::Json {
                 folder: Some(state_dir.to_path_buf()),
             }),
+            peer_id: Some(prism_peer_id()),
+            // This value is also the HTTP User-Agent used for tracker announces.
             client_name_and_version: Some(format!("Prism/{}", env!("CARGO_PKG_VERSION"))),
             ..Default::default()
         };

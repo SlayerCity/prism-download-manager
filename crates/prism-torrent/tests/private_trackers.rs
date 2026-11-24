@@ -44,20 +44,37 @@ fn torrent(announce: &str, private: bool) -> Vec<u8> {
     torrent
 }
 
-async fn tracker() -> (String, Arc<Mutex<Vec<String>>>) {
+#[derive(Default)]
+struct TrackerRequests {
+    requests: Vec<String>,
+    user_agents: Vec<String>,
+}
+
+async fn tracker() -> (String, Arc<Mutex<TrackerRequests>>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let address = listener.local_addr().unwrap();
-    let requests = Arc::new(Mutex::new(Vec::new()));
+    let requests = Arc::new(Mutex::new(TrackerRequests::default()));
     let captured = requests.clone();
     tokio::spawn(async move {
         while let Ok((stream, _)) = listener.accept().await {
             let mut reader = BufReader::new(stream);
             let mut request_line = String::new();
+            let mut user_agent = String::new();
             if reader.read_line(&mut request_line).await.is_ok() {
-                captured
-                    .lock()
-                    .unwrap()
-                    .push(request_line.trim().to_owned());
+                loop {
+                    let mut header = String::new();
+                    if reader.read_line(&mut header).await.is_err() || header == "\r\n" {
+                        break;
+                    }
+                    if let Some((name, value)) = header.split_once(':')
+                        && name.eq_ignore_ascii_case("user-agent")
+                    {
+                        user_agent = value.trim().to_owned();
+                    }
+                }
+                let mut captured = captured.lock().unwrap();
+                captured.requests.push(request_line.trim().to_owned());
+                captured.user_agents.push(user_agent);
             }
             let body = b"d8:intervali30e5:peers0:e";
             let response = format!(
@@ -121,17 +138,29 @@ async fn private_torrent_never_announces_to_session_public_trackers() {
         .unwrap();
 
     tokio::time::timeout(Duration::from_secs(10), async {
-        while private_requests.lock().unwrap().is_empty() {
+        while private_requests.lock().unwrap().requests.is_empty() {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
     })
     .await
     .expect("private torrent did not announce to its own tracker");
-    let announce = private_requests.lock().unwrap()[0].clone();
+    let captured = private_requests.lock().unwrap();
+    let announce = captured.requests[0].clone();
     assert_started_announce(&announce, b"private test payload".len());
+    let target = announce.split_whitespace().nth(1).unwrap();
+    let url = url::Url::parse(&format!("http://tracker.invalid{target}")).unwrap();
+    let query: HashMap<_, _> = url.query_pairs().into_owned().collect();
+    let version = env!("CARGO_PKG_VERSION").split('.').collect::<Vec<_>>();
+    let fingerprint = format!("-Pr{}{}{}0-", version[0], version[1], version[2]);
+    assert!(query["peer_id"].starts_with(&fingerprint));
+    assert_eq!(
+        captured.user_agents[0],
+        format!("Prism/{}", env!("CARGO_PKG_VERSION"))
+    );
+    drop(captured);
     // If the session's public list were appended, it would be announced in the same start.
     tokio::time::sleep(Duration::from_millis(500)).await;
-    assert!(public_requests.lock().unwrap().is_empty());
+    assert!(public_requests.lock().unwrap().requests.is_empty());
 }
 
 #[tokio::test]
@@ -160,8 +189,8 @@ async fn public_torrent_still_uses_session_public_trackers() {
         .unwrap();
 
     tokio::time::timeout(Duration::from_secs(10), async {
-        while torrent_requests.lock().unwrap().is_empty()
-            || public_requests.lock().unwrap().is_empty()
+        while torrent_requests.lock().unwrap().requests.is_empty()
+            || public_requests.lock().unwrap().requests.is_empty()
         {
             tokio::time::sleep(Duration::from_millis(25)).await;
         }

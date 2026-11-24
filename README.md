@@ -172,6 +172,14 @@ the [first-launch steps](docs/guide/installation.md#macos). If a security tool r
 leave the file blocked and follow the [reporting steps](docs/guide/installation.md#security-warnings).
 </details>
 
+<details><summary><b>What identifies Prism to BitTorrent trackers?</b></summary>
+
+Tracker announces use a Prism-version peer-ID fingerprint (`-Pr1250-` for version 1.2.5) with a
+random session suffix; HTTP tracker requests use `Prism/<app version>` as their User-Agent. The
+fingerprint changes when Prism's major, minor or patch version changes. This identifies the client;
+it does not mean a tracker has reviewed or whitelisted Prism.
+</details>
+
 <details><summary><b>Can I use it together with IDM or another download manager?</b></summary>
 
 Yes, but disable their browser extension — two extensions fighting over the same download
