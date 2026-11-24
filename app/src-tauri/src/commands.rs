@@ -526,7 +526,7 @@ pub async fn open_item(core: State<'_, Core>, app: AppHandle, id: String) -> Cmd
         .map_err(err)
 }
 
-/// Start a native file drag from a completed download row (Windows and macOS).
+/// Start a native file drag from a completed download row (Windows, macOS and Linux).
 #[tauri::command]
 pub async fn start_file_drag(
     core: State<'_, Core>,
@@ -563,7 +563,29 @@ fn start_native_drag(window: tauri::WebviewWindow, path: PathBuf) -> CmdResult<(
         .map_err(err)
 }
 
-#[cfg(not(any(windows, target_os = "macos")))]
+#[cfg(target_os = "linux")]
+fn start_native_drag(window: tauri::WebviewWindow, path: PathBuf) -> CmdResult<()> {
+    const DRAG_ICON: &[u8] = include_bytes!("../icons/64x64.png");
+    let target = window.clone();
+    window
+        .run_on_main_thread(move || match target.gtk_window() {
+            Ok(gtk_window) => {
+                if let Err(e) = drag::start_drag(
+                    &gtk_window,
+                    drag::DragItem::Files(vec![path]),
+                    drag::Image::Raw(DRAG_ICON.to_vec()),
+                    |_result, _cursor| {},
+                    drag::Options::default(),
+                ) {
+                    tracing::warn!("file drag failed: {e}");
+                }
+            }
+            Err(e) => tracing::warn!("could not access GTK window for file drag: {e}"),
+        })
+        .map_err(err)
+}
+
+#[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
 fn start_native_drag(_window: tauri::WebviewWindow, _path: PathBuf) -> CmdResult<()> {
     Err("Native file dragging is not supported on this platform".into())
 }

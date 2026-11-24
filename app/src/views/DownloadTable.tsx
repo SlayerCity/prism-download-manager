@@ -19,7 +19,7 @@ import { itemMenu } from "./itemMenu";
 import { useVisibleIds } from "./useListing";
 
 const nativeFileDragAvailable = () =>
-  inTauri && typeof navigator !== "undefined" && /Windows NT|Mac OS X/.test(navigator.userAgent);
+  inTauri && typeof navigator !== "undefined" && /Windows NT|Mac OS X|Linux/.test(navigator.userAgent);
 
 const ROW = { comfortable: 44, compact: 30 } as const;
 
