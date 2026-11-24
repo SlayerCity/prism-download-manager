@@ -160,17 +160,54 @@ pub async fn batch_from_pattern(core: State<'_, Core>, pattern: String) -> CmdRe
     core.batch_from_pattern(&pattern).map_err(err)
 }
 
-/// Batch from pasted text / a text file: every URL found becomes an entry.
+/// Find supported download addresses in prose, Markdown, or a pasted plain URL list.
+fn batch_entries_from_text(text: &str) -> Vec<prism_core::events::BatchEntry> {
+    const PREFIXES: [&str; 4] = ["https://", "http://", "ftp://", "magnet:"];
+    let mut seen = std::collections::HashSet::new();
+    let mut entries = Vec::new();
+
+    for (start, _) in text.char_indices() {
+        let tail = &text[start..];
+        if !PREFIXES.iter().any(|prefix| {
+            tail.get(..prefix.len())
+                .is_some_and(|s| s.eq_ignore_ascii_case(prefix))
+        }) {
+            continue;
+        }
+        let token = tail
+            .split(|c: char| c.is_whitespace() || matches!(c, '<' | '>' | '\"' | '\''))
+            .next()
+            .unwrap_or_default();
+        let mut candidate = token.trim_end_matches(['.', ',', '!', '?', ';', ':']);
+        for (close, open) in [(')', '('), (']', '['), ('}', '{')] {
+            while candidate.ends_with(close)
+                && candidate.chars().filter(|&c| c == close).count()
+                    > candidate.chars().filter(|&c| c == open).count()
+            {
+                candidate = &candidate[..candidate.len() - close.len_utf8()];
+            }
+        }
+        let Ok(url) = url::Url::parse(candidate) else {
+            continue;
+        };
+        if !matches!(url.scheme(), "http" | "https" | "ftp" | "magnet") {
+            continue;
+        }
+        let normalized = url.to_string();
+        if seen.insert(normalized.clone()) {
+            entries.push(prism_core::events::BatchEntry {
+                url: normalized,
+                ..Default::default()
+            });
+        }
+    }
+    entries
+}
+
+/// Batch from pasted text / a text file: every supported URL found becomes an entry.
 #[tauri::command]
 pub async fn batch_from_text(core: State<'_, Core>, text: String) -> CmdResult<BatchInfo> {
-    let entries: Vec<prism_core::events::BatchEntry> = text
-        .split_whitespace()
-        .filter(|t| t.contains("://") || t.starts_with("magnet:"))
-        .map(|u| prism_core::events::BatchEntry {
-            url: u.to_string(),
-            ..Default::default()
-        })
-        .collect();
+    let entries = batch_entries_from_text(&text);
     if entries.is_empty() {
         return Err("No addresses found".into());
     }
@@ -1006,7 +1043,39 @@ pub async fn data_dir(app: AppHandle) -> CmdResult<PathBuf> {
 
 #[cfg(test)]
 mod mirror_tests {
-    use super::parse_mirrors;
+    use super::{batch_entries_from_text, parse_mirrors};
+
+    #[test]
+    fn batch_text_finds_supported_links_in_prose_and_markdown() {
+        let entries = batch_entries_from_text(
+            "Download these: https://example.org/a.zip, [second](HTTP://example.org/b.pdf).\nmagnet:?xt=urn:btih:abc&dn=movie",
+        );
+        let urls: Vec<_> = entries.iter().map(|entry| entry.url.as_str()).collect();
+        assert_eq!(
+            urls,
+            [
+                "https://example.org/a.zip",
+                "http://example.org/b.pdf",
+                "magnet:?xt=urn:btih:abc&dn=movie",
+            ]
+        );
+    }
+
+    #[test]
+    fn batch_text_deduplicates_and_ignores_unsupported_or_invalid_schemes() {
+        let entries = batch_entries_from_text(
+            "https://example.org/file.zip https://example.org/file.zip javascript://alert(1) ftp://example.org/archive.zip",
+        );
+        let urls: Vec<_> = entries.iter().map(|entry| entry.url.as_str()).collect();
+        assert_eq!(
+            urls,
+            [
+                "https://example.org/file.zip",
+                "ftp://example.org/archive.zip"
+            ]
+        );
+        assert!(batch_entries_from_text("just some words and javascript://bad").is_empty());
+    }
 
     #[test]
     fn mirror_urls_are_http_and_deduplicated() {

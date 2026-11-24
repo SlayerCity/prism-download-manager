@@ -4946,6 +4946,7 @@ version = "1.2.5"
 dependencies = [
  "serde",
  "serde_json",
+ "static_vcruntime",
  "tempfile",
  "thiserror 2.0.21",
  "ureq",
