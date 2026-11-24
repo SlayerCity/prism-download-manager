@@ -2,6 +2,7 @@
 
 use crate::i18n::tr;
 use prism_core::manager::Core;
+use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
@@ -9,12 +10,20 @@ use tauri::{AppHandle, Manager, Wry};
 
 pub const TRAY_ID: &str = "prism-tray";
 
-// Windows/Linux trays are usually dark: white glyphs. macOS uses template images
-// (black + alpha) that the menu bar tints for light/dark automatically.
-#[cfg(not(target_os = "macos"))]
+// Linux trays are usually dark: white glyphs. Windows taskbars follow the user's light/dark
+// theme, so select a matching opaque-color glyph instead of always showing white on light mode.
+#[cfg(target_os = "linux")]
 static ICON_IDLE: &[u8] = include_bytes!("../icons/tray/tray-idle.png");
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 static ICON_ACTIVE: &[u8] = include_bytes!("../icons/tray/tray-downloading.png");
+#[cfg(target_os = "windows")]
+static ICON_IDLE_DARK: &[u8] = include_bytes!("../icons/tray/tray-idle-dark.png");
+#[cfg(target_os = "windows")]
+static ICON_ACTIVE_DARK: &[u8] = include_bytes!("../icons/tray/tray-downloading-dark.png");
+#[cfg(target_os = "windows")]
+static ICON_IDLE_LIGHT: &[u8] = include_bytes!("../icons/tray/tray-idle-light.png");
+#[cfg(target_os = "windows")]
+static ICON_ACTIVE_LIGHT: &[u8] = include_bytes!("../icons/tray/tray-downloading-light.png");
 #[cfg(target_os = "macos")]
 static ICON_IDLE: &[u8] = include_bytes!("../icons/tray/tray-idle-template.png");
 #[cfg(target_os = "macos")]
@@ -24,6 +33,7 @@ pub struct TrayState {
     pub limiter: CheckMenuItem<Wry>,
     /// Menu items with the English text they show (relabelled when the UI language changes).
     items: Vec<(MenuItem<Wry>, &'static str)>,
+    active: AtomicBool,
 }
 
 pub fn create(app: &AppHandle) -> tauri::Result<TrayIcon> {
@@ -76,10 +86,11 @@ pub fn create(app: &AppHandle) -> tauri::Result<TrayIcon> {
             (drop.clone(), "Drop zone"),
             (quit.clone(), "Quit Prism"),
         ],
+        active: AtomicBool::new(false),
     });
 
     TrayIconBuilder::with_id(TRAY_ID)
-        .icon(Image::from_bytes(ICON_IDLE)?)
+        .icon(Image::from_bytes(icon_bytes(app, false))?)
         .icon_as_template(cfg!(target_os = "macos"))
         .tooltip("Prism")
         .menu(&menu)
@@ -161,14 +172,52 @@ pub fn update(app: &AppHandle, active: usize, speed: u64, icon_changed: bool) {
         )
     };
     let _ = tray.set_tooltip(Some(tooltip));
-    if !icon_changed {
-        return;
+    if let Some(state) = app.try_state::<TrayState>() {
+        state.active.store(active > 0, Ordering::Relaxed);
     }
-    let bytes = if active == 0 { ICON_IDLE } else { ICON_ACTIVE };
-    if let Ok(img) = Image::from_bytes(bytes) {
+    if icon_changed {
+        refresh_icon(app);
+    }
+}
+
+/// Reapply the current state icon after a Windows light/dark theme change.
+pub fn refresh_icon(app: &AppHandle) {
+    let Some(tray) = app.tray_by_id(TRAY_ID) else {
+        return;
+    };
+    let active = app
+        .try_state::<TrayState>()
+        .is_some_and(|state| state.active.load(Ordering::Relaxed));
+    if let Ok(img) = Image::from_bytes(icon_bytes(app, active)) {
         let _ = tray.set_icon(Some(img));
         let _ = tray.set_icon_as_template(cfg!(target_os = "macos"));
     }
+}
+
+#[cfg(target_os = "windows")]
+fn icon_bytes(app: &AppHandle, active: bool) -> &'static [u8] {
+    // The taskbar follows the OS theme, independently of Prism's in-app appearance choice.
+    let dark_taskbar = !matches!(
+        app.get_webview_window("main")
+            .and_then(|window| window.theme().ok()),
+        Some(tauri::Theme::Light)
+    );
+    match (active, dark_taskbar) {
+        (false, true) => ICON_IDLE_LIGHT,
+        (true, true) => ICON_ACTIVE_LIGHT,
+        (false, false) => ICON_IDLE_DARK,
+        (true, false) => ICON_ACTIVE_DARK,
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn icon_bytes(_app: &AppHandle, active: bool) -> &'static [u8] {
+    if active { ICON_ACTIVE } else { ICON_IDLE }
+}
+
+#[cfg(target_os = "macos")]
+fn icon_bytes(_app: &AppHandle, active: bool) -> &'static [u8] {
+    if active { ICON_ACTIVE } else { ICON_IDLE }
 }
 
 fn human_speed(bps: u64) -> String {

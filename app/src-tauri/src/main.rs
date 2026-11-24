@@ -164,6 +164,7 @@ fn main() {
                 && let Some(main) = window.app_handle().get_webview_window("main")
             {
                 apply_window_material(&main, &window.state::<Core>().settings());
+                tray::refresh_icon(window.app_handle());
             }
             if window.label() == "main"
                 && let WindowEvent::CloseRequested { api, .. } = event
