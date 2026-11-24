@@ -1162,6 +1162,8 @@
   "Settings for BitTorrent downloads.": "Pengaturan untuk unduhan BitTorrent.",
   "Seeding": "Seeding",
   "Keep completed torrents seeding": "Tetap seeding torrent yang selesai",
+  "Maximum active seeds": "Maksimum torrent seeding aktif",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "Batasi jumlah torrent selesai yang berbagi sekaligus; 0 berarti tanpa batas. Torrent yang lebih lama diprioritaskan.",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "Mulai ulang Prism setelah mengubahnya. Torrent aktif membuat file tetap terbuka dan dapat memulihkan data yang hilang.",
   "Public trackers": "Pelacak publik",
   "Append trackers to public torrents": "Tambahkan pelacak ke torrent publik",

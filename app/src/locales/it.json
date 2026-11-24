@@ -1208,6 +1208,8 @@
   "Settings for BitTorrent downloads.": "Impostazioni per i download BitTorrent.",
   "Seeding": "Seeding",
   "Keep completed torrents seeding": "Continua a condividere i torrent completati",
+  "Maximum active seeds": "Numero massimo di torrent in seeding",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "Limita i torrent completati che condividono contemporaneamente; 0 significa nessun limite. I torrent più vecchi hanno la priorità.",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "Riavvia Prism dopo la modifica. I torrent attivi tengono aperti i file e possono ripristinare dati mancanti.",
   "Public trackers": "Tracker pubblici",
   "Append trackers to public torrents": "Aggiungi tracker ai torrent pubblici",

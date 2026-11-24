@@ -168,9 +168,46 @@ fn should_keep_torrent(
         || (unknown && !finished.contains(hash))
 }
 
+/// Pick a stable oldest-first set of active seeds and return pause/resume work.
+fn seed_limit_actions(
+    seeds: impl IntoIterator<Item = (String, prism_torrent::TorrentState)>,
+    limit: usize,
+) -> (Vec<String>, Vec<String>) {
+    if limit == 0 {
+        let resume = seeds
+            .into_iter()
+            .filter_map(|(hash, state)| {
+                (state == prism_torrent::TorrentState::Paused).then_some(hash)
+            })
+            .collect();
+        return (resume, Vec::new());
+    }
+    let mut selected = 0usize;
+    let mut resume = Vec::new();
+    let mut pause = Vec::new();
+    for (hash, state) in seeds {
+        if !matches!(
+            state,
+            prism_torrent::TorrentState::Seeding | prism_torrent::TorrentState::Paused
+        ) {
+            continue;
+        }
+        if selected < limit {
+            selected += 1;
+            if state == prism_torrent::TorrentState::Paused {
+                resume.push(hash);
+            }
+        } else if state == prism_torrent::TorrentState::Seeding {
+            pause.push(hash);
+        }
+    }
+    (resume, pause)
+}
+
 #[cfg(test)]
 mod torrent_retention_tests {
-    use super::should_keep_torrent;
+    use super::{seed_limit_actions, should_keep_torrent};
+    use prism_torrent::TorrentState;
     use std::collections::HashSet;
 
     #[test]
@@ -195,6 +232,33 @@ mod torrent_retention_tests {
         assert!(!should_keep_torrent(
             "complete", &active, &finished, true, false
         ));
+    }
+
+    #[test]
+    fn seed_limit_keeps_oldest_active_and_resumes_paused_slots() {
+        let (resume, pause) = seed_limit_actions(
+            [
+                ("old".into(), TorrentState::Seeding),
+                ("next".into(), TorrentState::Paused),
+                ("new".into(), TorrentState::Seeding),
+            ],
+            2,
+        );
+        assert_eq!(resume, ["next"]);
+        assert_eq!(pause, ["new"]);
+    }
+
+    #[test]
+    fn zero_seed_limit_resumes_all_paused_seeds() {
+        let (resume, pause) = seed_limit_actions(
+            [
+                ("paused".into(), TorrentState::Paused),
+                ("live".into(), TorrentState::Seeding),
+            ],
+            0,
+        );
+        assert_eq!(resume, ["paused"]);
+        assert!(pause.is_empty());
     }
 }
 
@@ -955,6 +1019,59 @@ impl Core {
 
     // ----- background loops -------------------------------------------------------------------
 
+    async fn enforce_seed_limit(&self) {
+        let (enabled, limit, mut seeds) = {
+            let st = self.0.state.lock();
+            let enabled = st.settings.torrent.seed_completed;
+            let limit = usize::from(st.settings.torrent.max_active_seeds.min(64));
+            let seeds = if enabled {
+                let mut seeds: Vec<_> = st
+                    .items
+                    .values()
+                    .filter(|item| {
+                        item.kind == ItemKind::Torrent
+                            && item.status == Status::Completed
+                            && !item.trashed
+                    })
+                    .filter_map(|item| {
+                        jobs::torrent_hash(item).map(|hash| (item.added_at, item.id.clone(), hash))
+                    })
+                    .collect();
+                seeds.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
+                seeds
+            } else {
+                Vec::new()
+            };
+            (enabled, limit, seeds)
+        };
+        if !enabled {
+            return;
+        }
+        let Some(engine) = self.0.torrent.get() else {
+            return;
+        };
+        let observed: Vec<_> = seeds
+            .drain(..)
+            .filter_map(|(_, _, hash)| {
+                engine
+                    .progress(&hash)
+                    .filter(|progress| progress.finished)
+                    .map(|progress| (hash, progress.state))
+            })
+            .collect();
+        let (resume, pause) = seed_limit_actions(observed, limit);
+        for hash in resume {
+            if let Err(error) = engine.resume(&hash).await {
+                tracing::warn!(torrent = %hash, "could not resume seed within configured limit: {error:#}");
+            }
+        }
+        for hash in pause {
+            if let Err(error) = engine.pause(&hash).await {
+                tracing::warn!(torrent = %hash, "could not pause seed above configured limit: {error:#}");
+            }
+        }
+    }
+
     fn spawn_background(&self, mut outcomes: mpsc::UnboundedReceiver<JobOutcome>) {
         // Job outcomes.
         let core = self.clone();
@@ -990,6 +1107,7 @@ impl Core {
             loop {
                 tick.tick().await;
                 core.queue_tick();
+                core.enforce_seed_limit().await;
             }
         });
     }
@@ -1287,6 +1405,7 @@ impl Core {
                 engine.set_torrent_limits(&hash, limit, limit)?;
             }
         }
+        self.enforce_seed_limit().await;
         Ok(engine)
     }
 

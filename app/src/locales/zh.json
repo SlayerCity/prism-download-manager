@@ -1162,6 +1162,8 @@
   "Settings for BitTorrent downloads.": "BitTorrent 下载设置。",
   "Seeding": "做种",
   "Keep completed torrents seeding": "继续为已完成的 torrent 做种",
+  "Maximum active seeds": "最大活动做种数",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "限制同时做种的已完成 torrent 数量；0 表示不限。较早的 torrent 优先。",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "更改后请重启 Prism。做种会保持文件打开，并可能在重启后恢复缺失的数据。",
   "Public trackers": "公共 tracker",
   "Append trackers to public torrents": "为公开 torrent 添加 tracker",

@@ -1277,6 +1277,8 @@
   "Settings for BitTorrent downloads.": "إعدادات تنزيلات BitTorrent.",
   "Seeding": "البذر",
   "Keep completed torrents seeding": "مواصلة بذر التورنت المكتمل",
+  "Maximum active seeds": "الحد الأقصى للتورنتات النشطة",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "يحد عدد التورنتات المكتملة التي تشارك في الوقت نفسه؛ 0 يعني بلا حد. تُعطى الأولوية للتورنتات الأقدم.",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "أعد تشغيل Prism بعد التغيير. تبقي عمليات البذر الملفات مفتوحة وقد تستعيد البيانات المحذوفة بعد إعادة التشغيل.",
   "Public trackers": "متعقبات عامة",
   "Append trackers to public torrents": "إضافة متعقبات إلى ملفات التورنت العامة",

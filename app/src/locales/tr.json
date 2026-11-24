@@ -1185,6 +1185,8 @@
   "Settings for BitTorrent downloads.": "BitTorrent indirme ayarları.",
   "Seeding": "Seed etme",
   "Keep completed torrents seeding": "Tamamlanan torrentleri seed etmeye devam et",
+  "Maximum active seeds": "Maksimum aktif seed sayısı",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "Aynı anda paylaşım yapan tamamlanmış torrentleri sınırlar; 0 sınırsız demektir. Daha eski torrentlere öncelik verilir.",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "Değişiklikten sonra Prism'i yeniden başlatın. Aktif seed işlemleri dosyaları açık tutar ve eksik verileri geri yükleyebilir.",
   "Public trackers": "Genel izleyiciler",
   "Append trackers to public torrents": "Genel torrentlere izleyici ekle",

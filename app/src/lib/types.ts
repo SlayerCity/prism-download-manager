@@ -230,6 +230,8 @@ export interface Settings {
     publicTrackers: string[];
     /** Keep completed torrents active for seeding across restarts. */
     seedCompleted: boolean;
+    /** Maximum completed torrents actively seeding at once; 0 means unlimited. */
+    maxActiveSeeds: number;
     enableUpnpPortForwarding: boolean;
     separateSpeedLimits: boolean;
     downloadLimit: number;

@@ -1231,6 +1231,8 @@
   "Settings for BitTorrent downloads.": "Nastavení stahování BitTorrentu.",
   "Seeding": "Sdílení",
   "Keep completed torrents seeding": "Po dokončení dál sdílet torrenty",
+  "Maximum active seeds": "Maximální počet aktivních seedů",
+  "Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.": "Omezí počet dokončených torrentů, které současně sdílejí; 0 znamená bez omezení. Přednost mají starší torrenty.",
   "Restart Prism after changing this. Active seeds hold files open and can restore deleted data.": "Po změně Prism restartujte. Aktivní sdílení drží soubory otevřené a může po restartu obnovit chybějící data.",
   "Public trackers": "Veřejné trackery",
   "Append trackers to public torrents": "Přidat trackery k veřejným torrentům",
