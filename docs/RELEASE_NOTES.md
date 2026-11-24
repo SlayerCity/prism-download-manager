@@ -240,10 +240,8 @@ Verify downloads with `SHA256SUMS.txt`.
 
 ## Known limitations
 
-* The installers are **not code-signed** (signing certificates are paid):
-  * Windows SmartScreen: click **More info → Run anyway**.
-  * macOS: run `xattr -dr com.apple.quarantine /Applications/Prism.app` once (or System
-    Settings → Privacy & Security → **Open Anyway**). In-app updates don't need this again.
+* Installers in this release were not code-signed. See the [installation guide](guide/installation.md#security-warnings)
+  for checksum verification and reporting a security warning.
 * Firefox: Prism isn't in Firefox Add-ons yet. Its extension is loaded by hand, and Firefox
   keeps unsigned add-ons only until restart, except in Developer Edition / Nightly / ESR.
 * macOS builds are produced by CI and tested there; feedback from real Macs is very welcome.

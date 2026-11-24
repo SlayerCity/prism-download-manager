@@ -73,10 +73,9 @@ Grab the file for your system from the **[latest release](https://github.com/For
 | **Fedora / openSUSE** | `Prism-<version>-1.x86_64.rpm` |
 | **Any Linux** | `Prism_<version>_amd64.AppImage` |
 
-> **First start:** the installers are not code-signed (certificates cost money).
-> Windows: *More info → Run anyway*. macOS: run `xattr -dr com.apple.quarantine /Applications/Prism.app`
-> once (or *System Settings → Privacy & Security → Open Anyway*).
-> Step-by-step for every system: **[Installation guide](docs/guide/installation.md)**.
+> Some release builds are unsigned. If a security tool blocks or quarantines a file,
+> leave the protection in place and see the [installation guide](docs/guide/installation.md)
+> for checksum verification and reporting steps.
 
 ## 🌐 Browser extension (1 minute)
 
@@ -167,8 +166,9 @@ the app on your own computer.
 
 <details><summary><b>Windows / macOS says the app is unsafe.</b></summary>
 
-The installers aren't signed with a paid certificate. The code is all here and every release
-is built by GitHub Actions from this repository, with `SHA256SUMS.txt` to verify your file.
+An unsigned-publisher notice is different from a malware detection. Compare the download to its
+release checksum, but don't treat a match as proof of safety. If a security tool flags a file,
+leave it blocked and follow the [reporting steps](docs/guide/installation.md#security-warnings).
 </details>
 
 <details><summary><b>Can I use it together with IDM or another download manager?</b></summary>

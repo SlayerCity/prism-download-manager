@@ -20,12 +20,25 @@ downloads and videos from your browser: [browser-extension.md](browser-extension
 
 ---
 
+## Security warnings
+
+Download the artifact and `SHA256SUMS.txt` from the same official release. For example, use
+`Get-FileHash -Algorithm SHA256 -LiteralPath .\Prism_<version>_x64-setup.exe` in PowerShell
+(replace `<version>` with the downloaded filename), or use `shasum -a 256 <file>` on macOS
+and `sha256sum <file>` on Linux. Compare the output with the entry for that exact file.
+A match checks that the file is the published artifact; it does not show that it is safe.
+
+If the checksum differs, don't open the file. If antivirus blocks or quarantines a file,
+don't restore it or add an exclusion. For a report to the maintainer or antivirus vendor,
+include the exact detection name, security product/version, Prism version, whether it was the
+installer or an installed executable, and the affected file's SHA-256 if already available.
+There's no need to retrieve a quarantined file or post one publicly to report the warning.
+
 ## Windows
 
-1. Run `Prism_<version>_x64-setup.exe`.
-2. Windows SmartScreen may say *"Windows protected your PC"* because the installer is not
-   code-signed with a paid certificate. Click **More info → Run anyway**.
-3. Prism starts and shows a short welcome tour. It sits in the system tray (bottom-right)
+1. Run `Prism_<version>_x64-setup.exe` if your system allows it. If Windows blocks installation,
+   follow the [security guidance above](#security-warnings).
+2. Prism starts and shows a short welcome tour. It sits in the system tray (bottom-right)
    while it works.
 
 The installer also:
@@ -40,17 +53,8 @@ the `data` folder next to it.
 ## macOS
 
 1. Open the `.dmg` and drag **Prism** into **Applications**.
-2. The app is not notarized by Apple (that needs a paid developer account), so macOS blocks
-   it the first time — it may refuse to open, say it *"is damaged"*, or close it after a few
-   seconds. Allow it once, either way:
-   * **Terminal (simplest):**
-     ```bash
-     xattr -dr com.apple.quarantine /Applications/Prism.app
-     ```
-   * or open Prism once, then **System Settings → Privacy & Security** → scroll down →
-     **Open Anyway** next to "Prism was blocked" → confirm with your password.
-
-   Updates installed from inside Prism (it offers them by itself) don't need this again.
+2. Notarization depends on the release. If macOS blocks the app, leave the protection
+   in place and follow the [security guidance above](#security-warnings).
 3. Optional but recommended for video downloads: `brew install ffmpeg` (Prism can also fetch a
    verified ffmpeg build by itself — Settings → Video & streams → Check tools).
 
