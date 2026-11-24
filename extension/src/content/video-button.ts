@@ -143,6 +143,9 @@ export class VideoButton {
   private menuOpen = false;
   private enabled = false;
   private compact = false;
+  private positions = new WeakMap<HTMLVideoElement, { x: number; y: number }>();
+  private drag: { pointer: number; x: number; y: number; grabX: number; grabY: number; moved: boolean } | null = null;
+  private suppressPointerClick = false;
   private videoSites: string[] = [];
   private prefetchTimer: ReturnType<typeof setTimeout> | undefined;
   private restPrefetch: Promise<void> | undefined;
@@ -288,10 +291,15 @@ export class VideoButton {
     this.menu = this.wrap.querySelector('.menu')!;
     // Only the user's own clicks (isTrusted): the shadow root is open, and a page script must not
     // open the menu or start a download with the page's cookies through synthetic events.
+    this.pill.addEventListener('pointerdown', this.startDrag);
+    this.pill.addEventListener('pointermove', this.moveDrag);
+    this.pill.addEventListener('pointerup', this.endDrag);
+    this.pill.addEventListener('pointercancel', this.endDrag);
+    this.pill.addEventListener('lostpointercapture', this.endDrag);
     this.pill.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!e.isTrusted) return;
+      if (!e.isTrusted || (e.detail > 0 && this.suppressPointerClick)) return;
       void this.toggleMenu();
     });
     this.pill.addEventListener('pointerenter', (e) => {
@@ -313,6 +321,45 @@ export class VideoButton {
 
   // ---- show / hide / position -------------------------------------------------
 
+  private startDrag = (e: PointerEvent): void => {
+    if (!e.isTrusted || !e.isPrimary || e.button !== 0 || e.pointerType === 'touch' || !this.current) return;
+    this.suppressPointerClick = false;
+    const b = this.pill.getBoundingClientRect();
+    this.pill.setPointerCapture(e.pointerId);
+    this.drag = { pointer: e.pointerId, x: e.clientX, y: e.clientY, grabX: e.clientX - b.left, grabY: e.clientY - b.top, moved: false };
+  };
+
+  private moveDrag = (e: PointerEvent): void => {
+    const drag = this.drag;
+    const v = this.current;
+    if (!e.isTrusted || !drag || e.pointerId !== drag.pointer || !v) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+    const r = targetOf(v)?.getBoundingClientRect();
+    if (!r) return;
+    if (!drag.moved) {
+      drag.moved = true;
+      this.suppressPointerClick = true;
+      this.closeMenu();
+      this.wrap.classList.add('dragging');
+    }
+    this.positions.set(v, { x: e.clientX - drag.grabX - r.left, y: e.clientY - drag.grabY - r.top });
+    this.position();
+  };
+
+  private endDrag = (e: PointerEvent): void => {
+    if (!e.isTrusted || e.pointerId !== this.drag?.pointer) return;
+    this.clearDrag();
+    this.overUi = this.pill.matches(':hover') || this.menu.matches(':hover');
+    this.hitTest();
+  };
+
+  private clearDrag(): void {
+    const pointer = this.drag?.pointer;
+    this.drag = null;
+    this.wrap.classList.remove('dragging');
+    if (pointer !== undefined && this.pill.hasPointerCapture(pointer)) this.pill.releasePointerCapture(pointer);
+  }
+
   private onMove = (e: PointerEvent): void => {
     if (e.pointerType === 'touch') return;
     this.lastX = e.clientX;
@@ -330,7 +377,7 @@ export class VideoButton {
   };
 
   private hitTest(): void {
-    if (!this.enabled || document.fullscreenElement || this.menuOpen || this.overUi) return;
+    if (!this.enabled || document.fullscreenElement || this.menuOpen || this.overUi || this.drag) return;
     const x = this.lastX;
     const y = this.lastY;
     let found: HTMLVideoElement | null = null;
@@ -386,7 +433,8 @@ export class VideoButton {
   private hide(force = false): void {
     if (!this.host) return;
     clearTimeout(this.prefetchTimer);
-    if (!force && (this.menuOpen || this.overUi)) return;
+    if (!force && (this.menuOpen || this.overUi || this.drag)) return;
+    this.clearDrag();
     this.closeMenu();
     this.wrap.classList.remove('show');
     this.current = null;
@@ -406,9 +454,18 @@ export class VideoButton {
     }
     const pw = this.pill.offsetWidth || 118;
     const ph = this.pill.offsetHeight || 32;
-    const x = Math.max(8, Math.min(r.right, vw) - pw - 10);
-    // Above the player's top-right edge when there is room, else just inside it.
-    const y = r.top >= ph + 14 ? r.top - ph - 6 : Math.max(r.top, 0) + 10;
+    const saved = this.positions.get(v);
+    const clamp = (n: number, min: number, max: number): number => Math.max(min, Math.min(n, max));
+    const x = saved
+      ? clamp(r.left + saved.x, Math.max(8, r.left), Math.min(r.right, vw - 8) - pw)
+      : Math.max(8, Math.min(r.right, vw) - pw - 10);
+    // Default: above the player's top-right edge when there is room, else just inside it.
+    const y = saved
+      ? clamp(r.top + saved.y, Math.max(8, r.top), Math.min(r.bottom, vh - 8) - ph)
+      : r.top >= ph + 14 ? r.top - ph - 6 : Math.max(r.top, 0) + 10;
+    const menuWidth = Math.min(300, Math.max(0, vw - 16));
+    this.menu.style.width = `${menuWidth}px`;
+    this.menu.style.left = `${clamp(x + pw - menuWidth, 8, vw - menuWidth - 8) - x}px`;
     this.wrap.style.setProperty('--x', `${x}px`);
     this.wrap.style.setProperty('--y', `${y}px`);
     // Open the menu upwards when there's no room below.
@@ -426,6 +483,7 @@ export class VideoButton {
 
   private onNavigate = (): void => {
     this.cache.clear();
+    this.positions = new WeakMap();
     this.hide(true);
     this.queueScan();
   };

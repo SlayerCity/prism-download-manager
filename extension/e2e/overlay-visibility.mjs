@@ -55,7 +55,26 @@ try {
   assert.ok(normalWidth > 32);
   await page.evaluate(() => window.setPrismCompactForTest(false));
   assert.equal(await pill.evaluate((el) => el.offsetWidth), normalWidth);
-  console.log('Passed: hidden players, fullscreen entry/exit, and accessible compact layout.');
+  const before = await pill.boundingBox();
+  const video = await page.locator('#video').boundingBox();
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(video.x + 80, video.y + 150, { steps: 10 });
+  await page.mouse.up();
+  await page.waitForFunction((left) => document.querySelector('[data-prism-video-button]').shadowRoot
+    .querySelector('.pill').getBoundingClientRect().left < left - 40, before.x);
+  assert.equal(await pill.getAttribute('aria-expanded'), 'false', 'drag must not activate the download menu');
+  const after = await pill.boundingBox();
+  assert.ok(after.x >= video.x && after.y >= video.y);
+  assert.ok(after.x + after.width <= video.x + video.width);
+  assert.ok(after.y + after.height <= video.y + video.height);
+  await pill.click();
+  assert.equal(await pill.getAttribute('aria-expanded'), 'true', 'a normal click must still open the menu');
+  await page.keyboard.press('Escape');
+  assert.equal(await pill.getAttribute('aria-expanded'), 'false');
+  await page.keyboard.press('Enter');
+  assert.equal(await pill.getAttribute('aria-expanded'), 'true', 'keyboard activation still works');
+  console.log('Passed: hidden players, fullscreen, compact layout, bounded drag, and click/keyboard activation.');
 } finally {
   await browser.close();
 }

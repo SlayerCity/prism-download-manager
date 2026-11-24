@@ -13,6 +13,7 @@ export const VIDEO_BUTTON_CSS = `
   -webkit-font-smoothing: antialiased;
 }
 .wrap.show { opacity: 1; transform: translate3d(var(--x, 0px), var(--y, 0px), 0) scale(1); }
+.wrap.dragging { transition: none; }
 .wrap.show .pill, .wrap.show .menu { pointer-events: auto; }
 .glass {
   background: linear-gradient(180deg, rgba(40,44,58,.62), rgba(18,20,28,.70));
@@ -24,10 +25,11 @@ export const VIDEO_BUTTON_CSS = `
 .pill {
   display: inline-flex; align-items: center; gap: 7px;
   height: 32px; padding: 0 10px 0 9px; border-radius: 999px;
-  cursor: pointer; color: inherit; font: inherit; letter-spacing: .01em;
+  cursor: grab; color: inherit; font: inherit; letter-spacing: .01em;
   outline: none; user-select: none; white-space: nowrap;
   transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
 }
+.dragging .pill { cursor: grabbing; }
 .pill:hover, .pill[aria-expanded="true"] {
   border-color: rgba(255,255,255,.26);
   background: linear-gradient(180deg, rgba(58,64,86,.70), rgba(24,27,38,.78));
@@ -43,7 +45,7 @@ export const VIDEO_BUTTON_CSS = `
 .pill.err { border-color: rgba(255,107,139,.6); }
 .prism-mark { display: block; filter: drop-shadow(0 0 6px rgba(150,170,255,.35)); }
 .menu {
-  position: absolute; right: 0; top: 38px;
+  position: absolute; top: 38px;
   width: 300px; max-height: 340px; overflow: auto;
   border-radius: 14px; padding: 6px;
   display: none;
