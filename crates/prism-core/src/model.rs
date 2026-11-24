@@ -144,6 +144,9 @@ pub struct DownloadItem {
     pub added_at: Timestamp,
     pub last_try_at: Option<Timestamp>,
     pub finished_at: Option<Timestamp>,
+    /// Cumulative uploaded bytes observed across Prism sessions while retained seeding is enabled.
+    #[serde(default)]
+    pub seed_uploaded_bytes: u64,
     pub resumable: Option<bool>,
     pub connections: u8,
     /// Per-download limit in bytes/s (0 = none).

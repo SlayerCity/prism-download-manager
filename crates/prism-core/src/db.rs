@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 
 pub type DbResult<T> = Result<T, rusqlite::Error>;
 
-const SCHEMA_VERSION: i64 = 2;
+const SCHEMA_VERSION: i64 = 3;
 
 pub struct Db {
     conn: Mutex<Connection>,
@@ -98,6 +98,11 @@ impl Db {
         if version < 2 {
             conn.execute_batch(
                 "ALTER TABLE downloads ADD COLUMN auto_extract INTEGER NOT NULL DEFAULT 0;",
+            )?;
+        }
+        if version < 3 {
+            conn.execute_batch(
+                "ALTER TABLE downloads ADD COLUMN seed_uploaded_bytes INTEGER NOT NULL DEFAULT 0;",
             )?;
         }
         conn.execute(
@@ -327,14 +332,14 @@ impl Db {
 
 const DOWNLOAD_COLUMNS: &str = "id, kind, url, final_url, file_name, save_dir, size, downloaded, status, error,
     category, queue_id, description, referer, added_at, last_try_at, finished_at, resumable, connections,
-    speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract";
+    speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract, seed_uploaded_bytes";
 
 fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
     conn.execute(
         "INSERT INTO downloads(id, kind, url, final_url, file_name, save_dir, size, downloaded, status, error,
             category, queue_id, description, referer, added_at, last_try_at, finished_at, resumable, connections,
-            speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract)
-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29)
+            speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract, seed_uploaded_bytes)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)
          ON CONFLICT(id) DO UPDATE SET kind=excluded.kind, url=excluded.url, final_url=excluded.final_url,
             file_name=excluded.file_name, save_dir=excluded.save_dir, size=excluded.size,
             downloaded=excluded.downloaded, status=excluded.status, error=excluded.error,
@@ -343,7 +348,8 @@ fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
             resumable=excluded.resumable, connections=excluded.connections, speed_limit=excluded.speed_limit,
             checksum=excluded.checksum, trashed=excluded.trashed, position=excluded.position,
             mirrors=excluded.mirrors, grabber_project=excluded.grabber_project, request=excluded.request,
-            resume=excluded.resume, media=excluded.media, auto_extract=excluded.auto_extract",
+            resume=excluded.resume, media=excluded.media, auto_extract=excluded.auto_extract,
+            seed_uploaded_bytes=excluded.seed_uploaded_bytes",
         params![
             d.id,
             d.kind.as_str(),
@@ -374,6 +380,7 @@ fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
             d.resume.as_ref().map(|v| v.to_string()),
             d.media.as_ref().map(to_json),
             d.auto_extract,
+            i64::try_from(d.seed_uploaded_bytes).unwrap_or(i64::MAX),
         ],
     )?;
     Ok(())
@@ -410,6 +417,7 @@ fn row_to_item(r: &Row<'_>) -> DbResult<DownloadItem> {
         resume: opt_json_col(r, 26)?,
         media: opt_json_col(r, 27)?,
         auto_extract: r.get(28)?,
+        seed_uploaded_bytes: r.get::<_, i64>(29)?.max(0) as u64,
     })
 }
 
@@ -441,6 +449,7 @@ mod tests {
             save_dir: "C:/tmp".into(),
             category: "compressed".into(),
             connections: 8,
+            seed_uploaded_bytes: 9876,
             mirrors: vec!["https://mirror/f.zip".into()],
             resume: Some(serde_json::json!({"segments": [[0, 10, 20]]})),
             ..Default::default()
@@ -454,6 +463,7 @@ mod tests {
         assert_eq!(loaded.downloaded, 42);
         assert_eq!(loaded.mirrors, item.mirrors);
         assert_eq!(loaded.resume, item.resume);
+        assert_eq!(loaded.seed_uploaded_bytes, 9876);
         item.auto_extract = true;
         db.upsert_download(&item).unwrap();
         assert!(db.download("a").unwrap().unwrap().auto_extract);
@@ -488,7 +498,16 @@ mod tests {
             )
             .unwrap();
         assert_eq!(value, 0);
-        assert_eq!(version, "2");
+        let uploaded: i64 = conn
+            .query_row(
+                "SELECT seed_uploaded_bytes FROM downloads WHERE id='old'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(value, 0);
+        assert_eq!(uploaded, 0);
+        assert_eq!(version, "3");
     }
 
     #[test]

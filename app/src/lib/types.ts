@@ -50,6 +50,8 @@ export interface DownloadItem {
   addedAt: number;
   lastTryAt?: number | null;
   finishedAt?: number | null;
+  /** Durable upload total observed while Prism retained this torrent for seeding. */
+  seedUploadedBytes?: number;
   resumable?: boolean | null;
   connections: number;
   speedLimit: number;
@@ -234,6 +236,8 @@ export interface Settings {
     maxActiveSeeds: number;
     /** Maximum hours a completed torrent may seed; 0 means unlimited. */
     maxSeedTimeHours: number;
+    /** Stop retained seeds at this upload/download ratio; 0 means unlimited. */
+    maxSeedRatio: number;
     enableUpnpPortForwarding: boolean;
     separateSpeedLimits: boolean;
     downloadLimit: number;

@@ -1171,7 +1171,6 @@
   "Public tracker URLs": "URL pelacak publik",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Statistik BitTorrent langsung",
-  "Uploaded this session": "Diunggah dalam sesi ini",
   "Upload speed": "Kecepatan unggah",
   "Speed limits": "Batas kecepatan",
   "Use separate BitTorrent speed limits": "Gunakan batas kecepatan BitTorrent terpisah",
@@ -1181,9 +1180,12 @@
   "Try automatic router port forwarding (UPnP)": "Coba penerusan port router otomatis (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk. Mulai ulang Prism agar berlaku; nonaktif secara default.",
   "Incoming connections": "Koneksi masuk",
-  "Session ratio": "Rasio sesi ini",
   "Connected peers": "Peer terhubung",
   "Maximum seeding time": "Waktu seeding maksimum",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Jedaikan torrent yang dipertahankan setelah jumlah jam ini; 0 berarti tanpa batas. Waktu dihitung sejak unduhan selesai.",
-  "hours": "jam"
+  "hours": "jam",
+  "Maximum seeding ratio": "Rasio seeding maksimum",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Jedaikan torrent yang dipertahankan saat unggahan mencapai kelipatan ukuran torrent ini; 0 berarti tanpa batas. Penghitungan dimulai pada versi ini.",
+  "Uploaded recorded": "Unggahan tercatat",
+  "Recorded ratio": "Rasio tercatat"
 }

@@ -254,6 +254,8 @@ pub struct TorrentSettings {
     pub max_active_seeds: u8,
     /// Maximum time a completed torrent may seed, in hours (0 = unlimited).
     pub max_seed_time_hours: u16,
+    /// Stop retained seeds at this upload/download ratio (0 = unlimited).
+    pub max_seed_ratio: u8,
     /// Ask compatible routers to forward the incoming BitTorrent port (opt-in).
     pub enable_upnp_port_forwarding: bool,
     /// Use BitTorrent-specific limits instead of following the global download limiter.
@@ -586,6 +588,9 @@ impl Settings {
         {
             anyhow::bail!("BitTorrent speed limits must be at most 4 GiB/s");
         }
+        if self.torrent.max_seed_ratio > 100 {
+            anyhow::bail!("Maximum seeding ratio must be between 0 and 100");
+        }
         let mut seen = std::collections::HashSet::new();
         let mut normalized = Vec::new();
         for raw in &self.torrent.public_trackers {
@@ -696,6 +701,26 @@ mod tests {
         assert_eq!(s.torrent.max_active_seeds, 3);
         let encoded = serde_json::to_value(&s).unwrap();
         assert_eq!(encoded["torrent"]["maxActiveSeeds"], 3);
+    }
+
+    #[test]
+    fn maximum_seed_ratio_roundtrips_and_zero_is_unlimited() {
+        let mut s = Settings::default();
+        assert_eq!(s.torrent.max_seed_ratio, 0);
+        s.apply_patch(&serde_json::json!({"torrent": {"maxSeedRatio": 2}}))
+            .unwrap();
+        assert_eq!(s.torrent.max_seed_ratio, 2);
+        assert_eq!(
+            serde_json::to_value(&s).unwrap()["torrent"]["maxSeedRatio"],
+            2
+        );
+    }
+
+    #[test]
+    fn maximum_seed_ratio_rejects_values_over_one_hundred() {
+        let mut s = Settings::default();
+        s.torrent.max_seed_ratio = 101;
+        assert!(s.validate().is_err());
     }
 
     #[test]

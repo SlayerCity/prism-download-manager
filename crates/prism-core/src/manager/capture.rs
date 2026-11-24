@@ -363,6 +363,7 @@ impl Core {
             added_at: now_ms(),
             last_try_at: None,
             finished_at: None,
+            seed_uploaded_bytes: 0,
             // yt-dlp's ffmpeg doesn't continue a cut: a paused part of a video starts over.
             resumable: n.media.as_ref().and_then(|m| m.section).map(|_| false),
             connections: settings.downloads.default_connections,

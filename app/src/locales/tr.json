@@ -1194,7 +1194,6 @@
   "Public tracker URLs": "Genel izleyici URL’leri",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Canlı BitTorrent istatistikleri",
-  "Uploaded this session": "Bu oturumda yüklenen",
   "Upload speed": "Yükleme hızı",
   "Speed limits": "Hız sınırları",
   "Use separate BitTorrent speed limits": "Ayrı BitTorrent hız sınırları kullan",
@@ -1204,9 +1203,12 @@
   "Try automatic router port forwarding (UPnP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
   "Incoming connections": "Gelen bağlantılar",
-  "Session ratio": "Oturum oranı",
   "Connected peers": "Bağlı eşler",
   "Maximum seeding time": "En uzun seed süresi",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Saklanan seedleri bu saatten sonra duraklatır; 0 sınırsızdır. Süre indirme tamamlanınca başlar.",
-  "hours": "saat"
+  "hours": "saat",
+  "Maximum seeding ratio": "En yüksek paylaşım oranı",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Yüklemeler torrent boyutunun bu katına ulaştığında saklanan torrentleri duraklatır; 0 sınırsızdır. Sayım bu sürümle başlar.",
+  "Uploaded recorded": "Kaydedilen yükleme",
+  "Recorded ratio": "Kaydedilen oran"
 }

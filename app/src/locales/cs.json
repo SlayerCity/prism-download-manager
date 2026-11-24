@@ -1240,7 +1240,6 @@
   "Public tracker URLs": "URL veřejných trackerů",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Živé statistiky BitTorrentu",
-  "Uploaded this session": "Odesláno v této relaci",
   "Upload speed": "Rychlost odesílání",
   "Speed limits": "Rychlostní limity",
   "Use separate BitTorrent speed limits": "Používat samostatné rychlostní limity BitTorrentu",
@@ -1250,9 +1249,12 @@
   "Try automatic router port forwarding (UPnP)": "Zkusit automatické přesměrování portu na routeru (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism požádá kompatibilní router o přesměrování příchozího portu BitTorrentu. Pro použití restartujte Prism; ve výchozím nastavení je vypnuto.",
   "Incoming connections": "Příchozí připojení",
-  "Session ratio": "Poměr v této relaci",
   "Connected peers": "Připojení peery",
   "Maximum seeding time": "Maximální doba seedování",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Pozastavit uchovávané torrenty po tomto počtu hodin; 0 znamená bez omezení. Čas se počítá od dokončení stahování.",
-  "hours": "hod."
+  "hours": "hod.",
+  "Maximum seeding ratio": "Maximální poměr sdílení",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Pozastavit uchovávané torrenty, když upload dosáhne tohoto násobku velikosti torrentu; 0 znamená bez omezení. Počítání začíná v této verzi.",
+  "Uploaded recorded": "Zaznamenáno odesláno",
+  "Recorded ratio": "Zaznamenaný poměr"
 }

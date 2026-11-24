@@ -1171,7 +1171,6 @@
   "Public tracker URLs": "公共 tracker URL",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "BitTorrent 实时统计",
-  "Uploaded this session": "本次会话已上传",
   "Upload speed": "上传速度",
   "Speed limits": "速度限制",
   "Use separate BitTorrent speed limits": "使用单独的 BitTorrent 速度限制",
@@ -1181,9 +1180,12 @@
   "Try automatic router port forwarding (UPnP)": "尝试自动路由器端口转发（UPnP）",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
   "Incoming connections": "传入连接",
-  "Session ratio": "本次会话分享率",
   "Connected peers": "已连接节点",
   "Maximum seeding time": "最长做种时间",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "保留做种的种子在此小时数后暂停；0 表示不限时。计时从下载完成时开始。",
-  "hours": "小时"
+  "hours": "小时",
+  "Maximum seeding ratio": "最大做种分享率",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "上传量达到种子大小的此倍数时暂停保留的种子；0 表示不限。计数从此版本开始。",
+  "Uploaded recorded": "已记录上传量",
+  "Recorded ratio": "已记录分享率"
 }

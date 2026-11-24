@@ -1217,7 +1217,6 @@
   "Public tracker URLs": "URLs des trackers publics",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "Statistiques BitTorrent en direct",
-  "Uploaded this session": "Envoyé pendant cette session",
   "Upload speed": "Vitesse d’envoi",
   "Speed limits": "Limites de vitesse",
   "Use separate BitTorrent speed limits": "Utiliser des limites de vitesse BitTorrent distinctes",
@@ -1227,9 +1226,12 @@
   "Try automatic router port forwarding (UPnP)": "Essayer la redirection automatique de port du routeur (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism demande à un routeur compatible de rediriger son port BitTorrent entrant. Redémarrez Prism pour appliquer le réglage ; désactivé par défaut.",
   "Incoming connections": "Connexions entrantes",
-  "Session ratio": "Ratio de cette session",
   "Connected peers": "Pairs connectés",
   "Maximum seeding time": "Durée maximale de partage",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Mettre en pause les torrents conservés après ce nombre d’heures ; 0 signifie sans limite. Le compte commence à la fin du téléchargement.",
-  "hours": "heures"
+  "hours": "heures",
+  "Maximum seeding ratio": "Ratio de partage maximal",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Mettre en pause les torrents conservés lorsque les envois atteignent ce multiple de leur taille ; 0 signifie sans limite. Le comptage commence avec cette version.",
+  "Uploaded recorded": "Envoi enregistré",
+  "Recorded ratio": "Ratio enregistré"
 }

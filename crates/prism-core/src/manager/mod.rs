@@ -102,6 +102,8 @@ pub(crate) struct State {
     pub video_probes: HashMap<String, (std::time::Instant, serde_json::Value)>,
     pub grabbers: HashMap<String, crate::grabber::CancelFlag>,
     pub speed_history: HashMap<String, VecDeque<u64>>,
+    /// Last session upload sample for retained torrents; the item counter stores the durable total.
+    pub seed_uploaded_session_last: HashMap<String, u64>,
     /// Items whose row must be persisted at the next checkpoint.
     pub dirty: HashSet<String>,
     /// Queues that were running in the previous tick (to detect "queue finished").
@@ -177,6 +179,23 @@ fn seed_time_expired(finished_at: Option<Timestamp>, max_hours: u16, now: Timest
     max_hours > 0 && now.saturating_sub(finished_at) >= i64::from(max_hours) * 60 * 60 * 1_000
 }
 
+/// A ratio goal is satisfied once durable observed uploads reach a multiple of the torrent size.
+fn seed_ratio_reached(uploaded: u64, total: Option<u64>, max_ratio: u8) -> bool {
+    let Some(total) = total.filter(|total| *total > 0) else {
+        return false;
+    };
+    max_ratio > 0 && u128::from(uploaded) >= u128::from(total) * u128::from(max_ratio)
+}
+
+/// Convert a torrent engine's session counter into a durable delta. Its first sample is a
+/// baseline, and a counter reset must not subtract from the durable total.
+fn seed_upload_delta(previous: Option<u64>, observed: u64) -> (u64, u64) {
+    (
+        observed,
+        previous.map_or(0, |last| observed.saturating_sub(last)),
+    )
+}
+
 /// Pick a stable oldest-first set of active seeds and return pause/resume work.
 fn seed_limit_actions(
     seeds: impl IntoIterator<Item = (String, prism_torrent::TorrentState)>,
@@ -214,6 +233,7 @@ fn seed_limit_actions(
 }
 
 /// Combine the active-seed cap with the maximum time retained seeds may run.
+#[cfg(test)]
 fn seed_time_actions(
     seeds: impl IntoIterator<Item = (String, prism_torrent::TorrentState, Option<Timestamp>)>,
     active_limit: usize,
@@ -238,7 +258,10 @@ fn seed_time_actions(
 
 #[cfg(test)]
 mod torrent_retention_tests {
-    use super::{seed_limit_actions, seed_time_actions, seed_time_expired, should_keep_torrent};
+    use super::{
+        seed_limit_actions, seed_ratio_reached, seed_time_actions, seed_time_expired,
+        seed_upload_delta, should_keep_torrent,
+    };
     use prism_torrent::TorrentState;
     use std::collections::HashSet;
 
@@ -278,6 +301,29 @@ mod torrent_retention_tests {
         );
         assert_eq!(resume, ["next"]);
         assert_eq!(pause, ["new"]);
+    }
+
+    #[test]
+    fn seed_upload_samples_accumulate_without_counting_baseline_or_resets() {
+        let (last, delta) = seed_upload_delta(None, 500);
+        assert_eq!((last, delta), (500, 0));
+        let (last, delta) = seed_upload_delta(Some(last), 750);
+        assert_eq!((last, delta), (750, 250));
+        let (last, delta) = seed_upload_delta(Some(last), 10);
+        assert_eq!((last, delta), (10, 0));
+        let (last, delta) = seed_upload_delta(Some(last), 30);
+        assert_eq!((last, delta), (30, 20));
+    }
+
+    #[test]
+    fn seed_ratio_goal_is_disabled_without_limit_or_known_size() {
+        assert!(!seed_ratio_reached(10_000, Some(1_000), 0));
+        assert!(!seed_ratio_reached(10_000, None, 1));
+        assert!(!seed_ratio_reached(10_000, Some(0), 1));
+        assert!(!seed_ratio_reached(999, Some(1_000), 1));
+        assert!(seed_ratio_reached(1_000, Some(1_000), 1));
+        assert!(seed_ratio_reached(2_000, Some(1_000), 2));
+        assert!(!seed_ratio_reached(u64::MAX, Some(u64::MAX), 2));
     }
 
     #[test]
@@ -396,6 +442,7 @@ impl Core {
             video_probes: HashMap::new(),
             grabbers: HashMap::new(),
             speed_history: HashMap::new(),
+            seed_uploaded_session_last: HashMap::new(),
             dirty: HashSet::new(),
             queue_was_busy: HashSet::new(),
             waiting_for_slot: VecDeque::new(),
@@ -1083,11 +1130,12 @@ impl Core {
     // ----- background loops -------------------------------------------------------------------
 
     async fn enforce_seed_limit(&self) {
-        let (enabled, limit, max_seed_time_hours, mut seeds) = {
+        let (enabled, limit, max_seed_time_hours, max_seed_ratio, mut seeds) = {
             let st = self.0.state.lock();
             let enabled = st.settings.torrent.seed_completed;
             let limit = usize::from(st.settings.torrent.max_active_seeds.min(64));
             let max_seed_time_hours = st.settings.torrent.max_seed_time_hours.min(8_760);
+            let max_seed_ratio = st.settings.torrent.max_seed_ratio.min(100);
             let seeds = if enabled {
                 let mut seeds: Vec<_> = st
                     .items
@@ -1098,8 +1146,16 @@ impl Core {
                             && !item.trashed
                     })
                     .filter_map(|item| {
-                        jobs::torrent_hash(item)
-                            .map(|hash| (item.added_at, item.id.clone(), hash, item.finished_at))
+                        jobs::torrent_hash(item).map(|hash| {
+                            (
+                                item.added_at,
+                                item.id.clone(),
+                                hash,
+                                item.finished_at,
+                                item.size,
+                                item.seed_uploaded_bytes,
+                            )
+                        })
                     })
                     .collect();
                 seeds.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
@@ -1107,7 +1163,7 @@ impl Core {
             } else {
                 Vec::new()
             };
-            (enabled, limit, max_seed_time_hours, seeds)
+            (enabled, limit, max_seed_time_hours, max_seed_ratio, seeds)
         };
         if !enabled {
             return;
@@ -1116,13 +1172,25 @@ impl Core {
             return;
         };
         let now = now_ms();
-        let observed = seeds.drain(..).filter_map(|(_, _, hash, finished_at)| {
-            engine
-                .progress(&hash)
-                .filter(|progress| progress.finished)
-                .map(|progress| (hash, progress.state, finished_at))
-        });
-        let (resume, pause) = seed_time_actions(observed, limit, max_seed_time_hours, now);
+        let mut eligible = Vec::new();
+        let mut pause_for_goal = Vec::new();
+        for (_, _, hash, finished_at, total, uploaded) in seeds.drain(..) {
+            let Some(progress) = engine.progress(&hash).filter(|progress| progress.finished) else {
+                continue;
+            };
+            let time_done = seed_time_expired(finished_at, max_seed_time_hours, now);
+            let ratio_done =
+                seed_ratio_reached(uploaded, total.or(Some(progress.total)), max_seed_ratio);
+            if time_done || ratio_done {
+                if progress.state == prism_torrent::TorrentState::Seeding {
+                    pause_for_goal.push(hash);
+                }
+            } else {
+                eligible.push((hash, progress.state));
+            }
+        }
+        let (resume, mut pause) = seed_limit_actions(eligible, limit);
+        pause.extend(pause_for_goal);
         for hash in resume {
             if let Err(error) = engine.resume(&hash).await {
                 tracing::warn!(torrent = %hash, "could not resume seed within configured limit: {error:#}");
@@ -1224,11 +1292,33 @@ impl Core {
                     })
                     .cloned()
                     .collect();
-                out.extend(
-                    seeds
-                        .iter()
-                        .filter_map(|item| jobs::completed_torrent_progress(item, engine)),
-                );
+                for item in &seeds {
+                    let Some(hash) = jobs::torrent_hash(item) else {
+                        continue;
+                    };
+                    let Some(observed) = engine.progress(&hash) else {
+                        continue;
+                    };
+                    let (last, delta) = seed_upload_delta(
+                        st.seed_uploaded_session_last.get(&item.id).copied(),
+                        observed.uploaded,
+                    );
+                    st.seed_uploaded_session_last.insert(item.id.clone(), last);
+                    if delta > 0
+                        && let Some(saved) = st.items.get_mut(&item.id)
+                    {
+                        saved.seed_uploaded_bytes = saved.seed_uploaded_bytes.saturating_add(delta);
+                        st.dirty.insert(item.id.clone());
+                    }
+                    let mut durable = item.clone();
+                    if let Some(saved) = st.items.get(&item.id) {
+                        durable.seed_uploaded_bytes = saved.seed_uploaded_bytes;
+                    }
+                    if let Some(mut progress) = jobs::completed_torrent_progress(&durable, engine) {
+                        progress.uploaded = Some(durable.seed_uploaded_bytes);
+                        out.push(progress);
+                    }
+                }
             }
             out
         };

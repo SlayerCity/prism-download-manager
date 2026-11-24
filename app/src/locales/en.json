@@ -99,7 +99,7 @@
   "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.",
   "Mirrors can’t be used with a password-protected download.": "Mirrors can’t be used with a password-protected download.",
   "Live BitTorrent stats": "Live BitTorrent stats",
-  "Uploaded this session": "Uploaded this session",
+  "Uploaded recorded": "Uploaded recorded",
   "Upload speed": "Upload speed",
   "Speed limits": "Speed limits",
   "Use separate BitTorrent speed limits": "Use separate BitTorrent speed limits",
@@ -108,9 +108,11 @@
   "Upload rate": "Upload rate",
   "Try automatic router port forwarding (UPnP)": "Try automatic router port forwarding (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.",
-  "Session ratio": "Session ratio",
+  "Recorded ratio": "Recorded ratio",
   "Connected peers": "Connected peers",
   "Maximum seeding time": "Maximum seeding time",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.",
-  "hours": "hours"
+  "hours": "hours",
+  "Maximum seeding ratio": "Maximum seeding ratio",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version."
 }

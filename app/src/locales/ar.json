@@ -1286,7 +1286,6 @@
   "Public tracker URLs": "عناوين URL للمتعقبات العامة",
   "BitTorrent": "BitTorrent",
   "Live BitTorrent stats": "إحصاءات BitTorrent المباشرة",
-  "Uploaded this session": "تم رفعه في هذه الجلسة",
   "Upload speed": "سرعة الرفع",
   "Speed limits": "حدود السرعة",
   "Use separate BitTorrent speed limits": "استخدام حدود سرعة منفصلة لـ BitTorrent",
@@ -1296,9 +1295,12 @@
   "Try automatic router port forwarding (UPnP)": "جرّب إعادة توجيه منفذ الموجّه تلقائيًا (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "سيطلب Prism من موجّه متوافق إعادة توجيه منفذ BitTorrent الوارد. أعد تشغيل Prism لتطبيق الإعداد؛ الميزة معطّلة افتراضيًا.",
   "Incoming connections": "الاتصالات الواردة",
-  "Session ratio": "نسبة المشاركة في هذه الجلسة",
   "Connected peers": "الأقران المتصلون",
   "Maximum seeding time": "الحد الأقصى لمدة المشاركة",
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "أوقف التورنت المحتفظ به بعد هذا العدد من الساعات؛ 0 تعني بلا حد. يبدأ الحساب عند اكتمال التنزيل.",
-  "hours": "ساعات"
+  "hours": "ساعات",
+  "Maximum seeding ratio": "أقصى نسبة مشاركة",
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "أوقف التورنتات المحتفظ بها عندما تصل البيانات المرفوعة إلى هذا المضاعف من حجمها؛ 0 تعني بلا حد. يبدأ العد في هذا الإصدار.",
+  "Uploaded recorded": "إجمالي الرفع المسجل",
+  "Recorded ratio": "النسبة المسجلة"
 }
