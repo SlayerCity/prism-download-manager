@@ -1182,5 +1182,8 @@
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk. Mulai ulang Prism agar berlaku; nonaktif secara default.",
   "Incoming connections": "Koneksi masuk",
   "Session ratio": "Rasio sesi ini",
-  "Connected peers": "Peer terhubung"
+  "Connected peers": "Peer terhubung",
+  "Maximum seeding time": "Waktu seeding maksimum",
+  "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Jedaikan torrent yang dipertahankan setelah jumlah jam ini; 0 berarti tanpa batas. Waktu dihitung sejak unduhan selesai.",
+  "hours": "jam"
 }

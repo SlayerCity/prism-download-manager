@@ -1205,5 +1205,8 @@
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
   "Incoming connections": "Gelen bağlantılar",
   "Session ratio": "Oturum oranı",
-  "Connected peers": "Bağlı eşler"
+  "Connected peers": "Bağlı eşler",
+  "Maximum seeding time": "En uzun seed süresi",
+  "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Saklanan seedleri bu saatten sonra duraklatır; 0 sınırsızdır. Süre indirme tamamlanınca başlar.",
+  "hours": "saat"
 }

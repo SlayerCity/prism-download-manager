@@ -1228,5 +1228,8 @@
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism pedirá a un router compatible que reenvíe el puerto entrante de BitTorrent. Reinicia Prism para aplicar el cambio; desactivado por defecto.",
   "Incoming connections": "Conexiones entrantes",
   "Session ratio": "Proporción de esta sesión",
-  "Connected peers": "Pares conectados"
+  "Connected peers": "Pares conectados",
+  "Maximum seeding time": "Tiempo máximo de seed",
+  "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Pausar los torrents compartidos después de estas horas; 0 significa ilimitado. El tiempo empieza al terminar la descarga.",
+  "hours": "horas"
 }

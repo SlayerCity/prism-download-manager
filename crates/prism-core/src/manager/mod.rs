@@ -168,6 +168,15 @@ fn should_keep_torrent(
         || (unknown && !finished.contains(hash))
 }
 
+/// A completed torrent's seed-time goal is measured from its persisted completion time.
+fn seed_time_expired(finished_at: Option<Timestamp>, max_hours: u16, now: Timestamp) -> bool {
+    let Some(finished_at) = finished_at else {
+        return false;
+    };
+    let max_hours = max_hours.min(8_760);
+    max_hours > 0 && now.saturating_sub(finished_at) >= i64::from(max_hours) * 60 * 60 * 1_000
+}
+
 /// Pick a stable oldest-first set of active seeds and return pause/resume work.
 fn seed_limit_actions(
     seeds: impl IntoIterator<Item = (String, prism_torrent::TorrentState)>,
@@ -204,9 +213,32 @@ fn seed_limit_actions(
     (resume, pause)
 }
 
+/// Combine the active-seed cap with the maximum time retained seeds may run.
+fn seed_time_actions(
+    seeds: impl IntoIterator<Item = (String, prism_torrent::TorrentState, Option<Timestamp>)>,
+    active_limit: usize,
+    max_hours: u16,
+    now: Timestamp,
+) -> (Vec<String>, Vec<String>) {
+    let mut eligible = Vec::new();
+    let mut expired = Vec::new();
+    for (hash, state, finished_at) in seeds {
+        if seed_time_expired(finished_at, max_hours, now) {
+            if state == prism_torrent::TorrentState::Seeding {
+                expired.push(hash);
+            }
+        } else {
+            eligible.push((hash, state));
+        }
+    }
+    let (resume, mut pause) = seed_limit_actions(eligible, active_limit);
+    pause.extend(expired);
+    (resume, pause)
+}
+
 #[cfg(test)]
 mod torrent_retention_tests {
-    use super::{seed_limit_actions, should_keep_torrent};
+    use super::{seed_limit_actions, seed_time_actions, seed_time_expired, should_keep_torrent};
     use prism_torrent::TorrentState;
     use std::collections::HashSet;
 
@@ -246,6 +278,37 @@ mod torrent_retention_tests {
         );
         assert_eq!(resume, ["next"]);
         assert_eq!(pause, ["new"]);
+    }
+
+    #[test]
+    fn seed_time_goal_expires_at_the_limit_and_zero_is_unlimited() {
+        let hour = 60 * 60 * 1_000;
+        assert!(!seed_time_expired(Some(10), 0, 10 + 10_000 * hour));
+        assert!(!seed_time_expired(None, 1, 10_000 * hour));
+        assert!(!seed_time_expired(Some(10), 2, 10 + 2 * hour - 1));
+        assert!(seed_time_expired(Some(10), 2, 10 + 2 * hour));
+        assert!(!seed_time_expired(Some(10_000), 1, 10));
+    }
+
+    #[test]
+    fn expired_seeds_pause_and_are_not_resumed_into_active_slots() {
+        let hour = 60 * 60 * 1_000;
+        let (resume, pause) = seed_time_actions(
+            [
+                ("expired-live".into(), TorrentState::Seeding, Some(10)),
+                ("expired-paused".into(), TorrentState::Paused, Some(10)),
+                (
+                    "eligible-paused".into(),
+                    TorrentState::Paused,
+                    Some(10 + hour),
+                ),
+            ],
+            1,
+            2,
+            10 + 2 * hour,
+        );
+        assert_eq!(resume, ["eligible-paused"]);
+        assert_eq!(pause, ["expired-live"]);
     }
 
     #[test]
@@ -1020,10 +1083,11 @@ impl Core {
     // ----- background loops -------------------------------------------------------------------
 
     async fn enforce_seed_limit(&self) {
-        let (enabled, limit, mut seeds) = {
+        let (enabled, limit, max_seed_time_hours, mut seeds) = {
             let st = self.0.state.lock();
             let enabled = st.settings.torrent.seed_completed;
             let limit = usize::from(st.settings.torrent.max_active_seeds.min(64));
+            let max_seed_time_hours = st.settings.torrent.max_seed_time_hours.min(8_760);
             let seeds = if enabled {
                 let mut seeds: Vec<_> = st
                     .items
@@ -1034,7 +1098,8 @@ impl Core {
                             && !item.trashed
                     })
                     .filter_map(|item| {
-                        jobs::torrent_hash(item).map(|hash| (item.added_at, item.id.clone(), hash))
+                        jobs::torrent_hash(item)
+                            .map(|hash| (item.added_at, item.id.clone(), hash, item.finished_at))
                     })
                     .collect();
                 seeds.sort_by(|a, b| (a.0, &a.1).cmp(&(b.0, &b.1)));
@@ -1042,7 +1107,7 @@ impl Core {
             } else {
                 Vec::new()
             };
-            (enabled, limit, seeds)
+            (enabled, limit, max_seed_time_hours, seeds)
         };
         if !enabled {
             return;
@@ -1050,16 +1115,14 @@ impl Core {
         let Some(engine) = self.0.torrent.get() else {
             return;
         };
-        let observed: Vec<_> = seeds
-            .drain(..)
-            .filter_map(|(_, _, hash)| {
-                engine
-                    .progress(&hash)
-                    .filter(|progress| progress.finished)
-                    .map(|progress| (hash, progress.state))
-            })
-            .collect();
-        let (resume, pause) = seed_limit_actions(observed, limit);
+        let now = now_ms();
+        let observed = seeds.drain(..).filter_map(|(_, _, hash, finished_at)| {
+            engine
+                .progress(&hash)
+                .filter(|progress| progress.finished)
+                .map(|progress| (hash, progress.state, finished_at))
+        });
+        let (resume, pause) = seed_time_actions(observed, limit, max_seed_time_hours, now);
         for hash in resume {
             if let Err(error) = engine.resume(&hash).await {
                 tracing::warn!(torrent = %hash, "could not resume seed within configured limit: {error:#}");

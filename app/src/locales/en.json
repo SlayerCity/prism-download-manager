@@ -109,5 +109,8 @@
   "Try automatic router port forwarding (UPnP)": "Try automatic router port forwarding (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.",
   "Session ratio": "Session ratio",
-  "Connected peers": "Connected peers"
+  "Connected peers": "Connected peers",
+  "Maximum seeding time": "Maximum seeding time",
+  "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.",
+  "hours": "hours"
 }

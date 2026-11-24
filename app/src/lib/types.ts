@@ -232,6 +232,8 @@ export interface Settings {
     seedCompleted: boolean;
     /** Maximum completed torrents actively seeding at once; 0 means unlimited. */
     maxActiveSeeds: number;
+    /** Maximum hours a completed torrent may seed; 0 means unlimited. */
+    maxSeedTimeHours: number;
     enableUpnpPortForwarding: boolean;
     separateSpeedLimits: boolean;
     downloadLimit: number;

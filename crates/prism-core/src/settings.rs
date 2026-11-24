@@ -252,6 +252,8 @@ pub struct TorrentSettings {
     pub seed_completed: bool,
     /// Maximum completed torrents actively seeding at once (0 = unlimited).
     pub max_active_seeds: u8,
+    /// Maximum time a completed torrent may seed, in hours (0 = unlimited).
+    pub max_seed_time_hours: u16,
     /// Ask compatible routers to forward the incoming BitTorrent port (opt-in).
     pub enable_upnp_port_forwarding: bool,
     /// Use BitTorrent-specific limits instead of following the global download limiter.
@@ -694,6 +696,17 @@ mod tests {
         assert_eq!(s.torrent.max_active_seeds, 3);
         let encoded = serde_json::to_value(&s).unwrap();
         assert_eq!(encoded["torrent"]["maxActiveSeeds"], 3);
+    }
+
+    #[test]
+    fn maximum_seed_time_roundtrips_and_zero_is_unlimited() {
+        let mut s = Settings::default();
+        assert_eq!(s.torrent.max_seed_time_hours, 0);
+        s.apply_patch(&serde_json::json!({"torrent": {"maxSeedTimeHours": 48}}))
+            .unwrap();
+        assert_eq!(s.torrent.max_seed_time_hours, 48);
+        let encoded = serde_json::to_value(&s).unwrap();
+        assert_eq!(encoded["torrent"]["maxSeedTimeHours"], 48);
     }
 
     #[test]

@@ -309,6 +309,9 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
             <Row title={t("Maximum active seeds")} hint={t("Limit completed torrents that seed at once; 0 means unlimited. Older torrents get priority.")}>
               <NumberField value={s.torrent.maxActiveSeeds ?? 0} min={0} max={64} label={t("Maximum active seeds")} onCommit={(v) => save({ torrent: { maxActiveSeeds: v } })} width={90} />
             </Row>
+            <Row title={t("Maximum seeding time")} hint={t("Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.")}>
+              <NumberField value={s.torrent.maxSeedTimeHours ?? 0} min={0} max={8760} label={t("Maximum seeding time")} suffix={t("hours")} onCommit={(v) => save({ torrent: { maxSeedTimeHours: v } })} width={100} />
+            </Row>
           </Group>
           <Group title={t("Incoming connections")}>
             <Toggle title={t("Try automatic router port forwarding (UPnP)")} hint={t("When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.")} value={s.torrent.enableUpnpPortForwarding} onChange={(v) => save({ torrent: { enableUpnpPortForwarding: v } })} />
