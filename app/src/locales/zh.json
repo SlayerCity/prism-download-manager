@@ -462,7 +462,7 @@
   "Wake the computer to start": "唤醒电脑以开始",
   "Lock screen": "锁定屏幕",
   "When finished": "完成后",
-  "After-queue actions run only when every download in the queue finishes": "仅当队列中的所有下载都完成后，才会执行此操作。",
+  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "到达停止时间时，未完成的文件会暂停，且不会执行队列后续操作；只有所有下载完成后才会执行这些操作。",
   "Run command": "运行命令",
   "Command to run": "要运行的命令",
   "e.g. {command}": "例如 {command}",

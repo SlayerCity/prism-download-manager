@@ -467,7 +467,7 @@
   "Wake the computer to start": "Bangunkan komputer untuk memulai",
   "Lock screen": "Kunci layar",
   "When finished": "Setelah selesai",
-  "After-queue actions run only when every download in the queue finishes": "Tindakan ini hanya berjalan setelah semua unduhan dalam antrean selesai.",
+  "Stop time pauses unfinished files without running after-queue actions; those run only after all downloads finish": "Waktu berhenti menjeda file yang belum selesai tanpa menjalankan tindakan setelah antrean; tindakan itu baru berjalan setelah semua unduhan selesai.",
   "Run command": "Jalankan perintah",
   "Command to run": "Perintah yang dijalankan",
   "e.g. {command}": "mis. {command}",
