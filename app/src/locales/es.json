@@ -1203,5 +1203,11 @@
   "Mirror URLs": "URL espejo",
   "One HTTP(S) URL per line": "Una URL HTTP(S) por línea",
   "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Los espejos deben ofrecer el mismo archivo con un ETag fuerte coincidente; no se envían credenciales ni encabezados personalizados.",
-  "Mirrors can’t be used with a password-protected download.": "No se pueden usar espejos en descargas protegidas con contraseña."
+  "Mirrors can’t be used with a password-protected download.": "No se pueden usar espejos en descargas protegidas con contraseña.",
+  "Settings for public BitTorrent downloads.": "Ajustes para descargas BitTorrent públicas.",
+  "Public trackers": "Rastreadores públicos",
+  "Append trackers to public torrents": "Añadir rastreadores a torrents públicos",
+  "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Una URL de rastreador HTTP, HTTPS o UDP por línea. Se excluyen los torrents privados. Reinicia Prism después de cambiar esta lista.",
+  "Public tracker URLs": "URLs de rastreadores públicos",
+  "BitTorrent": "BitTorrent"
 }

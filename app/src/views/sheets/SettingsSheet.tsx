@@ -22,6 +22,7 @@ export const SECTIONS: { id: string; label: string; icon: IconName; group?: bool
   { id: "general", label: tk("General"), icon: "settings" },
   { id: "appearance", label: tk("Appearance"), icon: "sun" },
   { id: "downloads", label: tk("Downloads"), icon: "download" },
+  { id: "torrent", label: tk("BitTorrent"), icon: "torrent" },
   { id: "connection", label: tk("Connection"), icon: "globe" },
   { id: "proxy", label: tk("Proxy"), icon: "proxy" },
   { id: "speed", label: tk("Speed & queues"), icon: "speed-limiter" },
@@ -296,6 +297,17 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
             <Toggle title={t("Start downloads automatically")} value={s.downloads.autoStart} onChange={(v) => save({ downloads: { autoStart: v } })} />
             <Toggle title={t("Verify checksums when known")} value={s.downloads.verifyChecksums} onChange={(v) => save({ downloads: { verifyChecksums: v } })} />
             <Toggle title={t("Keep the server’s file modification time")} hint={t("For new HTTP downloads when the server provides a modification date")} value={s.downloads.preserveServerModifiedTime} onChange={(v) => save({ downloads: { preserveServerModifiedTime: v } })} />
+          </Group>
+        </>
+      );
+    case "torrent":
+      return (
+        <>
+          <p className="lead">{t("Settings for public BitTorrent downloads.")}</p>
+          <Group title={t("Public trackers")}>
+            <Row title={t("Append trackers to public torrents")} hint={t("One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.")} align="start">
+              <ListField value={s.torrent.publicTrackers} onCommit={(v) => save({ torrent: { publicTrackers: v } })} label={t("Public tracker URLs")} placeholder="udp://tracker.example:6969/announce" rows={5} />
+            </Row>
           </Group>
         </>
       );

@@ -387,6 +387,7 @@ impl Core {
             let mut st = self.0.state.lock();
             let mut s = st.settings.clone();
             s.apply_patch(patch).context("invalid settings")?;
+            s.validate().context("invalid settings")?;
             st.settings = s.clone();
             s
         };
@@ -1157,7 +1158,9 @@ impl Core {
 
     pub(crate) async fn torrent_engine(&self) -> Result<&prism_torrent::TorrentEngine> {
         let data_dir = self.0.data_dir.clone();
-        let default_dir = self.settings().downloads.default_dir;
+        let settings = self.settings();
+        let default_dir = settings.downloads.default_dir;
+        let public_trackers = settings.torrent.public_trackers;
         let keep = self.torrents_to_keep();
         let engine = self
             .0
@@ -1167,6 +1170,7 @@ impl Core {
                     &data_dir.join("torrent-session"),
                     default_dir,
                     &|hash| keep(hash),
+                    public_trackers,
                 )
                 .await
             })

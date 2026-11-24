@@ -4,6 +4,7 @@
 //! has a default (`#[serde(default)]`), so older or partial documents always load
 //! and newly added options pick up sensible values.
 
+use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::path::PathBuf;
@@ -14,6 +15,7 @@ pub struct Settings {
     pub general: General,
     pub appearance: Appearance,
     pub downloads: Downloads,
+    pub torrent: TorrentSettings,
     pub connection: Connection,
     pub proxy: Proxy,
     pub capture: Capture,
@@ -238,6 +240,14 @@ impl Default for Downloads {
             auto_start: true,
         }
     }
+}
+
+/// BitTorrent-only settings, separate from direct-download engine preferences.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
+#[serde(default, rename_all = "camelCase")]
+pub struct TorrentSettings {
+    /// Extra trackers to append to public torrents. Private torrents never receive these.
+    pub public_trackers: Vec<String>,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -541,6 +551,31 @@ impl Default for Video {
 }
 
 impl Settings {
+    /// Normalize user-entered public tracker URLs before saving or starting the session.
+    pub fn validate(&mut self) -> anyhow::Result<()> {
+        if self.torrent.public_trackers.len() > 100 {
+            anyhow::bail!("Use no more than 100 public tracker URLs");
+        }
+        let mut seen = std::collections::HashSet::new();
+        let mut normalized = Vec::new();
+        for raw in &self.torrent.public_trackers {
+            let raw = raw.trim();
+            if raw.len() > 2048 {
+                anyhow::bail!("Tracker URLs must be 2048 characters or shorter");
+            }
+            let url = url::Url::parse(raw).context("Enter valid public tracker URLs")?;
+            if !matches!(url.scheme(), "http" | "https" | "udp") || url.host_str().is_none() {
+                anyhow::bail!("Public trackers must use HTTP, HTTPS, or UDP URLs");
+            }
+            let value = url.to_string();
+            if seen.insert(value.clone()) {
+                normalized.push(value);
+            }
+        }
+        self.torrent.public_trackers = normalized;
+        Ok(())
+    }
+
     /// Merge a partial JSON patch (as sent by the settings UI) into these settings.
     pub fn apply_patch(&mut self, patch: &serde_json::Value) -> Result<(), serde_json::Error> {
         let mut current = serde_json::to_value(&*self)?;
@@ -574,6 +609,31 @@ mod tests {
         assert!(s.capture.extensions.iter().any(|e| e == "zip"));
         assert!(s.capture.extensions.iter().any(|e| e == "png"));
         assert!(s.capture.mime_types.iter().any(|m| m == "image/"));
+        assert!(s.torrent.public_trackers.is_empty());
+    }
+
+    #[test]
+    fn public_tracker_settings_validate_and_deduplicate_urls() {
+        let mut s = Settings::default();
+        s.apply_patch(&serde_json::json!({
+            "torrent": {"publicTrackers": [
+                " udp://tracker.example:6969/announce ",
+                "https://tracker.example/announce",
+                "udp://tracker.example:6969/announce"
+            ]}
+        }))
+        .unwrap();
+        s.validate().unwrap();
+        assert_eq!(
+            s.torrent.public_trackers,
+            [
+                "udp://tracker.example:6969/announce",
+                "https://tracker.example/announce"
+            ]
+        );
+
+        s.torrent.public_trackers = vec!["file:///tmp/tracker".into()];
+        assert!(s.validate().is_err());
     }
 
     #[test]

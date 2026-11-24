@@ -223,6 +223,10 @@ export interface Settings {
     preserveServerModifiedTime: boolean;
     autoStart: boolean;
   };
+  torrent: {
+    /** Extra trackers appended to public torrents; private torrents are excluded. */
+    publicTrackers: string[];
+  };
   connection: {
     userAgent: string;
     connectTimeoutSecs: number;

@@ -1157,5 +1157,11 @@
   "Mirror URLs": "URL cermin",
   "One HTTP(S) URL per line": "Satu URL HTTP(S) per baris",
   "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Cermin harus menyediakan berkas yang sama dengan ETag kuat yang cocok; autentikasi dan header khusus tidak dikirim ke cermin.",
-  "Mirrors can’t be used with a password-protected download.": "Cermin tidak dapat digunakan untuk unduhan yang dilindungi kata sandi."
+  "Mirrors can’t be used with a password-protected download.": "Cermin tidak dapat digunakan untuk unduhan yang dilindungi kata sandi.",
+  "Settings for public BitTorrent downloads.": "Pengaturan untuk unduhan BitTorrent publik.",
+  "Public trackers": "Pelacak publik",
+  "Append trackers to public torrents": "Tambahkan pelacak ke torrent publik",
+  "One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.": "Satu URL pelacak HTTP, HTTPS, atau UDP per baris. Torrent privat dikecualikan. Mulai ulang Prism setelah mengubah daftar ini.",
+  "Public tracker URLs": "URL pelacak publik",
+  "BitTorrent": "BitTorrent"
 }

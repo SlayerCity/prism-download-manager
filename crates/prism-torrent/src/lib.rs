@@ -101,10 +101,19 @@ impl TorrentEngine {
         state_dir: &Path,
         default_output: PathBuf,
         keep: &(dyn Fn(&str) -> bool + Send + Sync),
+        public_trackers: Vec<String>,
     ) -> Result<Self> {
         std::fs::create_dir_all(state_dir).context("create torrent state dir")?;
         forget_saved(state_dir, keep);
+        let trackers = public_trackers
+            .into_iter()
+            .filter_map(|value| url::Url::parse(value.trim()).ok())
+            .filter(|url| {
+                matches!(url.scheme(), "http" | "https" | "udp") && url.host_str().is_some()
+            })
+            .collect();
         let opts = SessionOptions {
+            trackers,
             fastresume: true,
             persistence: Some(SessionPersistenceConfig::Json {
                 folder: Some(state_dir.to_path_buf()),
