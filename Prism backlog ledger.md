@@ -2,7 +2,7 @@
 
 Scope: all 42 issues open in the live November 24, 2026 snapshot (including #117, opened at 08:00 UTC). Each has a disposition below. The branch fixes or partially addresses some issues; the other issues are not resolved.
 
-Pushed [work/prism-backlog](https://github.com/SlayerCity/prism-download-manager/tree/work/prism-backlog), through `9d54161`, based on `feat/ctrl-lightning` (`e21cf7e`). The earlier overlay fixes and Ctrl effect remain intact. No changes were sent upstream.
+Pushed [work/prism-backlog](https://github.com/SlayerCity/prism-download-manager/tree/work/prism-backlog), through `2d4cfe6`, based on `feat/ctrl-lightning` (`e21cf7e`). The earlier overlay fixes and Ctrl effect remain intact. No changes were sent upstream.
 
 | Upstream issue | State | Work or next verification |
 | --- | --- | --- |
