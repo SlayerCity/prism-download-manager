@@ -604,6 +604,22 @@ impl Core {
                 job.change_url(url);
             }
         }
+        drop(st);
+        if let (Some(l), Some(hash)) = (limit, jobs::torrent_hash(&updated))
+            && updated.kind == ItemKind::Torrent
+        {
+            let core = self.clone();
+            tokio::spawn(async move {
+                match core.torrent_engine().await {
+                    Ok(engine) => {
+                        if let Err(e) = engine.set_torrent_limits(&hash, l, l) {
+                            tracing::debug!("could not update torrent rate limit: {e:#}");
+                        }
+                    }
+                    Err(e) => tracing::warn!("could not load torrent for rate-limit update: {e:#}"),
+                }
+            });
+        }
         Ok(updated)
     }
 
@@ -1255,6 +1271,20 @@ impl Core {
         };
         let (download, upload) = s.torrent.effective_speed_limits(global);
         engine.set_limits(download, upload);
+        let per_torrent: Vec<(String, u64)> = self
+            .0
+            .state
+            .lock()
+            .items
+            .values()
+            .filter(|item| item.kind == ItemKind::Torrent)
+            .filter_map(|item| jobs::torrent_hash(item).map(|hash| (hash, item.speed_limit)))
+            .collect();
+        for (hash, limit) in per_torrent {
+            if engine.is_managed(&hash) {
+                engine.set_torrent_limits(&hash, limit, limit)?;
+            }
+        }
         Ok(engine)
     }
 

@@ -1,10 +1,13 @@
 # Prism-local librqbit patch
 
-Prism pins librqbit 9.0.1 and carries one narrow fork-local change in `src/session.rs`:
-session-wide tracker fallbacks are not appended to torrents marked `private=1` in their
-metainfo. This prevents Prism's configured public tracker list from announcing a private
-info-hash to an unrelated tracker. Trackers in the torrent's own metainfo are retained.
+Prism pins librqbit 9.0.1 and carries two narrow fork-local changes:
 
-This is not a claim of complete private-tracker support: peer protocol compatibility,
-tracker announce behavior, ratio/seeding goals and live private-tracker validation remain
-separate work. Revisit this patch when updating librqbit and retain its regression test.
+- Session-wide public tracker fallbacks are not appended to torrents marked `private=1` in
+their metainfo, preventing Prism from announcing a private info-hash to an unrelated tracker.
+Trackers in the torrent's own metainfo are retained.
+- Each managed torrent owns a shared live-adjustable upload/download limiter. It survives
+pause/resume and can be changed while active; session-wide limits remain independently applied.
+
+These changes are not a claim of complete private-tracker support: peer protocol compatibility,
+ratio/seeding goals, port mapping and live private-tracker validation remain separate work.
+Revisit the fork-local patch when updating librqbit and retain its regression tests.

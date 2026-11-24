@@ -314,6 +314,28 @@ impl TorrentEngine {
         self.session.ratelimits.set_upload_bps(nz(upload_bps));
     }
 
+    /// Set this torrent's independent download and upload limits in bytes/s (0 = unlimited).
+    /// Session-wide limits, when configured, still apply in addition to these per-torrent caps.
+    pub fn set_torrent_limits(
+        &self,
+        info_hash: &str,
+        download_bps: u64,
+        upload_bps: u64,
+    ) -> Result<()> {
+        let handle = self.handle(info_hash).context("unknown torrent")?;
+        let nz = |v: u64| NonZeroU32::new(v.min(u32::MAX as u64) as u32);
+        handle.set_ratelimits(LimitsConfig {
+            download_bps: nz(download_bps),
+            upload_bps: nz(upload_bps),
+        });
+        Ok(())
+    }
+
+    /// Current per-torrent limits, for verification and diagnostics.
+    pub fn torrent_limits(&self, info_hash: &str) -> Option<LimitsConfig> {
+        self.handle(info_hash).map(|handle| handle.ratelimits())
+    }
+
     pub async fn shutdown(&self) {
         self.session.stop().await;
     }

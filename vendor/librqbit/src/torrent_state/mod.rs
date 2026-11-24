@@ -114,7 +114,6 @@ pub(crate) struct ManagedTorrentOptions {
     pub peer_read_write_timeout: Option<Duration>,
     pub allow_overwrite: bool,
     pub output_folder: PathBuf,
-    pub ratelimits: LimitsConfig,
     pub initial_peers: Vec<SocketAddr>,
     pub peer_limit: Option<usize>,
     #[cfg(feature = "disable-upload")]
@@ -186,6 +185,8 @@ pub struct ManagedTorrentShared {
     pub peer_id: Id20,
     pub span: tracing::Span,
     pub(crate) options: ManagedTorrentOptions,
+    /// Shared live-adjustable per-torrent rate limits.
+    pub(crate) ratelimits: Arc<crate::limits::Limits>,
     pub(crate) connector: Arc<StreamConnector>,
     pub(crate) storage_factory: BoxStorageFactory,
     pub(crate) session: Weak<Session>,
@@ -469,6 +470,18 @@ impl ManagedTorrent {
 
     pub fn is_paused(&self) -> bool {
         self.locked.read().paused
+    }
+
+    /// Update this torrent's live upload/download rate limits. The shared limiter survives
+    /// pause/resume transitions for the lifetime of the session.
+    pub fn set_ratelimits(&self, config: LimitsConfig) {
+        self.shared.ratelimits.set_download_bps(config.download_bps);
+        self.shared.ratelimits.set_upload_bps(config.upload_bps);
+    }
+
+    /// Read this torrent's current upload/download rate limits.
+    pub fn ratelimits(&self) -> LimitsConfig {
+        self.shared.ratelimits.get_config()
     }
 
     /// Pause the torrent if it's live.

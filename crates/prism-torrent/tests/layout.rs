@@ -257,3 +257,35 @@ async fn a_finished_torrent_lets_go_of_its_files() {
     assert!(!state.join(format!("{hash}.torrent")).exists());
     engine.shutdown().await;
 }
+
+#[tokio::test]
+async fn per_torrent_limits_are_live_and_survive_pause_resume() {
+    let dir = tempfile::tempdir().unwrap();
+    let engine = TorrentEngine::start_offline(dir.path().join("default"))
+        .await
+        .unwrap();
+    let source = TorrentSource::File(torrent(
+        "limited.bin",
+        &[(&["limited.bin"], contents(9, PIECE + 3))],
+    ));
+    let hash = engine
+        .add(&source, &dir.path().join("Downloads"), None, true)
+        .await
+        .unwrap();
+    engine.set_torrent_limits(&hash, 12_345, 6_789).unwrap();
+    let got = engine.torrent_limits(&hash).unwrap();
+    assert_eq!(got.download_bps.map(|v| v.get()), Some(12_345));
+    assert_eq!(got.upload_bps.map(|v| v.get()), Some(6_789));
+
+    engine.resume(&hash).await.unwrap();
+    engine.set_torrent_limits(&hash, 23_456, 9_876).unwrap();
+    let live = engine.torrent_limits(&hash).unwrap();
+    assert_eq!(live.download_bps.map(|v| v.get()), Some(23_456));
+    assert_eq!(live.upload_bps.map(|v| v.get()), Some(9_876));
+    engine.pause(&hash).await.unwrap();
+    engine.set_torrent_limits(&hash, 0, 0).unwrap();
+    let reset = engine.torrent_limits(&hash).unwrap();
+    assert_eq!(reset.download_bps, None);
+    assert_eq!(reset.upload_bps, None);
+    engine.shutdown().await;
+}

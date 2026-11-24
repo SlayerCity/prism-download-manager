@@ -1560,6 +1560,8 @@ impl TorrentJob {
             }
         };
         *self.hash.lock() = Some(hash.clone());
+        // The item's speed limit is a per-torrent cap; session-wide caps remain independent.
+        engine.set_torrent_limits(&hash, item.speed_limit, item.speed_limit)?;
         let started = Instant::now();
         loop {
             if let Some(p) = engine.progress(&hash) {
