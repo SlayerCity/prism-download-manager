@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "Obrázek nelze zobrazit",
+  "Loading preview…": "Načítání náhledu…",
+  "Hide preview": "Skrýt náhled",
+  "Preview image": "Náhled obrázku",
+  "Downloaded image preview": "Náhled staženého obrázku",
   "Keep the server’s file modification time": "Zachovat čas změny souboru ze serveru",
   "For new HTTP downloads when the server provides a modification date": "Pro nové stažené soubory přes HTTP, pokud server uvede datum změny",
   "Interface scale": "Měřítko rozhraní",

@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "No se pudo mostrar la vista previa de la imagen",
+  "Loading preview…": "Cargando vista previa…",
+  "Hide preview": "Ocultar vista previa",
+  "Preview image": "Vista previa de la imagen",
+  "Downloaded image preview": "Vista previa de la imagen descargada",
   "Keep the server’s file modification time": "Conservar la fecha de modificación del servidor",
   "For new HTTP downloads when the server provides a modification date": "Para nuevas descargas HTTP cuando el servidor indica una fecha de modificación",
   "Interface scale": "Escala de la interfaz",

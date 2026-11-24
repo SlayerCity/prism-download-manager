@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "Tidak dapat menampilkan pratinjau gambar",
+  "Loading preview…": "Memuat pratinjau…",
+  "Hide preview": "Sembunyikan pratinjau",
+  "Preview image": "Pratinjau gambar",
+  "Downloaded image preview": "Pratinjau gambar yang diunduh",
   "Keep the server’s file modification time": "Pertahankan waktu modifikasi dari server",
   "For new HTTP downloads when the server provides a modification date": "Untuk unduhan HTTP baru jika server menyediakan tanggal modifikasi",
   "Interface scale": "Skala antarmuka",

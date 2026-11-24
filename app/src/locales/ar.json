@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "تعذّرت معاينة الصورة",
+  "Loading preview…": "جارٍ تحميل المعاينة…",
+  "Hide preview": "إخفاء المعاينة",
+  "Preview image": "معاينة الصورة",
+  "Downloaded image preview": "معاينة الصورة التي تم تنزيلها",
   "Keep the server’s file modification time": "الاحتفاظ بوقت تعديل الملف من الخادم",
   "For new HTTP downloads when the server provides a modification date": "لتنزيلات HTTP الجديدة عندما يوفّر الخادم تاريخ التعديل",
   "Interface scale": "مقياس الواجهة",

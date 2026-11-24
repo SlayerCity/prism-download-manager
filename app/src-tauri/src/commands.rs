@@ -478,6 +478,18 @@ pub async fn open_item(core: State<'_, Core>, app: AppHandle, id: String) -> Cmd
 }
 
 #[tauri::command]
+pub async fn preview_item(core: State<'_, Core>, id: String) -> CmdResult<String> {
+    let item = core.item(&id).ok_or("unknown item")?;
+    if !item.status.is_finished() || item.trashed {
+        return Err("Only completed downloads can be previewed".into());
+    }
+    let path = item.path();
+    tokio::task::spawn_blocking(move || crate::file_preview::thumbnail(&path))
+        .await
+        .map_err(err)?
+}
+
+#[tauri::command]
 pub async fn reveal_item(core: State<'_, Core>, app: AppHandle, id: String) -> CmdResult<()> {
     let item = core.item(&id).ok_or("unknown item")?;
     let path = item.path();

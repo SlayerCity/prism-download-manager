@@ -3,6 +3,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod commands;
+mod file_preview;
 mod i18n;
 mod integration;
 #[cfg(target_os = "linux")]
@@ -232,6 +233,7 @@ fn main() {
             commands::update_item,
             commands::item_details,
             commands::open_item,
+            commands::preview_item,
             commands::reveal_item,
             commands::open_path,
             commands::assign_to_queue,

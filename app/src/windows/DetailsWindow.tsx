@@ -5,7 +5,7 @@ import { useItemDetails } from "../components/useItemDetails";
 import { ConnectionLanes, FileMap, FileTile, ProgressBar, SpeedChart } from "../components/Visuals";
 import { WindowFrame } from "../components/WindowFrame";
 import { Icon } from "../design/icons";
-import { api } from "../lib/api";
+import { api, inTauri } from "../lib/api";
 import { formatBytes, formatDuration, formatSpeed } from "../lib/format";
 import { t, tr } from "../lib/i18n";
 import { canPause, formatPct, progressOf, statusView } from "../lib/present";
@@ -140,7 +140,14 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
       <div className={`panel${simple ? " panel--single" : ""}`}>
         <div className="panel__conn">
           <div className="ph">{t("Connections")}</div>
-          {status === "completed" ? <p className="lanes__empty">{t("Download complete.")}</p> : <ConnectionLanes segments={segments} max={12} unit={unit} />}
+          {status === "completed" ? (
+            <>
+              <p className="lanes__empty">{t("Download complete.")}</p>
+              {inTauri && !item.trashed && /\.(png|jpe?g|webp)$/i.test(item.fileName) && (
+                <FilePreview key={JSON.stringify([id, item.saveDir, item.fileName, item.finishedAt])} id={id} />
+              )}
+            </>
+          ) : <ConnectionLanes segments={segments} max={12} unit={unit} />}
         </div>
         {!simple && (
           <div className="panel__speed">
@@ -209,5 +216,35 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
         )}
       </footer>
     </WindowFrame>
+  );
+}
+
+function FilePreview({ id }: { id: string }) {
+  const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  return (
+    <div className="details__preview">
+      <button type="button" className="btn" disabled={loading} onClick={async () => {
+        if (preview !== null) {
+          setPreview(null);
+          return;
+        }
+        setLoading(true);
+        setError(null);
+        try {
+          setPreview(await api.previewItem(id));
+        } catch (e) {
+          setError(typeof e === "string" ? e : t("Could not preview the image"));
+        } finally {
+          setLoading(false);
+        }
+      }}>
+        {loading ? t("Loading preview…") : preview ? t("Hide preview") : t("Preview image")}
+      </button>
+      {error && <p role="status" className="text-danger">{error}</p>}
+      {preview && <img src={preview} alt={t("Downloaded image preview")} />}
+    </div>
   );
 }

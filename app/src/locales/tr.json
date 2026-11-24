@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "Görsel önizlenemedi",
+  "Loading preview…": "Önizleme yükleniyor…",
+  "Hide preview": "Önizlemeyi gizle",
+  "Preview image": "Görseli önizle",
+  "Downloaded image preview": "İndirilen görselin önizlemesi",
   "Keep the server’s file modification time": "Sunucudaki dosya değiştirme zamanını koru",
   "For new HTTP downloads when the server provides a modification date": "Sunucu değiştirme tarihi sağladığında yeni HTTP indirmeleri için",
   "Interface scale": "Arayüz ölçeği",

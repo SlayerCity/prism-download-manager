@@ -1,4 +1,9 @@
 {
+  "Could not preview the image": "Impossible d’afficher l’aperçu de l’image",
+  "Loading preview…": "Chargement de l’aperçu…",
+  "Hide preview": "Masquer l’aperçu",
+  "Preview image": "Afficher l’aperçu de l’image",
+  "Downloaded image preview": "Aperçu de l’image téléchargée",
   "Keep the server’s file modification time": "Conserver la date de modification du serveur",
   "For new HTTP downloads when the server provides a modification date": "Pour les nouveaux téléchargements HTTP si le serveur indique une date de modification",
   "Interface scale": "Échelle de l’interface",
