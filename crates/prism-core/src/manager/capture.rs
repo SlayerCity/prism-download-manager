@@ -566,12 +566,11 @@ impl Core {
                     if p.item.mime.is_none() {
                         p.item.mime = probe.mime.clone();
                     }
+                    let mime = p.item.mime.as_deref();
                     let user_named = p.item.file_name.is_some();
                     if user_named {
-                        p.info.file_name = super::sanitize_name(&add_mime_extension(
-                            &p.info.file_name,
-                            probe.mime.as_deref(),
-                        ));
+                        p.info.file_name =
+                            super::sanitize_name(&add_mime_extension(&p.info.file_name, mime));
                     }
                     if !user_named && !probe.file_name.is_empty() {
                         p.info.file_name = match &p.fallback_name {
@@ -590,7 +589,7 @@ impl Core {
                         }
                     }
                     p.info.size = probe.size.or(p.info.size);
-                    p.info.mime = probe.mime;
+                    p.info.mime = p.item.mime.clone();
                     p.info.resumable = Some(probe.resumable);
                     p.info.final_url = Some(probe.final_url);
                 }
@@ -2421,6 +2420,39 @@ mod file_name_tests {
             })
             .unwrap();
         assert_eq!(item.file_name, "photo.webp");
+        core.shutdown().await;
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn browser_mime_is_used_when_the_probe_type_is_generic() {
+        let server = prism_testserver::TestServer::start(Default::default())
+            .await
+            .unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let core = core_in(tmp.path()).await;
+        let url = server.url("/file/photo?size=32&type=application/octet-stream");
+        let info = core.capture(
+            NewItem {
+                url,
+                file_name: Some("photo".into()),
+                mime: Some("image/webp".into()),
+                ..Default::default()
+            },
+            CaptureSource::Browser,
+        );
+        let info = tokio::time::timeout(Duration::from_secs(20), async {
+            loop {
+                let info = core.pending_capture(&info.id).unwrap();
+                if !info.probing {
+                    return info;
+                }
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        })
+        .await
+        .expect("the server was not asked");
+        assert_eq!(info.mime.as_deref(), Some("image/webp"));
+        assert_eq!(info.file_name, "photo.webp");
         core.shutdown().await;
     }
 
