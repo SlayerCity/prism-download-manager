@@ -153,10 +153,13 @@ impl HttpFetcher {
             HttpMethod::Post => reqwest::Method::POST,
         };
         let mut headers = self.ctx.headers.clone();
-        if headers.contains_key(header::AUTHORIZATION) && !self.ctx.sources.is_own_site(url) {
-            // A redirect target on another server (a CDN's signed link) doesn't get the site's
-            // credentials, the same as the redirect itself (reqwest drops them across sites).
+        if !self.ctx.sources.is_primary_site(url) {
+            // A mirror or cross-origin redirect never gets the primary URL's credentials.
             headers.remove(header::AUTHORIZATION);
+            headers.remove(header::COOKIE);
+            headers.remove(header::REFERER);
+            headers.remove(header::ORIGIN);
+            headers.remove(header::PROXY_AUTHORIZATION);
         }
         let mut rb = client.request(method, url.clone()).headers(headers);
         if let Some((from, to)) = range {
@@ -246,16 +249,20 @@ impl HttpFetcher {
         };
         let mut rounds = 0;
         loop {
-            let resp = if self.ctx.auth.uses_ntlm() && !self.ntlm_ready {
+            let primary_site = self.ctx.sources.is_primary_site(url);
+            let resp = if primary_site && self.ctx.auth.uses_ntlm() && !self.ntlm_ready {
                 self.ntlm_handshake(&client, url, range, if_range).await?
             } else {
-                let auth = self.ctx.auth.authorization(method, url);
+                let auth = primary_site
+                    .then(|| self.ctx.auth.authorization(method, url))
+                    .flatten();
                 self.request(&client, url, range, if_range, auth)
                     .send()
                     .await
                     .map_err(map_send_error)?
             };
             if resp.status() == StatusCode::UNAUTHORIZED
+                && primary_site
                 && rounds < 2
                 && self.ctx.auth.has_credentials()
             {
@@ -274,7 +281,7 @@ impl HttpFetcher {
                     ChallengeAction::GiveUp => return Ok(resp),
                 }
             }
-            if self.ctx.auth.uses_ntlm() {
+            if primary_site && self.ctx.auth.uses_ntlm() {
                 self.ntlm_ready = resp.status() != StatusCode::UNAUTHORIZED;
             }
             return Ok(resp);

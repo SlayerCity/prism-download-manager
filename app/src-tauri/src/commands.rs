@@ -53,6 +53,48 @@ pub struct AddUrlArgs {
     username: Option<String>,
     password: Option<String>,
     file_name: Option<String>,
+    #[serde(default)]
+    mirrors: Vec<String>,
+}
+
+fn parse_mirrors(primary: &str, values: Vec<String>) -> CmdResult<Vec<String>> {
+    if values.len() > 8 {
+        return Err("Use no more than eight mirror URLs".into());
+    }
+    if values.is_empty() {
+        return Ok(Vec::new());
+    }
+    let primary = url::Url::parse(primary).map_err(err)?;
+    if !matches!(primary.scheme(), "http" | "https") {
+        return Err("Mirrors can only be used with HTTP(S) downloads".into());
+    }
+    if !primary.username().is_empty() || primary.password().is_some() {
+        return Err("Remove credentials from the address before adding mirrors".into());
+    }
+    let mut seen = std::collections::HashSet::new();
+    let mut mirrors = Vec::new();
+    for value in values {
+        let value = value.trim();
+        if value.is_empty() {
+            continue;
+        }
+        let parsed = url::Url::parse(value).map_err(|_| "Enter valid HTTP(S) mirror URLs")?;
+        if !matches!(parsed.scheme(), "http" | "https")
+            || !parsed.username().is_empty()
+            || parsed.password().is_some()
+            || parsed.fragment().is_some()
+        {
+            return Err("Mirrors must be HTTP(S) URLs without credentials or fragments".into());
+        }
+        if parsed == primary {
+            continue;
+        }
+        let normalized = parsed.to_string();
+        if seen.insert(normalized.clone()) {
+            mirrors.push(normalized);
+        }
+    }
+    Ok(mirrors)
 }
 
 /// Open the "Download File" dialog for a URL typed or pasted by the user.
@@ -65,8 +107,15 @@ pub async fn add_url(core: State<'_, Core>, args: AddUrlArgs) -> CmdResult<Captu
     if !(url.contains("://") || url.starts_with("magnet:")) {
         return Err("The address must start with http://, https://, ftp:// or magnet:".into());
     }
+    let mirrors = parse_mirrors(&url, args.mirrors)?;
+    let has_auth = args.username.as_deref().is_some_and(|v| !v.is_empty())
+        || args.password.as_deref().is_some_and(|v| !v.is_empty());
+    if !mirrors.is_empty() && has_auth {
+        return Err("Mirrors can’t be used with a password-protected download".into());
+    }
     let n = NewItem {
         url,
+        mirrors,
         referer: args.referer,
         username: args.username.filter(|u| !u.is_empty()),
         password: args.password,
@@ -931,4 +980,57 @@ pub async fn clipboard_write(text: String) -> CmdResult<()> {
 #[tauri::command]
 pub async fn data_dir(app: AppHandle) -> CmdResult<PathBuf> {
     Ok(app.state::<Core>().data_dir().to_path_buf())
+}
+
+#[cfg(test)]
+mod mirror_tests {
+    use super::parse_mirrors;
+
+    #[test]
+    fn mirror_urls_are_http_and_deduplicated() {
+        assert_eq!(
+            parse_mirrors(
+                "https://example.org/file.bin",
+                vec![
+                    "https://mirror.example/file.bin".into(),
+                    "https://mirror.example/file.bin".into(),
+                    "".into(),
+                ],
+            )
+            .unwrap(),
+            vec!["https://mirror.example/file.bin"]
+        );
+    }
+
+    #[test]
+    fn mirror_urls_reject_credentials_and_other_schemes() {
+        assert!(
+            parse_mirrors(
+                "https://example.org/file.bin",
+                vec!["ftp://mirror/file".into()]
+            )
+            .is_err()
+        );
+        assert!(
+            parse_mirrors(
+                "https://example.org/file.bin",
+                vec!["https://user:pass@mirror/file".into()]
+            )
+            .is_err()
+        );
+        assert!(
+            parse_mirrors(
+                "ftp://example.org/file.bin",
+                vec!["https://mirror.example/file.bin".into()]
+            )
+            .is_err()
+        );
+        assert!(
+            parse_mirrors(
+                "https://user:pass@example.org/file.bin",
+                vec!["https://mirror.example/file.bin".into()]
+            )
+            .is_err()
+        );
+    }
 }

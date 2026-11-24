@@ -695,6 +695,36 @@ async fn mirrors_are_validated_and_used() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn mirrors_are_not_used_with_credentials_or_captured_headers() {
+    let primary = default_server().await;
+    let mirror = default_server().await;
+    let dir = tempfile::tempdir().unwrap();
+    let size = 2 * MIB;
+    let mut req = request(
+        &primary.url(&format!("/file/primary.bin?size={size}&seed=24")),
+        dir.path(),
+        4,
+    );
+    req.mirrors =
+        vec![Url::parse(&mirror.url(&format!("/file/mirror.bin?size={size}&seed=24"))).unwrap()];
+    req.auth = Some(Credentials {
+        username: "private-user".into(),
+        password: "private-password".into(),
+        scheme: AuthScheme::Basic,
+    });
+    req.cookies = Some("session=private".into());
+    req.headers
+        .push(("X-Private-Token".into(), "secret".into()));
+
+    let done = wait(&engine().start(req, None, vec![]), 30).await.unwrap();
+    assert_eq!(sha256_file(&done.path), expected_sha256(24, size));
+    assert!(
+        mirror.stats().requests.is_empty(),
+        "a mirror must not receive the primary request's credentials or captured headers"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn mirrors_without_primary_strong_etag_are_not_used() {
     let srv = default_server().await;
     let dir = tempfile::tempdir().unwrap();

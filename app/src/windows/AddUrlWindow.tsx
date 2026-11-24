@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TextField } from "../components/Controls";
+import { TextArea, TextField } from "../components/Controls";
 import { LogoMark } from "../components/LogoMark";
 import { WindowFrame } from "../components/WindowFrame";
 import { Icon } from "../design/icons";
@@ -14,6 +14,8 @@ export default function AddUrlWindow() {
   const [auth, setAuth] = useState(false);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
+  const [mirrorText, setMirrorText] = useState("");
+  const [showMirrors, setShowMirrors] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -31,12 +33,17 @@ export default function AddUrlWindow() {
 
   const submit = async () => {
     if (!valid || busy) return;
+    const mirrors = mirrorText.split(/\r?\n/).map((v) => v.trim()).filter(Boolean);
+    if (mirrors.length && auth && (user.trim() || pass)) {
+      setError(t("Mirrors can’t be used with a password-protected download."));
+      return;
+    }
     setBusy(true);
     setError("");
     try {
       if (model) await api.openWindow("model", hexEncode(url.trim()));
       else if (torrent) await api.openWindow("torrent", hexEncode(url.trim()));
-      else await api.addUrl({ url: url.trim(), username: auth ? user : undefined, password: auth ? pass : undefined });
+      else await api.addUrl({ url: url.trim(), username: auth ? user : undefined, password: auth ? pass : undefined, mirrors });
       await win.close();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -77,6 +84,15 @@ export default function AddUrlWindow() {
             <TextField value={pass} onChange={setPass} label={t("Password")} placeholder={t("Password")} type="password" icon="key" onEnter={submit} />
           </div>
         )}
+        {!model && !torrent && <>
+          <button type="button" className="disclose" aria-expanded={showMirrors} onClick={() => setShowMirrors(!showMirrors)}>
+            <Icon name={showMirrors ? "chevron-down" : "chevron-right"} size={12} strokeWidth={2.2} /> {t("Add mirror URLs (optional)")}
+          </button>
+          {showMirrors && <div className="field">
+            <TextArea value={mirrorText} onChange={setMirrorText} label={t("Mirror URLs")} placeholder={t("One HTTP(S) URL per line")} rows={3} />
+            <span className="field__hint">{t("Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.")}</span>
+          </div>}
+        </>}
       </div>
       <footer className="dialog__footer">
         <span className="spacer" />

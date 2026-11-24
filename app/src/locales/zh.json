@@ -1152,5 +1152,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "修复了窗口打开时已完成的下载有时仍显示为正在下载的问题。",
   "Extract ZIP to a new folder after download": "下载后将 ZIP 解压到新文件夹",
   "Drag the file into a chat, an e-mail or a folder": "将文件拖到聊天、电子邮件或文件夹中",
-  "Could not drag the file": "无法拖动文件"
+  "Could not drag the file": "无法拖动文件",
+  "Add mirror URLs (optional)": "添加镜像网址（可选）",
+  "Mirror URLs": "镜像网址",
+  "One HTTP(S) URL per line": "每行一个 HTTP(S) 网址",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "镜像必须提供相同文件和匹配的强 ETag；不会向镜像发送身份验证信息或自定义标头。",
+  "Mirrors can’t be used with a password-protected download.": "受密码保护的下载不能使用镜像。"
 }

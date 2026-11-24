@@ -1175,5 +1175,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Pencere açıkken biten bir indirme bazen hâlâ iniyormuş gibi görünüyordu.",
   "Extract ZIP to a new folder after download": "İndirmeden sonra ZIP dosyasını yeni bir klasöre çıkar",
   "Drag the file into a chat, an e-mail or a folder": "Dosyayı bir sohbete, e-postaya veya klasöre sürükleyin",
-  "Could not drag the file": "Dosya sürüklenemedi"
+  "Could not drag the file": "Dosya sürüklenemedi",
+  "Add mirror URLs (optional)": "Ayna URL’leri ekle (isteğe bağlı)",
+  "Mirror URLs": "Ayna URL’leri",
+  "One HTTP(S) URL per line": "Her satıra bir HTTP(S) URL",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Aynalar aynı dosyayı ve eşleşen güçlü bir ETag’i sunmalıdır; kimlik doğrulama ve özel başlıklar aynalara gönderilmez.",
+  "Mirrors can’t be used with a password-protected download.": "Şifre korumalı indirmelerde aynalar kullanılamaz."
 }

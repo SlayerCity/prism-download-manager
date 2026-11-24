@@ -1175,5 +1175,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Ein Download, der bei geöffnetem Fenster fertig wurde, sah manchmal noch so aus, als würde er laufen.",
   "Extract ZIP to a new folder after download": "ZIP nach dem Herunterladen in einen neuen Ordner entpacken",
   "Drag the file into a chat, an e-mail or a folder": "Datei in einen Chat, eine E-Mail oder einen Ordner ziehen",
-  "Could not drag the file": "Datei konnte nicht gezogen werden"
+  "Could not drag the file": "Datei konnte nicht gezogen werden",
+  "Add mirror URLs (optional)": "Spiegel-URLs hinzufügen (optional)",
+  "Mirror URLs": "Spiegel-URLs",
+  "One HTTP(S) URL per line": "Eine HTTP(S)-URL pro Zeile",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Spiegel müssen dieselbe Datei mit passendem starkem ETag liefern; Anmeldedaten und eigene Header werden nicht an Spiegel gesendet.",
+  "Mirrors can’t be used with a password-protected download.": "Spiegel können nicht mit passwortgeschützten Downloads verwendet werden."
 }

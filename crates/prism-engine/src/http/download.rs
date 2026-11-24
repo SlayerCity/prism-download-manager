@@ -65,6 +65,14 @@ pub(crate) fn build_ctx(
         tls: engine.tls()?,
         pool_max_idle: 1,
     };
+    let allow_mirrors = req.method == HttpMethod::Get
+        && req.body.is_none()
+        && req.auth.is_none()
+        && req.cookies.as_deref().is_none_or(str::is_empty)
+        && req.referer.as_deref().is_none_or(str::is_empty)
+        && req.headers.is_empty()
+        && url.username().is_empty()
+        && url.password().is_none();
     Ok(Arc::new(HttpCtx {
         spec,
         method: req.method,
@@ -72,6 +80,7 @@ pub(crate) fn build_ctx(
         headers: base_headers(&req.headers, req.cookies.as_deref(), req.referer.as_deref())?,
         auth: AuthState::new(req.auth.clone()),
         sources: Sources::new(url, final_url, &req.mirrors),
+        allow_mirrors,
         validators: Default::default(),
         probed: Default::default(),
         expect_file: req.expect_file,
@@ -184,7 +193,7 @@ impl UrlChanger for HttpUrlChanger {
 /// Validates mirrors in the background; valid ones join the rotation.
 fn spawn_mirror_validation(ctx: Arc<HttpCtx>, job: Arc<JobShared>) {
     let mirrors = ctx.sources.mirror_urls();
-    if mirrors.is_empty() {
+    if mirrors.is_empty() || !ctx.allow_mirrors {
         return;
     }
     tokio::spawn(async move {

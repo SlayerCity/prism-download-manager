@@ -1267,5 +1267,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "التنزيل الذي اكتمل والنافذة مفتوحة كان يبدو أحياناً كأنه ما زال قيد التنزيل.",
   "Extract ZIP to a new folder after download": "استخراج ملف ZIP إلى مجلد جديد بعد التنزيل",
   "Drag the file into a chat, an e-mail or a folder": "اسحب الملف إلى محادثة أو بريد أو أي مجلد",
-  "Could not drag the file": "تعذّر سحب الملف"
+  "Could not drag the file": "تعذّر سحب الملف",
+  "Add mirror URLs (optional)": "أضف روابط مرايا (اختياري)",
+  "Mirror URLs": "روابط المرايا",
+  "One HTTP(S) URL per line": "رابط HTTP(S) واحد في كل سطر",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "يجب أن توفر المرايا الملف نفسه مع ETag قوي مطابق؛ لن تُرسل بيانات المصادقة أو الترويسات المخصصة إلى المرايا.",
+  "Mirrors can’t be used with a password-protected download.": "لا يمكن استخدام المرايا مع تنزيل محمي بكلمة مرور."
 }

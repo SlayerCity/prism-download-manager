@@ -1221,5 +1221,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Stahování, které skončilo při otevřeném okně, občas dál vypadalo, že se stahuje.",
   "Extract ZIP to a new folder after download": "Po stažení rozbalit ZIP do nové složky",
   "Drag the file into a chat, an e-mail or a folder": "Přetáhněte soubor do chatu, e-mailu nebo složky",
-  "Could not drag the file": "Soubor nelze přetáhnout"
+  "Could not drag the file": "Soubor nelze přetáhnout",
+  "Add mirror URLs (optional)": "Přidat adresy zrcadel (volitelné)",
+  "Mirror URLs": "Adresy zrcadel",
+  "One HTTP(S) URL per line": "Jedna HTTP(S) adresa na řádek",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Zrcadla musí poskytovat stejný soubor se shodným silným ETagem; ověření ani vlastní hlavičky se zrcadlům neposílají.",
+  "Mirrors can’t be used with a password-protected download.": "Zrcadla nelze použít pro stahování chráněné heslem."
 }

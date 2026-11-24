@@ -179,7 +179,7 @@ export const api = {
   updateSettings: (patch: unknown) => invoke<Settings>("update_settings", { patch }),
   toggleSpeedLimiter: () => invoke<boolean>("toggle_speed_limiter"),
 
-  addUrl: (args: { url: string; referer?: string; username?: string; password?: string; fileName?: string }) =>
+  addUrl: (args: { url: string; referer?: string; username?: string; password?: string; fileName?: string; mirrors?: string[] }) =>
     invoke<CaptureInfo>("add_url", { args }),
   getCapture: (id: string) => invoke<CaptureInfo | null>("get_capture", { id }),
   confirmCapture: (decision: CaptureDecision) => invoke<DownloadItem>("confirm_capture", { decision }),

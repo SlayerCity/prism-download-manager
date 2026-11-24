@@ -163,12 +163,10 @@ impl Sources {
         self.lock().mirrors.iter().map(|m| m.url.clone()).collect()
     }
 
-    /// Whether `url` is on the site of the download's own link or of one of its mirrors (not
-    /// on a server one of them redirected to).
-    pub(crate) fn is_own_site(&self, url: &Url) -> bool {
-        let g = self.lock();
-        let origin = url.origin();
-        g.original.origin() == origin || g.mirrors.iter().any(|m| m.url.origin() == origin)
+    /// Whether `url` is on the original download's origin. Mirrors and redirect targets must
+    /// not receive the primary URL's credentials or captured request headers.
+    pub(crate) fn is_primary_site(&self, url: &Url) -> bool {
+        self.lock().original.origin() == url.origin()
     }
 
     /// Replaces the primary URL (change_url).
@@ -196,6 +194,8 @@ pub(crate) struct HttpCtx {
     pub headers: HeaderMap,
     pub auth: AuthState,
     pub sources: Sources,
+    /// Mirrors are disabled for requests carrying credentials or browser-specific context.
+    pub allow_mirrors: bool,
     pub validators: Mutex<Validators>,
     /// A successful response was received (403/410 afterwards mean an expired link).
     pub probed: AtomicBool,

@@ -1152,5 +1152,10 @@
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Unduhan yang selesai saat jendela terbuka kadang masih terlihat seperti sedang diunduh.",
   "Extract ZIP to a new folder after download": "Ekstrak ZIP ke folder baru setelah diunduh",
   "Drag the file into a chat, an e-mail or a folder": "Seret file ke obrolan, e-mail, atau folder",
-  "Could not drag the file": "Tidak dapat menyeret file"
+  "Could not drag the file": "Tidak dapat menyeret file",
+  "Add mirror URLs (optional)": "Tambahkan URL cermin (opsional)",
+  "Mirror URLs": "URL cermin",
+  "One HTTP(S) URL per line": "Satu URL HTTP(S) per baris",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Cermin harus menyediakan berkas yang sama dengan ETag kuat yang cocok; autentikasi dan header khusus tidak dikirim ke cermin.",
+  "Mirrors can’t be used with a password-protected download.": "Cermin tidak dapat digunakan untuk unduhan yang dilindungi kata sandi."
 }

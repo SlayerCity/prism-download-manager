@@ -92,5 +92,10 @@
     "other": "{count} downloads and their files will be deleted. The files can't be restored."
   },
   "Drag the file into a chat, an e-mail or a folder": "Drag the file into a chat, an e-mail or a folder",
-  "Could not drag the file": "Drag the file into a chat, an e-mail or a folder"
+  "Could not drag the file": "Drag the file into a chat, an e-mail or a folder",
+  "Add mirror URLs (optional)": "Add mirror URLs (optional)",
+  "Mirror URLs": "Mirror URLs",
+  "One HTTP(S) URL per line": "One HTTP(S) URL per line",
+  "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.": "Mirrors must be the same file and provide a matching strong ETag; authentication and custom headers are not sent to mirrors.",
+  "Mirrors can’t be used with a password-protected download.": "Mirrors can’t be used with a password-protected download."
 }
