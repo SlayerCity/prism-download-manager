@@ -7,7 +7,7 @@ import { chromium } from 'playwright';
 
 const { outputFiles: [script] } = await build({
   stdin: {
-    contents: "import { VideoButton } from './src/content/video-button'; new VideoButton().setEnabled(true);",
+    contents: "import { VideoButton } from './src/content/video-button'; const button = new VideoButton(); button.setEnabled(true); window.setPrismCompactForTest = (value) => button.setCompact(value);",
     resolveDir: fileURLToPath(new URL('..', import.meta.url)),
   },
   bundle: true,
@@ -48,7 +48,14 @@ try {
   await page.waitForFunction(() => !document.fullscreenElement);
   await moveOver('#video');
   await showing.waitFor({ state: 'attached' });
-  console.log('Passed: hidden players, fullscreen entry, pointer movement, and exit.');
+  const pill = showing.getByRole('button', { name: 'Download this video with Prism' });
+  const normalWidth = await pill.evaluate((el) => el.offsetWidth);
+  await page.evaluate(() => window.setPrismCompactForTest(true));
+  assert.equal(await pill.evaluate((el) => el.offsetWidth), 32);
+  assert.ok(normalWidth > 32);
+  await page.evaluate(() => window.setPrismCompactForTest(false));
+  assert.equal(await pill.evaluate((el) => el.offsetWidth), normalWidth);
+  console.log('Passed: hidden players, fullscreen entry/exit, and accessible compact layout.');
 } finally {
   await browser.close();
 }

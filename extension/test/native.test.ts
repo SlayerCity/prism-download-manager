@@ -49,6 +49,13 @@ beforeEach(() => {
 });
 
 describe('NativeClient', () => {
+  it('preserves helper start failure without a one-shot retry', async () => {
+    nextBehavior = (_m, p) => queueMicrotask(() => p.die('Failed to start native messaging host.'));
+    const c = new NativeClient('dev.prism.host');
+    await expect(c.request({ type: 'status' }, { noLaunch: true })).rejects.toMatchObject({ code: 'host_start_failed' });
+    expect(chromeMock.runtime.sendNativeMessage).not.toHaveBeenCalled();
+  });
+
   it('sends an envelope with id/type/noLaunch over one long-lived port and correlates replies', async () => {
     const c = new NativeClient('dev.prism.host');
     const [a, b] = await Promise.all([
