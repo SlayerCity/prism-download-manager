@@ -1,9 +1,11 @@
 # Building Prism on macOS
 
-Prism was developed and tested on Windows and Linux. The code base is fully
-macOS-buildable — every OS-specific piece sits behind `#[cfg(target_os = "macos")]`
-implementations — but it has **not been run on a Mac yet**. Follow these steps exactly and
-report anything that differs.
+Prism is developed and routinely tested on Windows and Linux. A contributor reported
+running the official 1.2.4 release and a source build on Apple Silicon with macOS 27.2
+([test report](https://github.com/FortoGraphy/prism-download-manager/issues/79)); that report
+is not a substitute for testing each platform-specific change or release. The code base is
+macOS-buildable, with OS-specific pieces behind `#[cfg(target_os = "macos")]` implementations.
+Follow these steps and report anything that differs.
 
 ## 1. Prerequisites (macOS 11 Big Sur or newer; Apple Silicon or Intel)
 
@@ -60,7 +62,7 @@ Artifacts: `target/<target>/release/bundle/macos/Prism.app` and
 
 ## 4. First run checks
 
-1. Open `Prism.app` (right-click → Open the first time if unsigned).
+1. Verify the downloaded app against the checksum from its official release. If Gatekeeper blocks an otherwise matching release because Apple cannot verify the developer, Control-click `Prism.app` → **Open** and confirm. Where available, **System Settings → Privacy & Security → Open Anyway** is another first-launch override. This only bypasses Gatekeeper; it does not establish that a file is safe. Leave any antivirus malware detection blocked and follow the [installation security guidance](guide/installation.md#security-warnings).
 2. Settings → Browser integration → **Repair** — every installed browser should show
    "Registered".
 3. Load the extension (Chrome: `chrome://extensions` → Developer mode → Load unpacked →
@@ -106,6 +108,6 @@ DMGs on Apple Silicon runners (`macos-14`; the Intel build is cross-compiled). T
 works: the first run produced `Prism_1.0.0_aarch64.dmg` and `Prism_1.0.0_x64.dmg`.
 
 Without signing secrets the app gets an **ad-hoc signature** (`bundle.macOS.signingIdentity
-= "-"`), which Apple Silicon requires to launch at all. Gatekeeper still asks on first launch:
-right-click `Prism.app` → **Open** (or `xattr -dr com.apple.quarantine /Applications/Prism.app`).
+= "-"`), which Apple Silicon requires to launch at all. Gatekeeper may still ask for a first-launch
+override; use the Control-click → **Open** steps above only after verifying the official artifact.
 Add the `APPLE_*` secrets to the repository to get Developer-ID-signed, notarized DMGs.

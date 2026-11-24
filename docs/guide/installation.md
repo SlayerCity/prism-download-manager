@@ -53,8 +53,7 @@ the `data` folder next to it.
 ## macOS
 
 1. Open the `.dmg` and drag **Prism** into **Applications**.
-2. Notarization depends on the release. If macOS blocks the app, leave the protection
-   in place and follow the [security guidance above](#security-warnings).
+2. Before opening it, verify the app against the checksum from the same official release. If Gatekeeper says Apple could not verify the developer, first make sure the checksum matches; then Control-click (or right-click) **Prism** in Applications, choose **Open**, and confirm **Open**. On macOS versions that show it, you can instead use **System Settings → Privacy & Security → Open Anyway** after the blocked first launch. This is a Gatekeeper override, not proof that a file is safe; if antivirus reports malware, leave it blocked and follow [Security warnings](#security-warnings).
 3. Optional but recommended for video downloads: `brew install ffmpeg` (Prism can also fetch a
    verified ffmpeg build by itself — Settings → Video & streams → Check tools).
 

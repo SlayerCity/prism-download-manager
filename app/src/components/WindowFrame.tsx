@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Icon } from "../design/icons";
 import { inTauri } from "../lib/api";
 import { t } from "../lib/i18n";
@@ -53,6 +53,29 @@ export function WindowFrame({ kind, title, icon, actions, onClose, minimizable, 
   }, []);
 
   const close = onClose ?? (() => void win.close());
+  const closeRef = useRef(close);
+  closeRef.current = close;
+  useEffect(() => {
+    if (!inTauri || bare || document.documentElement.dataset.platform !== "macos") return;
+    let unlisten: (() => void) | undefined;
+    let disposed = false;
+    let closing = false;
+    void win.onCloseRequested((event) => {
+      // Route the first native close through the same cancellation path as the custom control.
+      // That path may request a second close; let that one through to avoid an event loop.
+      if (closing) return;
+      event.preventDefault();
+      closing = true;
+      closeRef.current();
+    }).then((off) => {
+      if (disposed) off?.();
+      else unlisten = off;
+    });
+    return () => {
+      disposed = true;
+      unlisten?.();
+    };
+  }, [bare]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if (e.key === "Escape" && !e.defaultPrevented && !document.querySelector(".modal-scrim, .menu--floating")) close();

@@ -8,6 +8,10 @@ import "./styles/main.css";
 import "./styles/windows.css";
 import "./styles/sheets.css";
 import { App } from "./App";
+import { inTauri } from "./lib/api";
+
+// Native macOS traffic lights overlay the top-left webview content.
+if (inTauri && /Macintosh|Mac OS X/.test(navigator.userAgent)) document.documentElement.dataset.platform = "macos";
 
 const NOT_TEXT = new Set(["button", "checkbox", "color", "file", "hidden", "image", "radio", "range", "reset", "submit"]);
 

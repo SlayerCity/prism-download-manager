@@ -1,3 +1,5 @@
+import type { CloseRequestedEvent } from "@tauri-apps/api/window";
+
 // Current-window controls. All are no-ops outside Tauri (browser preview).
 
 import { inTauri } from "./api";
@@ -28,6 +30,7 @@ export const win = {
   toggleMaximize: async () => (await current())?.toggleMaximize(),
   isMaximized: async () => (await (await current())?.isMaximized()) ?? false,
   onResized: async (cb: () => void) => (await current())?.onResized(cb),
+  onCloseRequested: async (cb: (event: CloseRequestedEvent) => void | Promise<void>) => (await current())?.onCloseRequested(cb),
   setAlwaysOnTop: async (on: boolean) => (await current())?.setAlwaysOnTop(on),
 };
 

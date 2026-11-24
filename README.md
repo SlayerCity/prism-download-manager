@@ -167,8 +167,9 @@ the app on your own computer.
 <details><summary><b>Windows / macOS says the app is unsafe.</b></summary>
 
 An unsigned-publisher notice is different from a malware detection. Compare the download to its
-release checksum, but don't treat a match as proof of safety. If a security tool flags a file,
-leave it blocked and follow the [reporting steps](docs/guide/installation.md#security-warnings).
+release checksum, but don't treat a match as proof of safety. For a macOS Gatekeeper warning, see
+the [first-launch steps](docs/guide/installation.md#macos). If a security tool reports malware,
+leave the file blocked and follow the [reporting steps](docs/guide/installation.md#security-warnings).
 </details>
 
 <details><summary><b>Can I use it together with IDM or another download manager?</b></summary>

@@ -9,6 +9,8 @@ use std::time::Duration;
 use tauri::{
     AppHandle, Emitter, Manager, PhysicalPosition, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
+#[cfg(target_os = "macos")]
+use tauri::{LogicalPosition, TitleBarStyle};
 
 struct Spec {
     width: f64,
@@ -205,6 +207,18 @@ fn create(app: &AppHandle, kind: &str, label: &str, route: &str) -> tauri::Resul
         .focused(!matches!(kind, "mini" | "dropzone"));
     // HTML5 drag & drop (links from the browser) instead of Tauri's file-only handler, except in
     // the Tools window: files dropped there need their paths, which only Tauri's handler gives.
+    // macOS uses native traffic lights over the webview. The mini window and drop zone remain
+    // frameless because their compact/bare layouts have no title-bar space for native controls.
+    #[cfg(target_os = "macos")]
+    let builder = if !matches!(kind, "mini" | "dropzone") {
+        builder
+            .decorations(true)
+            .title_bar_style(TitleBarStyle::Overlay)
+            .hidden_title(true)
+            .traffic_light_position(LogicalPosition::new(14.0, 14.0))
+    } else {
+        builder
+    };
     let builder = if kind == "tools" {
         builder
     } else {
