@@ -30,6 +30,8 @@ pub struct NewItem {
     pub url: String,
     pub kind: Option<ItemKind>,
     pub file_name: Option<String>,
+    /// Response MIME type supplied by the browser, used when its suggested name has no suffix.
+    pub mime: Option<String>,
     pub save_dir: Option<PathBuf>,
     pub category: Option<String>,
     pub description: String,
@@ -254,6 +256,17 @@ pub(crate) fn typed_video_name(typed: &str, ext: &str) -> Option<String> {
     name_stem(typed).map(|stem| format!("{stem}.{ext}"))
 }
 
+/// Adds a known response type to an extensionless browser-suggested name without changing names
+/// that already have a suffix or responses with generic/unknown MIME types.
+fn add_mime_extension(name: &str, mime: Option<&str>) -> String {
+    if std::path::Path::new(name).extension().is_some() {
+        return name.to_string();
+    }
+    mime.and_then(prism_engine::filename::extension_for_mime)
+        .map(|ext| format!("{name}.{ext}"))
+        .unwrap_or_else(|| name.to_string())
+}
+
 /// The extension of a media file: from its address when that names a media file, else from
 /// the MIME type, else mp4.
 fn media_ext(url: &str, mime: Option<&str>) -> String {
@@ -302,7 +315,7 @@ impl Core {
         let file_name = n
             .file_name
             .clone()
-            .map(|f| super::sanitize_name(&f))
+            .map(|f| super::sanitize_name(&add_mime_extension(&f, n.mime.as_deref())))
             .unwrap_or_else(|| name_from_url(&n.url));
         let category = n.category.clone().unwrap_or_else(|| {
             let st = self.0.state.lock();
@@ -470,7 +483,7 @@ impl Core {
         let file_name = n
             .file_name
             .clone()
-            .map(|f| super::sanitize_name(&f))
+            .map(|f| super::sanitize_name(&add_mime_extension(&f, n.mime.as_deref())))
             .or_else(|| fallback_name.clone())
             .unwrap_or_else(|| name_from_url(&n.url));
         let category = {
@@ -550,7 +563,16 @@ impl Core {
             p.info.probing = false;
             match result {
                 Ok(probe) => {
+                    if p.item.mime.is_none() {
+                        p.item.mime = probe.mime.clone();
+                    }
                     let user_named = p.item.file_name.is_some();
+                    if user_named {
+                        p.info.file_name = super::sanitize_name(&add_mime_extension(
+                            &p.info.file_name,
+                            probe.mime.as_deref(),
+                        ));
+                    }
                     if !user_named && !probe.file_name.is_empty() {
                         p.info.file_name = match &p.fallback_name {
                             Some(name) if !server_named(&probe, &p.item.url) => name.clone(),
@@ -1332,6 +1354,7 @@ impl Core {
                     url,
                     file_name: s("filename")
                         .map(|f| f.rsplit(['/', '\\']).next().unwrap_or(&f).to_string()),
+                    mime: s("mime"),
                     referer: s("referrer").or_else(|| s("pageUrl")),
                     cookies,
                     user_agent: s("userAgent"),
@@ -2164,6 +2187,22 @@ mod file_name_tests {
     use std::time::Duration;
 
     #[test]
+    fn mime_extension_is_added_only_when_the_name_has_no_suffix() {
+        assert_eq!(
+            add_mime_extension("photo", Some("image/webp")),
+            "photo.webp"
+        );
+        assert_eq!(
+            add_mime_extension("photo.png", Some("image/webp")),
+            "photo.png"
+        );
+        assert_eq!(
+            add_mime_extension("photo", Some("application/octet-stream")),
+            "photo"
+        );
+    }
+
+    #[test]
     fn a_name_typed_for_a_video_gets_the_formats_extension() {
         let name = |typed: &str, ext: &str| typed_video_name(typed, ext);
         assert_eq!(name("My clip", "mp4").as_deref(), Some("My clip.mp4"));
@@ -2342,6 +2381,70 @@ mod file_name_tests {
             "entries": [{"url": "https://www.youtube.com/watch?v=aaaaaaaaaaa", "title": "First", "index": 1}],
         }));
         assert_eq!(list[0].file_name, "First [aaaaaaaaaaa].mp4");
+        core.shutdown().await;
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn an_extensionless_browser_name_gets_the_probed_mime_extension() {
+        let server = prism_testserver::TestServer::start(Default::default())
+            .await
+            .unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let core = core_in(tmp.path()).await;
+        let url = server.url("/file/photo?size=32&type=image/webp");
+        let info = core.capture(
+            NewItem {
+                url,
+                file_name: Some("photo".into()),
+                ..Default::default()
+            },
+            CaptureSource::Browser,
+        );
+        let info = tokio::time::timeout(Duration::from_secs(20), async {
+            loop {
+                let info = core.pending_capture(&info.id).unwrap();
+                if !info.probing {
+                    return info;
+                }
+                tokio::time::sleep(Duration::from_millis(50)).await;
+            }
+        })
+        .await
+        .expect("the server was not asked");
+        assert_eq!(info.mime.as_deref(), Some("image/webp"));
+        assert_eq!(info.file_name, "photo.webp");
+        let item = core
+            .confirm_capture(CaptureDecision {
+                id: info.id,
+                mode: StartMode::Later,
+                ..Default::default()
+            })
+            .unwrap();
+        assert_eq!(item.file_name, "photo.webp");
+        core.shutdown().await;
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn a_browser_mime_adds_an_extension_when_capture_dialog_is_disabled() {
+        let server = prism_testserver::TestServer::start(Default::default())
+            .await
+            .unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let core = core_in(tmp.path()).await;
+        let reply = core
+            .handle_message(json!({
+                "type": "download",
+                "url": server.url("/file/photo?size=32&type=image/webp"),
+                "filename": "photo",
+                "mime": "image/webp",
+                "fileSize": 32,
+                "userAgent": "Prism test",
+                "incognito": false,
+                "source": "capture",
+            }))
+            .await;
+        let id = reply["downloadId"].as_str().expect("download was added");
+        assert_eq!(core.item(id).unwrap().file_name, "photo.webp");
         core.shutdown().await;
     }
 
