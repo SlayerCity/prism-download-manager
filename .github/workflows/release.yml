@@ -109,6 +109,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/make-portable.ps1 -Target ${{ matrix.target }}
+      - name: PortableApps-format package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/make-portable-paf.ps1 -Target ${{ matrix.target }}
       - uses: actions/upload-artifact@v5
         with:
           name: prism-${{ matrix.name }}
