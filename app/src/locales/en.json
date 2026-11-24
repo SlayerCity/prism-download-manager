@@ -90,5 +90,7 @@
   "{count} downloads and their files will be deleted. The files can't be restored.": {
     "one": "{count} download and its file will be deleted. The file can't be restored.",
     "other": "{count} downloads and their files will be deleted. The files can't be restored."
-  }
+  },
+  "Drag the file into a chat, an e-mail or a folder": "Drag the file into a chat, an e-mail or a folder",
+  "Could not drag the file": "Drag the file into a chat, an e-mail or a folder"
 }

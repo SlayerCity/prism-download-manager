@@ -1150,5 +1150,7 @@
   "The “Download file” window shows the files in a ZIP before you download it, and can download just one of them.": "“下载文件”窗口会在下载前显示 ZIP 中的文件，并且可以只下载其中一个。",
   "Finished means finished": "完成就是完成",
   "A download that finished while the window was open sometimes still looked like it was downloading.": "修复了窗口打开时已完成的下载有时仍显示为正在下载的问题。",
-  "Extract ZIP to a new folder after download": "下载后将 ZIP 解压到新文件夹"
+  "Extract ZIP to a new folder after download": "下载后将 ZIP 解压到新文件夹",
+  "Drag the file into a chat, an e-mail or a folder": "将文件拖到聊天、电子邮件或文件夹中",
+  "Could not drag the file": "无法拖动文件"
 }

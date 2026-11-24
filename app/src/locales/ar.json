@@ -1265,5 +1265,7 @@
   "The “Download file” window shows the files in a ZIP before you download it, and can download just one of them.": "تعرض نافذة «تنزيل ملف» الملفات الموجودة في ZIP قبل تنزيله، ويمكنها تنزيل ملف واحد منها فقط.",
   "Finished means finished": "المكتمل مكتمل",
   "A download that finished while the window was open sometimes still looked like it was downloading.": "التنزيل الذي اكتمل والنافذة مفتوحة كان يبدو أحياناً كأنه ما زال قيد التنزيل.",
-  "Extract ZIP to a new folder after download": "استخراج ملف ZIP إلى مجلد جديد بعد التنزيل"
+  "Extract ZIP to a new folder after download": "استخراج ملف ZIP إلى مجلد جديد بعد التنزيل",
+  "Drag the file into a chat, an e-mail or a folder": "اسحب الملف إلى محادثة أو بريد أو أي مجلد",
+  "Could not drag the file": "تعذّر سحب الملف"
 }

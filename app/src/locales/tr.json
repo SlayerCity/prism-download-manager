@@ -1173,5 +1173,7 @@
   "The “Download file” window shows the files in a ZIP before you download it, and can download just one of them.": "«Dosya indir» penceresi bir ZIP'teki dosyaları indirmeden önce gösterir ve yalnızca birini indirebilir.",
   "Finished means finished": "Bitti demek bitti",
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Pencere açıkken biten bir indirme bazen hâlâ iniyormuş gibi görünüyordu.",
-  "Extract ZIP to a new folder after download": "İndirmeden sonra ZIP dosyasını yeni bir klasöre çıkar"
+  "Extract ZIP to a new folder after download": "İndirmeden sonra ZIP dosyasını yeni bir klasöre çıkar",
+  "Drag the file into a chat, an e-mail or a folder": "Dosyayı bir sohbete, e-postaya veya klasöre sürükleyin",
+  "Could not drag the file": "Dosya sürüklenemedi"
 }

@@ -158,6 +158,10 @@
 .chk .checkbox { opacity: 0; transition: opacity var(--dur-fast) var(--ease-standard); }
 .row:hover .chk .checkbox, .row.is-selected .chk .checkbox, .chk .checkbox:focus-visible { opacity: 1; }
 .namecell { display: flex; align-items: center; gap: 12px; }
+.namecell.is-file-draggable { cursor: grab; }
+.namecell.is-file-draggable:active { cursor: grabbing; }
+.file-drag-grip { margin-inline-start: auto; flex: none; opacity: 0.45; }
+.namecell.is-file-draggable:hover .file-drag-grip { opacity: 0.9; }
 .row-lead { width: 44px; height: 28px; display: grid; place-items: center; flex: none; }
 .name { display: grid; gap: 2px; min-width: 0; }
 .name__t { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

@@ -1219,5 +1219,7 @@
   "The “Download file” window shows the files in a ZIP before you download it, and can download just one of them.": "Okno „Stáhnout soubor“ ukáže soubory v ZIPu ještě před stažením a umí stáhnout jen jeden z nich.",
   "Finished means finished": "Hotovo je hotovo",
   "A download that finished while the window was open sometimes still looked like it was downloading.": "Stahování, které skončilo při otevřeném okně, občas dál vypadalo, že se stahuje.",
-  "Extract ZIP to a new folder after download": "Po stažení rozbalit ZIP do nové složky"
+  "Extract ZIP to a new folder after download": "Po stažení rozbalit ZIP do nové složky",
+  "Drag the file into a chat, an e-mail or a folder": "Přetáhněte soubor do chatu, e-mailu nebo složky",
+  "Could not drag the file": "Soubor nelze přetáhnout"
 }

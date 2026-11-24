@@ -254,6 +254,7 @@ export const api = {
   itemDetails: (id: string) => invoke<ItemDetails | null>("item_details", { id }),
   previewItem: (id: string) => invoke<string>("preview_item", { id }),
   openItem: (id: string) => invoke<void>("open_item", { id }),
+  startFileDrag: (id: string) => invoke<void>("start_file_drag", { id }),
   revealItem: (id: string) => invoke<void>("reveal_item", { id }),
   /** Shows a file selected in its folder. */
   openPath: (path: string) => invoke<void>("open_path", { path }),

@@ -234,6 +234,7 @@ fn main() {
             commands::update_item,
             commands::item_details,
             commands::open_item,
+            commands::start_file_drag,
             commands::preview_item,
             commands::reveal_item,
             commands::open_path,

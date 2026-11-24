@@ -8,6 +8,7 @@ import { Icon } from "../design/icons";
 import { actions } from "../lib/actions";
 import { type ColumnDef, gridTemplate, minRowWidth, resolveColumns } from "../lib/columns";
 import { formatBytes, formatDate, formatDuration, formatSpeed } from "../lib/format";
+import { inTauri } from "../lib/api";
 import { t } from "../lib/i18n";
 import { bytesLine, canPause, formatPct, metaLine, progressOf, statusView } from "../lib/present";
 import { clickSelect, type MoveKey, moveSelect } from "../lib/selection";
@@ -16,6 +17,9 @@ import { useUi } from "../lib/ui";
 import { EmptyState } from "./EmptyState";
 import { itemMenu } from "./itemMenu";
 import { useVisibleIds } from "./useListing";
+
+const nativeFileDragAvailable = () =>
+  inTauri && typeof navigator !== "undefined" && /Windows NT|Mac OS X/.test(navigator.userAgent);
 
 const ROW = { comfortable: 44, compact: 30 } as const;
 
@@ -202,7 +206,17 @@ const Row = memo(function Row({ id, index, top, cols, selected, fresh, compact, 
     switch (c.key) {
       case "name":
         return (
-          <div className="namecell" key="name">
+          <div
+            className={`namecell${item.status === "completed" && nativeFileDragAvailable() ? " is-file-draggable" : ""}`}
+            key="name"
+            draggable={item.status === "completed" && nativeFileDragAvailable()}
+            title={item.status === "completed" && nativeFileDragAvailable() ? t("Drag the file into a chat, an e-mail or a folder") : undefined}
+            onDragStart={(e) => {
+              if (item.status !== "completed" || !nativeFileDragAvailable()) return;
+              e.preventDefault();
+              actions.dragFile(id);
+            }}
+          >
             <span className="row-lead">
               <FileTile item={item} size={compact ? 20 : 28} thumbWidth={compact ? 28 : 44} />
             </span>
@@ -212,6 +226,7 @@ const Row = memo(function Row({ id, index, top, cols, selected, fresh, compact, 
               </div>
               {!compact && <div className="name__m">{metaLine(item, categories)}</div>}
             </div>
+            {item.status === "completed" && nativeFileDragAvailable() && <Icon name="drag-handle" size={15} className="file-drag-grip" aria-hidden="true" />}
           </div>
         );
       case "size":

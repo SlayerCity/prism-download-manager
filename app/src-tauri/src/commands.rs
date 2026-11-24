@@ -477,6 +477,48 @@ pub async fn open_item(core: State<'_, Core>, app: AppHandle, id: String) -> Cmd
         .map_err(err)
 }
 
+/// Start a native file drag from a completed download row (Windows and macOS).
+#[tauri::command]
+pub async fn start_file_drag(
+    core: State<'_, Core>,
+    window: tauri::WebviewWindow,
+    id: String,
+) -> CmdResult<()> {
+    let item = core.item(&id).ok_or("unknown item")?;
+    if item.status != Status::Completed || item.trashed {
+        return Err("Only completed downloads can be dragged".into());
+    }
+    let path = item.path();
+    if !path.exists() {
+        return Err("Downloaded file not found".into());
+    }
+    start_native_drag(window, path)
+}
+
+#[cfg(any(windows, target_os = "macos"))]
+fn start_native_drag(window: tauri::WebviewWindow, path: PathBuf) -> CmdResult<()> {
+    const DRAG_ICON: &[u8] = include_bytes!("../icons/64x64.png");
+    let target = window.clone();
+    window
+        .run_on_main_thread(move || {
+            if let Err(e) = drag::start_drag(
+                &target,
+                drag::DragItem::Files(vec![path]),
+                drag::Image::Raw(DRAG_ICON.to_vec()),
+                |_result, _cursor| {},
+                drag::Options::default(),
+            ) {
+                tracing::warn!("file drag failed: {e}");
+            }
+        })
+        .map_err(err)
+}
+
+#[cfg(not(any(windows, target_os = "macos")))]
+fn start_native_drag(_window: tauri::WebviewWindow, _path: PathBuf) -> CmdResult<()> {
+    Err("Native file dragging is not supported on this platform".into())
+}
+
 #[tauri::command]
 pub async fn preview_item(core: State<'_, Core>, id: String) -> CmdResult<String> {
     let item = core.item(&id).ok_or("unknown item")?;
