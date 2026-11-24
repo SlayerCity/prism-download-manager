@@ -1294,5 +1294,6 @@
   "Try automatic router port forwarding (UPnP)": "جرّب إعادة توجيه منفذ الموجّه تلقائيًا (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "سيطلب Prism من موجّه متوافق إعادة توجيه منفذ BitTorrent الوارد. أعد تشغيل Prism لتطبيق الإعداد؛ الميزة معطّلة افتراضيًا.",
   "Incoming connections": "الاتصالات الواردة",
-  "Session ratio": "نسبة المشاركة في هذه الجلسة"
+  "Session ratio": "نسبة المشاركة في هذه الجلسة",
+  "Connected peers": "الأقران المتصلون"
 }

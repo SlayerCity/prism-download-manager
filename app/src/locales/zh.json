@@ -1179,5 +1179,6 @@
   "Try automatic router port forwarding (UPnP)": "尝试自动路由器端口转发（UPnP）",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
   "Incoming connections": "传入连接",
-  "Session ratio": "本次会话分享率"
+  "Session ratio": "本次会话分享率",
+  "Connected peers": "已连接节点"
 }

@@ -140,6 +140,7 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
           <div className="torrent-stats" role="group" aria-label={t("Live BitTorrent stats")}>
             <div><div className="kpi__k">{t("Uploaded this session")}</div><div className="kpi__v tnum">{formatBytes(torrentStats.uploaded)}</div></div>
             <div><div className="kpi__k">{t("Upload speed")}</div><div className="kpi__v tnum">{formatSpeed(torrentStats.uploadSpeed)}</div></div>
+            <div><div className="kpi__k">{t("Connected peers")}</div><div className="kpi__v tnum">{torrentStats.connections}</div></div>
             <div><div className="kpi__k">{t("Session ratio")}</div><div className="kpi__v tnum">{formatRatio(torrentStats.uploaded, torrentStats.downloaded)}</div></div>
           </div>
         )}
