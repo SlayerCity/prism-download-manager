@@ -1172,18 +1172,25 @@ impl std::error::Error for NotEnoughSpace {}
 /// Putting a video's streams together writes a file about as big as they are, next to them;
 /// with less room ffmpeg filled the disk to the last byte (#49). Checked before it starts.
 fn check_room_to_merge(post: &prism_video::PostProcess) -> Result<()> {
-    // Room for ffmpeg's own files and the file system; small streams always fit in it.
-    const MARGIN: u64 = 64 << 20;
-    let streams: u64 = post
+    let stream_sizes = post
         .inputs
         .iter()
         .filter_map(|i| i.path.as_ref())
         .filter_map(|p| std::fs::metadata(p).ok())
-        .map(|m| m.len())
-        .sum();
+        .map(|m| m.len());
     let dir = post.output_path.parent().unwrap_or(Path::new("."));
-    room_to_merge(streams + MARGIN, crate::platform::available_space(dir))?;
+    room_to_merge(
+        merge_space_needed(stream_sizes),
+        crate::platform::available_space(dir),
+    )?;
     Ok(())
+}
+
+/// Total output headroom for the merge, including a small filesystem/ffmpeg margin. Saturation
+/// prevents extreme/virtual sizes from wrapping the guard below the actual requirement (#49).
+fn merge_space_needed(stream_sizes: impl IntoIterator<Item = u64>) -> u64 {
+    const MARGIN: u64 = 64 << 20;
+    stream_sizes.into_iter().fold(MARGIN, u64::saturating_add)
 }
 
 /// `needed` bytes against what's `free` (unknown: assumed enough).
@@ -1831,6 +1838,11 @@ mod tests {
         assert!(any.downcast_ref::<NotEnoughSpace>().is_some());
         assert!(room_to_merge(8_000_000_000, Some(9_000_000_000)).is_ok());
         assert!(room_to_merge(8_000_000_000, None).is_ok());
+
+        // Large virtual or malformed inputs must never wrap the required space to a small value.
+        let needed = merge_space_needed([u64::MAX, 1]);
+        assert_eq!(needed, u64::MAX);
+        assert!(room_to_merge(needed, Some(5_000_000_000)).is_err());
     }
 
     #[test]
