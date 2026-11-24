@@ -1223,8 +1223,6 @@
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Se disattivato, i torrent seguono il limite globale di download. Usa 0 per illimitato.",
   "Download rate": "Velocità di download",
   "Upload rate": "Velocità di upload",
-  "Try automatic router port forwarding (UPnP)": "Prova il port forwarding automatico del router (UPnP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism chiederà a un router compatibile di inoltrare la porta BitTorrent in ingresso. Riavvia Prism per applicare; disattivato per impostazione predefinita.",
   "Listening port": "Porta di ascolto",
   "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Le connessioni peer in ingresso usano questa porta. 0 la sceglie automaticamente; riavvia Prism per applicare la modifica.",
   "Incoming connections": "Connessioni in ingresso",
@@ -1235,5 +1233,7 @@
   "Maximum seeding ratio": "Rapporto massimo di condivisione",
   "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Metti in pausa i torrent mantenuti quando gli upload raggiungono questo multiplo della dimensione; 0 significa illimitato. Il conteggio inizia con questa versione.",
   "Uploaded recorded": "Caricamento registrato",
-  "Recorded ratio": "Rapporto registrato"
+  "Recorded ratio": "Rapporto registrato",
+  "Try automatic router port forwarding (UPnP or NAT-PMP)": "Prova il port forwarding automatico del router (UPnP o NAT-PMP)",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism chiederà a un router compatibile di inoltrare la porta BitTorrent in ingresso tramite UPnP o NAT-PMP. Riavvia Prism per applicare; disattivato per impostazione predefinita."
 }

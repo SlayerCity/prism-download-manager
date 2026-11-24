@@ -320,7 +320,7 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
             <Row title={t("Listening port")} hint={t("Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.")}>
               <NumberField value={s.torrent.listenPort ?? 0} min={0} max={65535} label={t("Listening port")} onCommit={(v) => save({ torrent: { listenPort: v } })} width={100} />
             </Row>
-            <Toggle title={t("Try automatic router port forwarding (UPnP)")} hint={t("When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.")} value={s.torrent.enableUpnpPortForwarding} onChange={(v) => save({ torrent: { enableUpnpPortForwarding: v } })} />
+            <Toggle title={t("Try automatic router port forwarding (UPnP or NAT-PMP)")} hint={t("When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.")} value={s.torrent.enableUpnpPortForwarding} onChange={(v) => save({ torrent: { enableUpnpPortForwarding: v } })} />
           </Group>
           <Group title={t("Speed limits")}>
             <Toggle title={t("Use separate BitTorrent speed limits")} hint={t("When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.")} value={s.torrent.separateSpeedLimits} onChange={(v) => save({ torrent: { separateSpeedLimits: v } })} />

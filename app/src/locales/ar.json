@@ -1292,8 +1292,6 @@
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "عند إيقافه، تتبع التورنتات حد التنزيل العام. أدخل 0 لعدم التحديد.",
   "Download rate": "معدل التنزيل",
   "Upload rate": "معدل الرفع",
-  "Try automatic router port forwarding (UPnP)": "جرّب إعادة توجيه منفذ الموجّه تلقائيًا (UPnP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "سيطلب Prism من موجّه متوافق إعادة توجيه منفذ BitTorrent الوارد. أعد تشغيل Prism لتطبيق الإعداد؛ الميزة معطّلة افتراضيًا.",
   "Listening port": "منفذ الاستماع",
   "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "تستخدم اتصالات الأقران الواردة هذا المنفذ. القيمة 0 تحدده تلقائيًا؛ أعد تشغيل Prism لتطبيق التغيير.",
   "Incoming connections": "الاتصالات الواردة",
@@ -1304,5 +1302,7 @@
   "Maximum seeding ratio": "أقصى نسبة مشاركة",
   "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "أوقف التورنتات المحتفظ بها عندما تصل البيانات المرفوعة إلى هذا المضاعف من حجمها؛ 0 تعني بلا حد. يبدأ العد في هذا الإصدار.",
   "Uploaded recorded": "إجمالي الرفع المسجل",
-  "Recorded ratio": "النسبة المسجلة"
+  "Recorded ratio": "النسبة المسجلة",
+  "Try automatic router port forwarding (UPnP or NAT-PMP)": "جرّب إعادة توجيه منفذ الموجّه تلقائيًا (UPnP أو NAT-PMP)",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "سيطلب Prism من موجّه متوافق إعادة توجيه منفذ BitTorrent الوارد باستخدام UPnP أو NAT-PMP. أعد تشغيل Prism لتطبيق الإعداد؛ الميزة معطّلة افتراضيًا."
 }

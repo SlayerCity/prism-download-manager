@@ -856,6 +856,19 @@ impl Session {
                         Self::task_upnp_port_forwarder(announce_port, bind_device),
                     );
                 }
+                if listen.enable_upnp_port_forwarding
+                    && let Some(announce_port) = listen.announce_port
+                {
+                    info!(port = announce_port, "starting NAT-PMP port forwarder");
+                    session.spawn(
+                        debug_span!(parent: session.rs(), "natpmp_forward", port = announce_port),
+                        "natpmp_forward",
+                        Self::task_natpmp_port_forwarder(
+                            announce_port,
+                            session.cancellation_token().child_token(),
+                        ),
+                    );
+                }
             }
 
             if let Some(persistence) = session.persistence.as_ref() {
@@ -1018,6 +1031,86 @@ impl Session {
     ) -> anyhow::Result<()> {
         let pf = librqbit_upnp::UpnpPortForwarder::new(vec![port], None, bind_device)?;
         pf.run_forever().await
+    }
+
+    async fn task_natpmp_port_forwarder(
+        port: u16,
+        cancellation_token: CancellationToken,
+    ) -> anyhow::Result<()> {
+        const LEASE_SECS: u32 = 3600;
+        let mut retry_delay = Duration::ZERO;
+        loop {
+            tokio::select! {
+                _ = cancellation_token.cancelled() => {
+                    if let Err(e) = Self::set_natpmp_mappings(port, 0).await {
+                        warn!(port, "could not remove NAT-PMP mappings during shutdown: {e:#}");
+                    }
+                    return Ok(());
+                }
+                _ = tokio::time::sleep(retry_delay) => {}
+            }
+
+            match Self::set_natpmp_mappings(port, LEASE_SECS).await {
+                Ok(()) => retry_delay = Duration::from_secs(u64::from(LEASE_SECS / 2)),
+                Err(e) => {
+                    warn!(port, "NAT-PMP port mapping failed; will retry: {e:#}");
+                    retry_delay = Duration::from_secs(60);
+                }
+            }
+        }
+    }
+
+    async fn set_natpmp_mappings(port: u16, lifetime: u32) -> anyhow::Result<()> {
+        use natpmp::{Protocol, Response, new_tokio_natpmp};
+
+        let client = new_tokio_natpmp().await.context("discover NAT-PMP gateway")?;
+        for protocol in [Protocol::TCP, Protocol::UDP] {
+            client
+                .send_port_mapping_request(protocol, port, port, lifetime)
+                .await
+                .context("send NAT-PMP mapping request")?;
+            let response = tokio::time::timeout(
+                Duration::from_secs(5),
+                client.read_response_or_retry(),
+            )
+            .await
+            .context("NAT-PMP gateway did not reply within five seconds")?
+            .context("read NAT-PMP mapping response")?;
+            let mapping = match (protocol, response) {
+                (Protocol::TCP, Response::TCP(mapping))
+                | (Protocol::UDP, Response::UDP(mapping)) => mapping,
+                (_, other) => anyhow::bail!("unexpected NAT-PMP response: {other:?}"),
+            };
+            if mapping.private_port() != port {
+                anyhow::bail!("NAT-PMP gateway returned a different internal port");
+            }
+            if lifetime > 0 && mapping.public_port() != port {
+                let external_port = mapping.public_port();
+                client
+                    .send_port_mapping_request(protocol, port, external_port, 0)
+                    .await
+                    .context("remove NAT-PMP mapping that used a different external port")?;
+                let removal = tokio::time::timeout(
+                    Duration::from_secs(5),
+                    client.read_response_or_retry(),
+                )
+                .await
+                .context("NAT-PMP gateway did not confirm removal of mismatched mapping")?
+                .context("read NAT-PMP mapping removal response")?;
+                match (protocol, removal) {
+                    (Protocol::TCP, Response::TCP(mapping))
+                    | (Protocol::UDP, Response::UDP(mapping))
+                        if mapping.private_port() == port && mapping.lifetime().is_zero() => {}
+                    (_, other) => anyhow::bail!(
+                        "unexpected NAT-PMP mapping removal response: {other:?}"
+                    ),
+                }
+                anyhow::bail!(
+                    "NAT-PMP gateway assigned external port {external_port}, not requested listener port {port}; removed the mismatched mapping"
+                );
+            }
+        }
+        Ok(())
     }
 
     pub fn get_dht(&self) -> Option<&Dht> {

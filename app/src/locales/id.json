@@ -1177,8 +1177,6 @@
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Jika mati, torrent mengikuti batas unduhan global. Isi 0 untuk tanpa batas.",
   "Download rate": "Kecepatan unduh",
   "Upload rate": "Kecepatan unggah",
-  "Try automatic router port forwarding (UPnP)": "Coba penerusan port router otomatis (UPnP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk. Mulai ulang Prism agar berlaku; nonaktif secara default.",
   "Listening port": "Port masuk",
   "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Koneksi peer masuk menggunakan port ini. 0 memilih port secara otomatis; mulai ulang Prism untuk menerapkan perubahan.",
   "Incoming connections": "Koneksi masuk",
@@ -1189,5 +1187,7 @@
   "Maximum seeding ratio": "Rasio seeding maksimum",
   "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Jedaikan torrent yang dipertahankan saat unggahan mencapai kelipatan ukuran torrent ini; 0 berarti tanpa batas. Penghitungan dimulai pada versi ini.",
   "Uploaded recorded": "Unggahan tercatat",
-  "Recorded ratio": "Rasio tercatat"
+  "Recorded ratio": "Rasio tercatat",
+  "Try automatic router port forwarding (UPnP or NAT-PMP)": "Coba penerusan port router otomatis (UPnP atau NAT-PMP)",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk melalui UPnP atau NAT-PMP. Mulai ulang Prism agar berlaku; nonaktif secara default."
 }

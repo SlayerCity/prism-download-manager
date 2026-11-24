@@ -210,6 +210,9 @@ optional = true
 [dependencies.memmap2]
 version = "0.9"
 
+[dependencies.natpmp]
+version = "0.5"
+
 [dependencies.metrics-exporter-prometheus]
 version = "0.18"
 optional = true

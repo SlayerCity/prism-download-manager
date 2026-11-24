@@ -1177,8 +1177,6 @@
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "关闭时，种子遵循全局下载速度限制。设为 0 表示不限速。",
   "Download rate": "下载速度",
   "Upload rate": "上传速度",
-  "Try automatic router port forwarding (UPnP)": "尝试自动路由器端口转发（UPnP）",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
   "Listening port": "监听端口",
   "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "传入的节点连接使用此端口。0 表示自动选择；重启 Prism 后生效。",
   "Incoming connections": "传入连接",
@@ -1189,5 +1187,7 @@
   "Maximum seeding ratio": "最大做种分享率",
   "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "上传量达到种子大小的此倍数时暂停保留的种子；0 表示不限。计数从此版本开始。",
   "Uploaded recorded": "已记录上传量",
-  "Recorded ratio": "已记录分享率"
+  "Recorded ratio": "已记录分享率",
+  "Try automatic router port forwarding (UPnP or NAT-PMP)": "尝试自动路由器端口转发（UPnP 或 NAT-PMP）",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器使用 UPnP 或 NAT-PMP 转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。"
 }

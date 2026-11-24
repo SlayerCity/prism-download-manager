@@ -1200,8 +1200,6 @@
   "When off, torrents follow the global download speed limit. Set either limit to 0 for unlimited.": "Kapalıyken torrentler genel indirme hız sınırını izler. Sınırsız için 0 girin.",
   "Download rate": "İndirme hızı",
   "Upload rate": "Yükleme hızı",
-  "Try automatic router port forwarding (UPnP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
   "Listening port": "Dinleme bağlantı noktası",
   "Incoming peer connections use this port. 0 selects automatically; restart Prism to apply.": "Gelen eş bağlantıları bu bağlantı noktasını kullanır. 0 otomatik seçim yapar; uygulamak için Prism’i yeniden başlatın.",
   "Incoming connections": "Gelen bağlantılar",
@@ -1212,5 +1210,7 @@
   "Maximum seeding ratio": "En yüksek paylaşım oranı",
   "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Yüklemeler torrent boyutunun bu katına ulaştığında saklanan torrentleri duraklatır; 0 sınırsızdır. Sayım bu sürümle başlar.",
   "Uploaded recorded": "Kaydedilen yükleme",
-  "Recorded ratio": "Kaydedilen oran"
+  "Recorded ratio": "Kaydedilen oran",
+  "Try automatic router port forwarding (UPnP or NAT-PMP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP veya NAT-PMP)",
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını UPnP veya NAT-PMP ile yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır."
 }
