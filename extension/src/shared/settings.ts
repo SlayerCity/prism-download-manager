@@ -4,7 +4,7 @@ import type { BypassKey, CaptureSettings } from './protocol';
 export const DEFAULT_EXTENSIONS = (
   '3GP 7Z AAC ACE AIF APK ARJ ASF AVI BIN BZ2 EXE GZ GZIP IMG ISO LZH M4A M4V MKV MOV MP3 MP4 MPA MPE MPEG MPG ' +
   'MSI MSU OGG OGV PDF PLJ PPS PPT QT R0* R1* RA RAR RM RMVB SEA SIT SITX TAR TIF TIFF WAV WMA WMV Z ZIP DMG DEB ' +
-  'RPM APPIMAGE FLAC OPUS WEBM ZST XZ'
+  'RPM APPIMAGE FLAC OPUS PNG SVG WEBP WEBM ZST XZ'
 ).split(' ');
 
 export const DEFAULT_MIME_TYPES = [
@@ -31,6 +31,7 @@ export const DEFAULT_MIME_TYPES = [
   'application/vnd.debian.binary-package',
   'application/x-debian-package',
   'application/x-rpm',
+  'image/',
   'application/x-redhat-package-manager',
 ];
 

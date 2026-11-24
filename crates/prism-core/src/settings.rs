@@ -326,12 +326,12 @@ pub struct Capture {
 }
 
 pub const DEFAULT_CAPTURE_EXTENSIONS: &[&str] = &[
-    "3gp", "7z", "aac", "ace", "aif", "aiff", "apk", "appimage", "arj", "asf", "avi", "bin", "bz2",
-    "cab", "deb", "dmg", "exe", "flac", "flv", "gz", "gzip", "img", "iso", "lzh", "m4a", "m4v",
-    "mkv", "mov", "mp3", "mp4", "mpa", "mpe", "mpeg", "mpg", "msi", "msix", "msu", "ogg", "ogv",
-    "opus", "pdf", "pkg", "ppt", "pptx", "qt", "r00", "r01", "ra", "rar", "rm", "rmvb", "rpm",
-    "sea", "sit", "sitx", "tar", "tgz", "tif", "tiff", "torrent", "wav", "webm", "wma", "wmv",
-    "xz", "z", "zip", "zst",
+    "3gp", "7z", "aac", "ace", "aif", "aiff", "apk", "appimage", "arj", "asf", "avi", "avif",
+    "bin", "bmp", "bz2", "cab", "deb", "dmg", "exe", "flac", "flv", "gif", "gz", "gzip", "img",
+    "iso", "jpeg", "jpg", "lzh", "m4a", "m4v", "mkv", "mov", "mp3", "mp4", "mpa", "mpe", "mpeg",
+    "mpg", "msi", "msix", "msu", "ogg", "ogv", "opus", "pdf", "pkg", "png", "ppt", "pptx", "qt",
+    "r00", "r01", "ra", "rar", "rm", "rmvb", "rpm", "sea", "sit", "sitx", "svg", "tar", "tgz",
+    "tif", "tiff", "torrent", "wav", "webp", "webm", "wma", "wmv", "xz", "z", "zip", "zst",
 ];
 
 impl Default for Capture {
@@ -351,6 +351,7 @@ impl Default for Capture {
                 "application/vnd.rar",
                 "application/x-iso9660-image",
                 "application/x-bittorrent",
+                "image/",
             ]
             .into_iter()
             .map(String::from)
@@ -571,6 +572,8 @@ mod tests {
         assert_eq!(s.downloads.default_connections, 16);
         assert_eq!(s.downloads.max_connections, 32);
         assert!(s.capture.extensions.iter().any(|e| e == "zip"));
+        assert!(s.capture.extensions.iter().any(|e| e == "png"));
+        assert!(s.capture.mime_types.iter().any(|m| m == "image/"));
     }
 
     #[test]

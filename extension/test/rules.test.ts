@@ -77,6 +77,10 @@ describe('site patterns', () => {
 describe('decideCapture', () => {
   const base = { url: 'https://dl.example.com/file.zip', filename: 'file.zip', mime: 'application/zip', fileSize: 5_000_000 };
 
+  it('captures image downloads with the defaults, including extensionless image responses', () => {
+    expect(decideCapture({ url: 'https://x.com/photo.png', filename: 'photo.png', mime: 'image/png' }, S, ctx).capture).toBe(true);
+    expect(decideCapture({ url: 'https://x.com/download?id=1', mime: 'image/jpeg' }, S, ctx).capture).toBe(true);
+  });
   it('captures listed types', () => {
     expect(decideCapture(base, S, ctx).capture).toBe(true);
     expect(decideCapture({ url: 'https://x.com/get?id=1', mime: 'video/mp4' }, S, ctx).capture).toBe(true);
