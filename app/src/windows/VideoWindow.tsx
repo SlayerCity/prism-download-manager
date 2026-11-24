@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Checkbox, Segmented, Switch, TextField } from "../components/Controls";
+import { Checkbox, Segmented, Select, Switch, TextField } from "../components/Controls";
 import { openMenuAt } from "../components/MenuHost";
 import { PartPicker } from "../components/PartPicker";
 import { WindowFrame } from "../components/WindowFrame";
@@ -146,7 +146,15 @@ export default function VideoWindow({ id }: { id: string }) {
   const choices = probe?.kind === "video" ? probe.choices : PLAYLIST_CHOICES;
   const { video, mp3 } = useMemo(() => splitChoices(choices), [choices]);
   const picked = format === "mp3" ? mp3 : video.find((c) => c.id === choice) ?? video[0];
-  const subLangs = useMemo(() => (probe?.kind === "video" ? Object.keys(probe.subtitles ?? {}) : []), [probe]);
+  const subLangs = useMemo(() => {
+    if (probe?.kind !== "video") return [];
+    return Object.entries(probe.subtitles ?? {}).flatMap(([code, track]) => {
+      if (code === "live_chat" || !/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i.test(code)) return [];
+      const name = track && typeof track === "object" && "name" in track && typeof track.name === "string"
+        ? track.name : "";
+      return [{ value: code, label: name ? `${name} (${code})` : code }];
+    });
+  }, [probe]);
   const named = (probe?.kind === "video" ? probe.title : probe?.kind === "playlist" ? probe.title : null) ?? cap?.title;
   // The English fallback goes to the core; only the shown one is translated.
   const title = named ?? "Video";
@@ -344,9 +352,13 @@ export default function VideoWindow({ id }: { id: string }) {
             )}
             <div className={`vopt${section ? " is-off" : ""}`} inert={!!section}>
               <span>
-                <Icon name="subtitle" size={15} /> {t("Subtitles")} {subLangs.length ? <em>({subLangs.slice(0, 6).join(", ")})</em> : null}
+                <Icon name="subtitle" size={15} /> {t("Subtitles")}
               </span>
               <div className="inline">
+                {subs && subLangs.length > 0 && (
+                  <Select label={t("Subtitle languages")} value={""} width={140} onChange={(code) => code && setLangs(code)}
+                    options={[{ value: "", label: t("Subtitle languages") }, ...subLangs]} />
+                )}
                 {subs && <TextField value={langs} onChange={setLangs} label={t("Subtitle languages")} mono />}
                 <Switch checked={subs} label={t("Embed subtitles")} onChange={setSubs} />
               </div>
