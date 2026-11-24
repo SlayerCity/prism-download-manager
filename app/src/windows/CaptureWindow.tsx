@@ -32,6 +32,7 @@ export default function CaptureWindow({ id }: { id: string }) {
   const [pass, setPass] = useState("");
   const [conflict, setConflict] = useState<"rename" | "overwrite">("rename");
   const [remember, setRemember] = useState(false);
+  const [autoExtract, setAutoExtract] = useState(false);
   const [more, setMore] = useState(true);
   const [free, setFree] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -82,6 +83,7 @@ export default function CaptureWindow({ id }: { id: string }) {
         password: pass || undefined,
         rememberDir: remember,
         conflict: cap.exists ? conflict : undefined,
+        autoExtract: autoExtract && isZip(cap),
       }),
       t("Could not add the download"),
     );
@@ -237,6 +239,7 @@ export default function CaptureWindow({ id }: { id: string }) {
         </div>
 
         <div className="checks">
+          {cap && isZip(cap) && <Checkbox checked={autoExtract} onChange={setAutoExtract}>{t("Extract ZIP to a new folder after download")}</Checkbox>}
           <Checkbox checked={remember} onChange={setRemember}>
             {t("Remember this folder for {category}", { category: displayName(categories.find((c) => c.id === category)?.name ?? "") || t("this category") })}
           </Checkbox>

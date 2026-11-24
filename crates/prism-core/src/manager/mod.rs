@@ -1020,8 +1020,49 @@ impl Core {
                     i.downloaded = size;
                     i.resume = None;
                 });
+                let auto_extract = self
+                    .with_item(&id, |item| item.auto_extract)
+                    .unwrap_or(false);
                 let av = self.settings().antivirus;
                 let scan = crate::antivirus::scan(&av, &path).await;
+                let mut extraction_notice = None;
+                if auto_extract {
+                    match &scan {
+                        crate::antivirus::ScanResult::Clean
+                        | crate::antivirus::ScanResult::Skipped => {
+                            let archive_path = path.clone();
+                            match tokio::task::spawn_blocking(move || {
+                                crate::auto_extract::extract_zip_archive(&archive_path)
+                            })
+                            .await
+                            {
+                                Ok(Ok(folder)) => {
+                                    extraction_notice = Some((
+                                        "Archive extracted".to_string(),
+                                        folder.to_string_lossy().into_owned(),
+                                    ))
+                                }
+                                Ok(Err(error)) => {
+                                    extraction_notice =
+                                        Some(("Archive extraction failed".to_string(), error))
+                                }
+                                Err(error) => {
+                                    extraction_notice = Some((
+                                        "Archive extraction failed".to_string(),
+                                        error.to_string(),
+                                    ))
+                                }
+                            }
+                        }
+                        crate::antivirus::ScanResult::Error { detail } => {
+                            extraction_notice = Some((
+                                "ZIP not extracted".to_string(),
+                                format!("The antivirus scan could not finish: {detail}"),
+                            ));
+                        }
+                        crate::antivirus::ScanResult::Infected { .. } => {}
+                    }
+                }
                 let error = match &scan {
                     crate::antivirus::ScanResult::Infected { detail } => {
                         Some(format!("Antivirus: threat detected\n{detail}"))
@@ -1050,6 +1091,9 @@ impl Core {
                     }
                     i.clone()
                 });
+                if let Some((title, body)) = extraction_notice {
+                    self.emit(CoreEvent::Notify { title, body });
+                }
                 if let Some(item) = item {
                     let s = self.settings();
                     if item.status == Status::Completed {

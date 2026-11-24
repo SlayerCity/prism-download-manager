@@ -58,6 +58,7 @@ export interface DownloadItem {
   position: number;
   mirrors: string[];
   grabberProject?: string | null;
+  autoExtract?: boolean;
   media?: MediaInfo | null;
 }
 

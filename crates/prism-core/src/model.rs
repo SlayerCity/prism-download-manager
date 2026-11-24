@@ -158,6 +158,9 @@ pub struct DownloadItem {
     /// Serialized `prism_engine::DownloadRequest` (or video/torrent job spec).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request: Option<serde_json::Value>,
+    /// Extract a completed ZIP into a new sibling folder after the archive passes scanning.
+    #[serde(default)]
+    pub auto_extract: bool,
     /// Serialized engine resume state (never sent to the UI).
     #[serde(skip)]
     pub resume: Option<serde_json::Value>,

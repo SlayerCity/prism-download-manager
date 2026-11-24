@@ -6,6 +6,7 @@
 //! layer over this crate, which keeps all business logic testable headlessly.
 
 pub mod antivirus;
+pub mod auto_extract;
 pub mod categories;
 pub mod clipboard;
 pub mod db;

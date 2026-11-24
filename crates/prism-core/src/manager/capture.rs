@@ -45,6 +45,8 @@ pub struct NewItem {
     pub username: Option<String>,
     pub password: Option<String>,
     pub conflict: Option<ConflictAction>,
+    /// User opted to extract a ZIP after download.
+    pub auto_extract: bool,
     pub media: Option<MediaInfo>,
     /// Pre-built job spec (video / torrent jobs).
     pub request: Option<serde_json::Value>,
@@ -79,6 +81,8 @@ pub struct CaptureDecision {
     pub remember_dir: bool,
     /// Resolution when the file already exists.
     pub conflict: Option<ConflictAction>,
+    /// Extract a ZIP after a successful download and antivirus check.
+    pub auto_extract: bool,
 }
 
 #[derive(Debug, Clone, Deserialize, Default)]
@@ -356,6 +360,7 @@ impl Core {
             mirrors: n.mirrors.clone(),
             grabber_project: n.grabber_project.clone(),
             request,
+            auto_extract: n.auto_extract,
             resume: None,
             media: n.media.clone(),
         }
@@ -658,6 +663,7 @@ impl Core {
             n.password = d.password;
         }
         n.conflict = d.conflict.or(Some(ConflictAction::Rename));
+        n.auto_extract = d.auto_extract;
         let mut items = self.add_items(vec![n], d.mode)?;
         let item = items.pop().ok_or_else(|| anyhow!("nothing added"))?;
         if let Some(final_url) = info.final_url {

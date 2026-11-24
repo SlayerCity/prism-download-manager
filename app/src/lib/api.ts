@@ -73,6 +73,7 @@ export interface CaptureDecision {
   password?: string;
   rememberDir?: boolean;
   conflict?: "rename" | "overwrite";
+  autoExtract?: boolean;
 }
 
 export interface ItemPatch {

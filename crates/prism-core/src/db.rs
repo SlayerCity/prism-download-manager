@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 
 pub type DbResult<T> = Result<T, rusqlite::Error>;
 
-const SCHEMA_VERSION: i64 = 1;
+const SCHEMA_VERSION: i64 = 2;
 
 pub struct Db {
     conn: Mutex<Connection>,
@@ -93,6 +93,11 @@ impl Db {
                     id TEXT PRIMARY KEY, name TEXT NOT NULL, config TEXT NOT NULL,
                     results TEXT NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);
                 COMMIT;",
+            )?;
+        }
+        if version < 2 {
+            conn.execute_batch(
+                "ALTER TABLE downloads ADD COLUMN auto_extract INTEGER NOT NULL DEFAULT 0;",
             )?;
         }
         conn.execute(
@@ -322,14 +327,14 @@ impl Db {
 
 const DOWNLOAD_COLUMNS: &str = "id, kind, url, final_url, file_name, save_dir, size, downloaded, status, error,
     category, queue_id, description, referer, added_at, last_try_at, finished_at, resumable, connections,
-    speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media";
+    speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract";
 
 fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
     conn.execute(
         "INSERT INTO downloads(id, kind, url, final_url, file_name, save_dir, size, downloaded, status, error,
             category, queue_id, description, referer, added_at, last_try_at, finished_at, resumable, connections,
-            speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media)
-         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28)
+            speed_limit, checksum, trashed, position, mirrors, grabber_project, request, resume, media, auto_extract)
+         VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29)
          ON CONFLICT(id) DO UPDATE SET kind=excluded.kind, url=excluded.url, final_url=excluded.final_url,
             file_name=excluded.file_name, save_dir=excluded.save_dir, size=excluded.size,
             downloaded=excluded.downloaded, status=excluded.status, error=excluded.error,
@@ -338,7 +343,7 @@ fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
             resumable=excluded.resumable, connections=excluded.connections, speed_limit=excluded.speed_limit,
             checksum=excluded.checksum, trashed=excluded.trashed, position=excluded.position,
             mirrors=excluded.mirrors, grabber_project=excluded.grabber_project, request=excluded.request,
-            resume=excluded.resume, media=excluded.media",
+            resume=excluded.resume, media=excluded.media, auto_extract=excluded.auto_extract",
         params![
             d.id,
             d.kind.as_str(),
@@ -368,6 +373,7 @@ fn upsert_download_on(conn: &Connection, d: &DownloadItem) -> DbResult<()> {
             d.request.as_ref().map(|v| v.to_string()),
             d.resume.as_ref().map(|v| v.to_string()),
             d.media.as_ref().map(to_json),
+            d.auto_extract,
         ],
     )?;
     Ok(())
@@ -403,6 +409,7 @@ fn row_to_item(r: &Row<'_>) -> DbResult<DownloadItem> {
         request: opt_json_col(r, 25)?,
         resume: opt_json_col(r, 26)?,
         media: opt_json_col(r, 27)?,
+        auto_extract: r.get(28)?,
     })
 }
 
@@ -447,8 +454,41 @@ mod tests {
         assert_eq!(loaded.downloaded, 42);
         assert_eq!(loaded.mirrors, item.mirrors);
         assert_eq!(loaded.resume, item.resume);
+        item.auto_extract = true;
+        db.upsert_download(&item).unwrap();
+        assert!(db.download("a").unwrap().unwrap().auto_extract);
         db.delete_download("a").unwrap();
         assert!(db.downloads().unwrap().is_empty());
+    }
+
+    #[test]
+    fn upgrades_version_one_downloads_with_extraction_disabled() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+             INSERT INTO meta(key, value) VALUES ('schema_version', '1');
+             CREATE TABLE downloads (id TEXT PRIMARY KEY, file_name TEXT NOT NULL);
+             INSERT INTO downloads(id, file_name) VALUES ('old', 'old.zip');",
+        )
+        .unwrap();
+        let db = Db::init(conn).unwrap();
+        let conn = db.conn.lock();
+        let value: i64 = conn
+            .query_row(
+                "SELECT auto_extract FROM downloads WHERE id='old'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        let version: String = conn
+            .query_row(
+                "SELECT value FROM meta WHERE key='schema_version'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(value, 0);
+        assert_eq!(version, "2");
     }
 
     #[test]
