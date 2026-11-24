@@ -16,7 +16,8 @@ import type { NativeError } from '../shared/correlator';
 import type { DownloadRequest } from '../shared/protocol';
 import { type CaptureCandidate, decideCapture, filenameFromContentDisposition, filenameFromUrl, isAttachment } from '../shared/rules';
 import { showUnreachable } from './badge';
-import { actionTimeout, cookieHeaderFor, tabInfo, userAgent } from './context';
+import { cookieHeaderFor, tabInfo, userAgent } from './context';
+import { CAPTURE_HANDOFF_TIMEOUT_MS } from '../shared/timeouts';
 import { native } from './native';
 import { type RequestInfo, requestByUrl } from './requests';
 import { getState } from './state';
@@ -93,7 +94,7 @@ export async function maybeHandOff({ candidate, req, incognito }: HandOffInput):
     source: 'capture',
   };
   try {
-    const reply = await native.request({ ...msg, type: 'download' }, { timeoutMs: actionTimeout() });
+    const reply = await native.request({ ...msg, type: 'download' }, { timeoutMs: CAPTURE_HANDOFF_TIMEOUT_MS });
     lastCapture.deliveredMs = performance.now() - t0;
     lastCapture.result = reply.accepted === false ? 'declined by app' : 'handed off';
     return reply.accepted !== false;
