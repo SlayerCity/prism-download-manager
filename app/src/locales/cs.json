@@ -501,6 +501,7 @@
   "Wake the computer to start": "Probudit počítač ke spuštění",
   "Lock screen": "Zamknout obrazovku",
   "When finished": "Po dokončení",
+  "After-queue actions run only when every download in the queue finishes": "Tato akce se provede až po dokončení všech stahování ve frontě.",
   "Run command": "Spustit příkaz",
   "Command to run": "Příkaz ke spuštění",
   "e.g. {command}": "např. {command}",

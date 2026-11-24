@@ -462,6 +462,7 @@
   "Wake the computer to start": "唤醒电脑以开始",
   "Lock screen": "锁定屏幕",
   "When finished": "完成后",
+  "After-queue actions run only when every download in the queue finishes": "仅当队列中的所有下载都完成后，才会执行此操作。",
   "Run command": "运行命令",
   "Command to run": "要运行的命令",
   "e.g. {command}": "例如 {command}",

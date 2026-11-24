@@ -475,6 +475,7 @@
   "Wake the computer to start": "Computer zum Start aufwecken",
   "Lock screen": "Bildschirm sperren",
   "When finished": "Nach Abschluss",
+  "After-queue actions run only when every download in the queue finishes": "Diese Aktion läuft erst, wenn alle Downloads in der Warteschlange abgeschlossen sind.",
   "Run command": "Befehl ausführen",
   "Command to run": "Auszuführender Befehl",
   "e.g. {command}": "z. B. {command}",

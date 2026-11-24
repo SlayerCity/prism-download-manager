@@ -537,6 +537,7 @@
   "Wake the computer to start": "إيقاظ الكمبيوتر للبدء",
   "Lock screen": "قفل الشاشة",
   "When finished": "عند الانتهاء",
+  "After-queue actions run only when every download in the queue finishes": "يُنفَّذ هذا الإجراء فقط بعد اكتمال جميع التنزيلات في قائمة الانتظار.",
   "Run command": "تشغيل أمر",
   "Command to run": "الأمر المراد تشغيله",
   "e.g. {command}": "مثلًا {command}",

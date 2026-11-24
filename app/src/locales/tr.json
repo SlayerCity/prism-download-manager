@@ -475,6 +475,7 @@
   "Wake the computer to start": "Başlatmak için bilgisayarı uyandır",
   "Lock screen": "Ekranı kilitle",
   "When finished": "Tamamlanınca",
+  "After-queue actions run only when every download in the queue finishes": "Bu işlem yalnızca sıradaki tüm indirmeler tamamlandığında çalışır.",
   "Run command": "Komut çalıştır",
   "Command to run": "Çalıştırılacak komut",
   "e.g. {command}": "örn. {command}",

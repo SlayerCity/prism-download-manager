@@ -488,6 +488,7 @@
   "Wake the computer to start": "Réveiller l’ordinateur pour démarrer",
   "Lock screen": "Verrouiller l’écran",
   "When finished": "À la fin",
+  "After-queue actions run only when every download in the queue finishes": "Cette action ne s’exécute qu’une fois tous les téléchargements de la file terminés.",
   "Run command": "Exécuter une commande",
   "Command to run": "Commande à exécuter",
   "e.g. {command}": "p. ex. {command}",

@@ -488,6 +488,7 @@
   "Wake the computer to start": "Riattiva il computer per l’avvio",
   "Lock screen": "Blocca schermo",
   "When finished": "Al termine",
+  "After-queue actions run only when every download in the queue finishes": "Questa azione viene eseguita solo quando tutti i download della coda sono terminati.",
   "Run command": "Esegui comando",
   "Command to run": "Comando da eseguire",
   "e.g. {command}": "es. {command}",
