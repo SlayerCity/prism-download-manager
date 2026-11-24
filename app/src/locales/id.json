@@ -1190,5 +1190,7 @@
   "Uploaded recorded": "Unggahan tercatat",
   "Recorded ratio": "Rasio tercatat",
   "Try automatic router port forwarding (UPnP or NAT-PMP)": "Coba penerusan port router otomatis (UPnP atau NAT-PMP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk melalui UPnP atau NAT-PMP. Mulai ulang Prism agar berlaku; nonaktif secara default."
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism akan meminta router yang kompatibel meneruskan port BitTorrent masuk melalui UPnP atau NAT-PMP. Mulai ulang Prism agar berlaku; nonaktif secara default.",
+  "This is the local listener; router or firewall reachability isn't checked.": "Ini hanya menunjukkan listener lokal; keterjangkauan melalui router atau firewall tidak diperiksa.",
+  "Local listening port": "Port dengar lokal"
 }

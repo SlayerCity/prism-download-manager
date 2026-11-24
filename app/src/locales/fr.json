@@ -1236,5 +1236,7 @@
   "Uploaded recorded": "Envoi enregistré",
   "Recorded ratio": "Ratio enregistré",
   "Try automatic router port forwarding (UPnP or NAT-PMP)": "Essayer la redirection automatique de port du routeur (UPnP ou NAT-PMP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism demande à un routeur compatible de rediriger son port BitTorrent entrant via UPnP ou NAT-PMP. Redémarrez Prism pour appliquer le réglage ; désactivé par défaut."
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism demande à un routeur compatible de rediriger son port BitTorrent entrant via UPnP ou NAT-PMP. Redémarrez Prism pour appliquer le réglage ; désactivé par défaut.",
+  "This is the local listener; router or firewall reachability isn't checked.": "Cela indique uniquement l’écoute locale ; l’accès via le routeur ou le pare-feu n’est pas vérifié.",
+  "Local listening port": "Port d’écoute local"
 }

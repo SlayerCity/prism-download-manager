@@ -115,5 +115,7 @@
   "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.": "Pause retained seeds after this many hours; 0 means unlimited. Count starts when the torrent finishes.",
   "hours": "hours",
   "Maximum seeding ratio": "Maximum seeding ratio",
-  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version."
+  "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.": "Pause retained seeds when uploads reach this multiple of the torrent size; 0 means unlimited. Counts start with this version.",
+  "This is the local listener; router or firewall reachability isn't checked.": "This is the local listener; router or firewall reachability isn't checked.",
+  "Local listening port": "Local listening port"
 }

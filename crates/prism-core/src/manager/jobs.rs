@@ -98,6 +98,7 @@ impl Job {
                     connections: s.active_connections,
                     uploaded: None,
                     upload_speed: None,
+                    listener_port: None,
                     detail,
                     fraction: None,
                     trackers: None,
@@ -807,6 +808,7 @@ impl VideoJob {
             connections: conns,
             uploaded: None,
             upload_speed: None,
+            listener_port: None,
             detail: st.detail.clone(),
             fraction,
             trackers: None,
@@ -1627,6 +1629,7 @@ fn torrent_progress(item: &DownloadItem, p: prism_torrent::TorrentProgress) -> P
         connections: p.peers,
         uploaded: Some(p.uploaded),
         upload_speed: Some(p.upload_speed),
+        listener_port: p.listener_port,
         detail: Some(match p.state {
             prism_torrent::TorrentState::Initializing => "Checking existing data".to_string(),
             prism_torrent::TorrentState::Seeding => "Seeding".to_string(),
@@ -1912,6 +1915,7 @@ mod tests {
                 download_speed: 0,
                 upload_speed: 128,
                 peers: 3,
+                listener_port: Some(51_413),
                 eta_secs: None,
                 finished: true,
                 error: None,
@@ -1923,6 +1927,7 @@ mod tests {
         assert_eq!(progress.uploaded, Some(2_500));
         assert_eq!(progress.upload_speed, Some(128));
         assert_eq!(progress.connections, 3);
+        assert_eq!(progress.listener_port, Some(51_413));
     }
 
     #[test]

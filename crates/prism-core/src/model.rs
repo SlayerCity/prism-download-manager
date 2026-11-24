@@ -221,6 +221,9 @@ pub struct Progress {
     pub uploaded: Option<u64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub upload_speed: Option<u64>,
+    /// The active local BitTorrent listener port, not a test of external reachability.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub listener_port: Option<u16>,
     /// Human-readable detail: "Muxing", "Retrying in 4 s", ...
     pub detail: Option<String>,
     /// Share done (0–1) when the size isn't known until the end (a part of a video, cut by

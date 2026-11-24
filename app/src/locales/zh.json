@@ -1190,5 +1190,7 @@
   "Uploaded recorded": "已记录上传量",
   "Recorded ratio": "已记录分享率",
   "Try automatic router port forwarding (UPnP or NAT-PMP)": "尝试自动路由器端口转发（UPnP 或 NAT-PMP）",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器使用 UPnP 或 NAT-PMP 转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。"
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "启用后，Prism 会请求兼容的路由器使用 UPnP 或 NAT-PMP 转发其传入的 BitTorrent 端口。重启 Prism 后生效；默认关闭。",
+  "This is the local listener; router or firewall reachability isn't checked.": "这仅显示本地监听端口；不会检测路由器或防火墙是否允许外部访问。",
+  "Local listening port": "本地监听端口"
 }

@@ -1213,5 +1213,7 @@
   "Uploaded recorded": "Kaydedilen yükleme",
   "Recorded ratio": "Kaydedilen oran",
   "Try automatic router port forwarding (UPnP or NAT-PMP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP veya NAT-PMP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını UPnP veya NAT-PMP ile yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır."
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port using UPnP or NAT-PMP. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını UPnP veya NAT-PMP ile yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
+  "This is the local listener; router or firewall reachability isn't checked.": "Bu yalnızca yerel dinleyiciyi gösterir; yönlendirici veya güvenlik duvarı erişimi denetlenmez.",
+  "Local listening port": "Yerel dinleme bağlantı noktası"
 }

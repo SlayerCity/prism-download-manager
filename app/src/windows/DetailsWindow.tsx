@@ -142,6 +142,7 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
             <div><div className="kpi__k">{t("Upload speed")}</div><div className="kpi__v tnum">{formatSpeed(torrentStats.uploadSpeed)}</div></div>
             <div><div className="kpi__k">{t("Connected peers")}</div><div className="kpi__v tnum">{torrentStats.connections}</div></div>
             <div><div className="kpi__k">{t("Recorded ratio")}</div><div className="kpi__v tnum">{formatRatio(torrentStats.uploaded, item.size ?? torrentStats.downloaded)}</div></div>
+            {torrentStats.listenerPort != null && <div title={t("This is the local listener; router or firewall reachability isn't checked.")}><div className="kpi__k">{t("Local listening port")}</div><div className="kpi__v tnum">{torrentStats.listenerPort}</div></div>}
           </div>
         )}
       </div>

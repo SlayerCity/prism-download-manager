@@ -88,6 +88,8 @@ pub enum TorrentState {
 #[serde(rename_all = "camelCase")]
 pub struct TorrentProgress {
     pub trackers: Vec<librqbit::TrackerAnnounceStatus>,
+    /// The bound local peer-listener port; this does not prove router/firewall reachability.
+    pub listener_port: Option<u16>,
     pub state: TorrentState,
     pub downloaded: u64,
     pub uploaded: u64,
@@ -321,6 +323,7 @@ impl TorrentEngine {
         let remaining = stats.total_bytes.saturating_sub(stats.progress_bytes);
         Some(TorrentProgress {
             trackers: stats.tracker_status.clone(),
+            listener_port: self.session.listen_addr().map(|addr| addr.port()),
             state,
             downloaded: stats.progress_bytes,
             uploaded: stats.uploaded_bytes,
