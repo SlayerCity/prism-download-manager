@@ -6,7 +6,7 @@ import { ConnectionLanes, FileMap, FileTile, ProgressBar, SpeedChart } from "../
 import { WindowFrame } from "../components/WindowFrame";
 import { Icon } from "../design/icons";
 import { api, inTauri } from "../lib/api";
-import { formatBytes, formatDuration, formatSpeed } from "../lib/format";
+import { formatBytes, formatDuration, formatRatio, formatSpeed } from "../lib/format";
 import { t, tr } from "../lib/i18n";
 import { canPause, formatPct, progressOf, statusView } from "../lib/present";
 import { useApp } from "../lib/store";
@@ -140,6 +140,7 @@ export default function DetailsWindow({ id, simple }: { id: string; simple?: boo
           <div className="torrent-stats" role="group" aria-label={t("Live BitTorrent stats")}>
             <div><div className="kpi__k">{t("Uploaded this session")}</div><div className="kpi__v tnum">{formatBytes(torrentStats.uploaded)}</div></div>
             <div><div className="kpi__k">{t("Upload speed")}</div><div className="kpi__v tnum">{formatSpeed(torrentStats.uploadSpeed)}</div></div>
+            <div><div className="kpi__k">{t("Session ratio")}</div><div className="kpi__v tnum">{formatRatio(torrentStats.uploaded, torrentStats.downloaded)}</div></div>
           </div>
         )}
       </div>

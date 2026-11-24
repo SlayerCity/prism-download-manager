@@ -107,5 +107,6 @@
   "Download rate": "Download rate",
   "Upload rate": "Upload rate",
   "Try automatic router port forwarding (UPnP)": "Try automatic router port forwarding (UPnP)",
-  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default."
+  "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.",
+  "Session ratio": "Session ratio"
 }

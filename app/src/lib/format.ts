@@ -16,6 +16,12 @@ export function formatBytes(n?: number | null, digits = 1): string {
   return `${v >= 100 ? v.toFixed(0) : v.toFixed(digits)} ${UNITS[i]}`;
 }
 
+/** Uploaded/downloaded bytes as a session-scoped sharing ratio. */
+export function formatRatio(uploaded?: number | null, downloaded?: number | null): string {
+  if (uploaded == null || downloaded == null || !Number.isFinite(uploaded) || !Number.isFinite(downloaded) || downloaded <= 0) return "—";
+  return `${(uploaded / downloaded).toFixed(2)}×`;
+}
+
 export function formatSpeed(bps?: number | null): string {
   if (!bps) return "—";
   return `${formatBytes(bps)}/s`;

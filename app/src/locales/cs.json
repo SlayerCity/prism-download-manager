@@ -1247,5 +1247,6 @@
   "Upload rate": "Rychlost odesílání",
   "Try automatic router port forwarding (UPnP)": "Zkusit automatické přesměrování portu na routeru (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism požádá kompatibilní router o přesměrování příchozího portu BitTorrentu. Pro použití restartujte Prism; ve výchozím nastavení je vypnuto.",
-  "Incoming connections": "Příchozí připojení"
+  "Incoming connections": "Příchozí připojení",
+  "Session ratio": "Poměr v této relaci"
 }

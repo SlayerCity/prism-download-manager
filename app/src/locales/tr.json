@@ -1201,5 +1201,6 @@
   "Upload rate": "Yükleme hızı",
   "Try automatic router port forwarding (UPnP)": "Otomatik yönlendirici port yönlendirmesini dene (UPnP)",
   "When enabled, Prism asks a compatible router to forward its incoming BitTorrent port. Restart Prism to apply; off by default.": "Prism, uyumlu bir yönlendiriciden gelen BitTorrent bağlantı noktasını yönlendirmesini ister. Uygulamak için Prism’i yeniden başlatın; varsayılan olarak kapalıdır.",
-  "Incoming connections": "Gelen bağlantılar"
+  "Incoming connections": "Gelen bağlantılar",
+  "Session ratio": "Oturum oranı"
 }
