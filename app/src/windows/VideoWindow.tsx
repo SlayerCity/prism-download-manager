@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Checkbox, Segmented, Select, Switch, TextField } from "../components/Controls";
+import { Checkbox, Segmented, Select, TextField } from "../components/Controls";
 import { openMenuAt } from "../components/MenuHost";
 import { PartPicker } from "../components/PartPicker";
 import { WindowFrame } from "../components/WindowFrame";
@@ -102,6 +102,7 @@ export default function VideoWindow({ id }: { id: string }) {
   const [more, setMore] = useState(false);
   const [entries, setEntries] = useState<Set<string>>(new Set());
   const [subs, setSubs] = useState(settings?.video.embedSubtitles ?? false);
+  const [subtitleFile, setSubtitleFile] = useState(false);
   const [langs, setLangs] = useState(settings?.video.subtitleLangs ?? "en.*");
   const [thumb, setThumb] = useState(settings?.video.embedThumbnail ?? true);
   const [meta, setMeta] = useState(settings?.video.embedMetadata ?? true);
@@ -199,6 +200,7 @@ export default function VideoWindow({ id }: { id: string }) {
           container,
           audioFormat: "mp3",
           embedSubtitles: subs,
+          writeSubtitles: subtitleFile,
           subLangs: langs.split(/[\s,]+/).filter(Boolean),
           embedThumbnail: thumb,
           embedMetadata: meta,
@@ -354,13 +356,14 @@ export default function VideoWindow({ id }: { id: string }) {
               <span>
                 <Icon name="subtitle" size={15} /> {t("Subtitles")}
               </span>
-              <div className="inline">
-                {subs && subLangs.length > 0 && (
+              <div className="inline vopt__subtitles">
+                {(subs || subtitleFile) && subLangs.length > 0 && (
                   <Select label={t("Subtitle languages")} value={""} width={140} onChange={(code) => code && setLangs(code)}
                     options={[{ value: "", label: t("Subtitle languages") }, ...subLangs]} />
                 )}
-                {subs && <TextField value={langs} onChange={setLangs} label={t("Subtitle languages")} mono />}
-                <Switch checked={subs} label={t("Embed subtitles")} onChange={setSubs} />
+                {(subs || subtitleFile) && <TextField value={langs} onChange={setLangs} label={t("Subtitle languages")} mono />}
+                <Checkbox checked={subs} onChange={setSubs}>{t("Embed subtitles")}</Checkbox>
+                <Checkbox checked={subtitleFile} onChange={setSubtitleFile}>{t("Save subtitle files")}</Checkbox>
               </div>
             </div>
             <div className="vopt">

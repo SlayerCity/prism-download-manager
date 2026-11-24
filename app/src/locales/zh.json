@@ -673,6 +673,7 @@
   "Container": "容器格式",
   "Audio format": "音频格式",
   "Embed subtitles": "嵌入字幕",
+  "Save subtitle files": "保存字幕文件",
   "Subtitle languages": "字幕语言",
   "e.g. en.*, cs, all": "例如 en.*, zh-Hans, all",
   "Embed thumbnail": "嵌入缩略图",
