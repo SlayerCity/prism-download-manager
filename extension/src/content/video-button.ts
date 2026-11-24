@@ -557,10 +557,11 @@ export class VideoButton {
     const x = saved
       ? clamp(r.left + saved.x, Math.max(8, r.left), Math.min(r.right, vw - 8) - pw)
       : Math.max(8, Math.min(r.right, vw) - pw - 10);
-    // Default: above the player's top-right edge when there is room, else just inside it.
+    // Keep the default pill inside the player: placing it above can cover unrelated
+    // page content (for example, a video page's title or header).
     const y = saved
       ? clamp(r.top + saved.y, Math.max(8, r.top), Math.min(r.bottom, vh - 8) - ph)
-      : r.top >= ph + 14 ? r.top - ph - 6 : Math.max(r.top, 0) + 10;
+      : clamp(r.top + 10, Math.max(8, r.top), Math.min(r.bottom, vh - 8) - ph);
     const menuWidth = Math.min(300, Math.max(0, vw - 16));
     this.menu.style.width = `${menuWidth}px`;
     this.menu.style.left = `${clamp(x + pw - menuWidth, 8, vw - menuWidth - 8) - x}px`;

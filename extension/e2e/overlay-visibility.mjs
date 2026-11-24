@@ -19,6 +19,7 @@ try {
   const page = await browser.newPage();
   await page.setContent(`
     <style>video { display: block; background: #123; }</style>
+    <header style="height: 90px">Video page title and controls</header>
     <div id="player"><button id="fullscreen" onclick="this.parentElement.requestFullscreen()">Fullscreen</button>
       <video id="video" width="400" height="240"></video>
     </div>
@@ -55,8 +56,11 @@ try {
   assert.ok(normalWidth > 32);
   await page.evaluate(() => window.setPrismCompactForTest(false));
   assert.equal(await pill.evaluate((el) => el.offsetWidth), normalWidth);
-  const before = await pill.boundingBox();
+  const initialPill = await pill.boundingBox();
   const video = await page.locator('#video').boundingBox();
+  assert.ok(initialPill.y >= video.y, 'default overlay must stay inside the video instead of covering the page header');
+  assert.ok(initialPill.y + initialPill.height <= video.y + video.height);
+  const before = initialPill;
   await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
   await page.mouse.down();
   await page.mouse.move(video.x + 80, video.y + 150, { steps: 10 });
@@ -100,7 +104,7 @@ try {
   await youtube.mouse.move(unrelatedBox.x + 40, unrelatedBox.y + 40);
   await youtube.waitForFunction(() => !document.querySelector('[data-prism-video-button] .wrap.show'));
   await youtube.close();
-  console.log('Passed: hidden players, fullscreen, compact layout, bounded drag, click/keyboard activation, and YouTube feed hover preview.');
+  console.log('Passed: hidden players, fullscreen, compact layout, default overlay within player, bounded drag, click/keyboard activation, and YouTube feed hover preview.');
 } finally {
   await browser.close();
 }
