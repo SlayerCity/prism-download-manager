@@ -587,13 +587,22 @@ impl HttpFetcher {
         {
             return Err(FetchError::fatal(EngineError::ValidatorMismatch));
         }
-        if src == SourceRef::Primary {
-            let got = header_string(resp.headers(), header::ETAG);
-            if let (Some(e1), Some(e2)) =
-                (strong_etag(v.etag.as_deref()), strong_etag(got.as_deref()))
-                && e1 != e2
-            {
-                return Err(FetchError::fatal(EngineError::ValidatorMismatch));
+        let got = header_string(resp.headers(), header::ETAG);
+        match src {
+            SourceRef::Primary => {
+                if let (Some(e1), Some(e2)) =
+                    (strong_etag(v.etag.as_deref()), strong_etag(got.as_deref()))
+                    && e1 != e2
+                {
+                    return Err(FetchError::fatal(EngineError::ValidatorMismatch));
+                }
+            }
+            SourceRef::Mirror(_) => {
+                if strong_etag(v.etag.as_deref()).is_none()
+                    || strong_etag(got.as_deref()) != strong_etag(v.etag.as_deref())
+                {
+                    return Err(FetchError::fatal(EngineError::ValidatorMismatch));
+                }
             }
         }
         self.ctx.mark_probed();

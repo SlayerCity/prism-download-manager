@@ -667,6 +667,11 @@ async fn mirrors_are_validated_and_used() {
     req.mirrors = vec![
         Url::parse(&srv.url(&format!("/file/mirror.bin?{q}"))).unwrap(),
         Url::parse(&srv.url(&format!("/file/wrong.bin?size={}&seed=21", size / 2))).unwrap(),
+        // Same length but different content must not be admitted as a mirror.
+        Url::parse(&srv.url(&format!(
+            "/file/different.bin?size={size}&seed=22&throttle=4M"
+        )))
+        .unwrap(),
     ];
     let done = wait(&engine().start(req, None, vec![]), 60).await.unwrap();
     assert_eq!(done.path.file_name().unwrap(), "primary.bin");
@@ -681,7 +686,37 @@ async fn mirrors_are_validated_and_used() {
     };
     assert!(ranged("/file/mirror.bin") >= 1, "mirror unused");
     assert!(ranged("/file/primary.bin") >= 1);
-    assert_eq!(ranged("/file/wrong.bin"), 0, "invalid mirror used");
+    assert_eq!(ranged("/file/wrong.bin"), 0, "invalid-size mirror used");
+    assert_eq!(
+        ranged("/file/different.bin"),
+        0,
+        "different-content mirror used"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn mirrors_without_primary_strong_etag_are_not_used() {
+    let srv = default_server().await;
+    let dir = tempfile::tempdir().unwrap();
+    let size = 8 * MIB;
+    let mut req = request(
+        &srv.url(&format!(
+            "/file/primary.bin?size={size}&seed=23&etag=0&lm=0"
+        )),
+        dir.path(),
+        4,
+    );
+    req.mirrors = vec![
+        Url::parse(&srv.url(&format!("/file/mirror.bin?size={size}&seed=23&etag=0&lm=0"))).unwrap(),
+    ];
+    let done = wait(&engine().start(req, None, vec![]), 60).await.unwrap();
+    assert_eq!(sha256_file(&done.path), expected_sha256(23, size));
+    assert!(
+        srv.stats().requests.iter().all(|r| {
+            !r.uri.starts_with("/file/mirror.bin") || r.range.as_deref() == Some("bytes=0-0")
+        }),
+        "mirror without an identity validator was used"
+    );
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

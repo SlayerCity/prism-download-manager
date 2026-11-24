@@ -188,16 +188,30 @@ fn spawn_mirror_validation(ctx: Arc<HttpCtx>, job: Arc<JobShared>) {
         return;
     }
     tokio::spawn(async move {
+        let validators = ctx.validators();
+        // Equal lengths do not make files interchangeable. Only admit mirrors when both
+        // endpoints expose the same strong validator, and re-check it on every mirror range.
+        let Some(primary_etag) = strong_etag(validators.etag.as_deref()) else {
+            tracing::info!("mirrors rejected: primary has no strong ETag");
+            return;
+        };
         for (i, url) in mirrors.into_iter().enumerate() {
             let check = tokio::select! {
                 r = check_url(&ctx, &url) => r,
                 _ = job.stop.cancelled() => return,
             };
             match check {
-                Ok((total, _, final_url)) if total.is_some() && total == ctx.validators().total => {
+                Ok((total, etag, final_url))
+                    if total.is_some()
+                        && total == validators.total
+                        && strong_etag(etag.as_deref()) == Some(primary_etag) =>
+                {
                     ctx.sources.validate_mirror(i, Some(final_url));
                 }
-                Ok(_) => tracing::info!(%url, "mirror rejected: different size"),
+                Ok((total, _etag, _)) if total != validators.total => {
+                    tracing::info!(%url, "mirror rejected: different size");
+                }
+                Ok(_) => tracing::info!(%url, "mirror rejected: missing or different strong ETag"),
                 Err(e) => tracing::info!(%url, error = %e, "mirror rejected"),
             }
         }

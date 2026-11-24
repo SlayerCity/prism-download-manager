@@ -144,9 +144,10 @@ live, and `0` means unlimited.
 
 **Redirects, mirrors, URL refresh.** The engine follows up to 10 redirects and reuses the final
 URL. On `403`/`404`/`410` it falls back to the original URL, which yields a fresh signed URL.
-Mirrors are validated in the background (same size) and used round-robin. A failing mirror is
-benched for 60 s. `change_url` validates the size and strong ETag, then every worker re-opens
-on the new URL.
+Mirrors are validated in the background by size and matching strong ETag, then used round-robin;
+the ETag is checked again on each mirror range. A failing mirror is benched for 60 s. This is a
+conservative mismatch check, not cryptographic proof that separate hosts serve identical bytes.
+`change_url` validates the size and strong ETag, then every worker re-opens on the new URL.
 
 **Authentication.** Basic and Digest use the `http-auth` crate (MD5/SHA-256, `qop=auth`,
 nonce counting). NTLM uses `ntlmclient`, with the 3-leg handshake on the worker's own
