@@ -655,7 +655,8 @@ impl Core {
         };
         let gone: Vec<String> = finished
             .into_iter()
-            .filter(|(_, dir, path)| dir.is_dir() && !path.exists())
+            // Permission or transient I/O failures do not establish that a file was deleted.
+            .filter(|(_, dir, path)| dir.is_dir() && matches!(path.try_exists(), Ok(false)))
             .map(|(id, _, _)| id)
             .collect();
         if gone.is_empty() {

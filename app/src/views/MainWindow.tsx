@@ -43,18 +43,29 @@ export function MainWindow() {
     api.mainWindowStartsVisible().then((visible) => visible !== false && show(), show);
   }, []);
 
-  // Settings › General › "Remove downloads whose files were deleted": checked again whenever the
-  // window comes to the front (files are usually deleted while Prism is in the background).
+  // Check on return to Prism and periodically while it is visible. A single focus-only check
+  // missed deletions during split-screen use or when the webview stayed focused behind a dialog.
+  const removeDeletedFiles = useApp((s) => s.settings?.general.removeDeletedFiles ?? false);
   useEffect(() => {
-    let last = 0;
+    if (!removeDeletedFiles) return;
+    let running = false;
+    let lastCheck = -Infinity;
     const check = () => {
-      if (!useApp.getState().settings?.general.removeDeletedFiles || Date.now() - last < 10_000) return;
-      last = Date.now();
-      void api.removeDeletedFiles().catch(() => {});
+      if (document.hidden || running || performance.now() - lastCheck < 5000) return;
+      running = true;
+      lastCheck = performance.now();
+      void api.removeDeletedFiles().catch(() => {}).finally(() => { running = false; });
     };
+    check();
+    const timer = window.setInterval(check, 30_000);
     window.addEventListener("focus", check);
-    return () => window.removeEventListener("focus", check);
-  }, []);
+    document.addEventListener("visibilitychange", check);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", check);
+      document.removeEventListener("visibilitychange", check);
+    };
+  }, [removeDeletedFiles]);
 
   // Square corners while maximized / fullscreen, rounded otherwise (see shell.css).
   useEffect(() => {
