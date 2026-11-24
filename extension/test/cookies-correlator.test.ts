@@ -74,6 +74,7 @@ describe('Correlator', () => {
     expect(classifyDisconnect('Specified native messaging host not found.')).toBe('host_missing');
     expect(classifyDisconnect('No such native application dev.prism.host')).toBe('host_missing');
     expect(classifyDisconnect('Access to the specified native messaging host is forbidden.')).toBe('host_forbidden');
+    expect(classifyDisconnect('Failed to start native messaging host.')).toBe('host_start_failed');
     expect(classifyDisconnect('Native host has exited.')).toBe('host_exited');
     expect(classifyDisconnect(undefined)).toBe('disconnected');
   });

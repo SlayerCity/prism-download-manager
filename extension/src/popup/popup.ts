@@ -37,15 +37,19 @@ function chip(c: ConnectionInfo): string {
 function alertCard(c: ConnectionInfo): string {
   if (c.state === 'connected' || c.state === 'unknown') return '';
   const missing = c.state === 'host_missing';
-  const title = missing ? 'Browser integration isn’t installed' : 'Prism isn’t reachable';
+  const startFailed = c.state === 'host_start_failed';
+  const title = missing ? 'Browser integration isn’t installed'
+    : startFailed ? 'The browser couldn’t start the Prism helper' : 'Prism isn’t reachable';
   const hint = missing
     ? 'Fix: open Prism › Settings › Browser integration and click Repair.'
-    : 'Start Prism, or open Prism › Settings › Browser integration › Repair. Downloads stay in the browser meanwhile.';
+    : startFailed
+      ? 'Open Prism › Settings › Browser integration › Repair, then restart your browser. Downloads stay in the browser meanwhile.'
+      : 'Start Prism, or open Prism › Settings › Browser integration › Repair. Downloads stay in the browser meanwhile.';
   return `<section class="alert glass" id="fix">
     <span class="ic">${icons.alert(18)}</span><b>${title}</b>
     <p>${hint}${c.error ? `<br><span class="small">Details: ${esc(c.error)}</span>` : ''}</p>
     <div class="actions">
-      ${missing ? '' : `<button class="btn primary" data-act="launch">${icons.external(14)}Start Prism</button>`}
+      ${missing || startFailed ? '' : `<button class="btn primary" data-act="launch">${icons.external(14)}Start Prism</button>`}
       <button class="btn" data-act="retry">${icons.refresh(14)}Retry</button>
     </div>
   </section>`;

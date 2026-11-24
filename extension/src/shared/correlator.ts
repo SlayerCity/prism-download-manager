@@ -90,6 +90,7 @@ export class Correlator<T extends { id?: unknown }> {
 /** Maps a port disconnect message to a protocol-style error code. */
 export function classifyDisconnect(message: string | undefined): string {
   const m = (message ?? '').toLowerCase();
+  if (m.includes('failed to start native messaging host')) return 'host_start_failed';
   if (m.includes('not found') || m.includes('no such native application') || m.includes('not exist')) return 'host_missing';
   if (m.includes('forbidden') || m.includes('access') || m.includes('not allowed')) return 'host_forbidden';
   if (m.includes('exited') || m.includes('error when communicating')) return 'host_exited';

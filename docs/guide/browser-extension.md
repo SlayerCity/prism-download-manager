@@ -66,6 +66,7 @@ grab downloads before Prism sees them.
 | Symptom | Fix |
 |---|---|
 | Popup says **Not connected** / *Prism isn't reachable* | Start Prism (it lives in the tray), then click **Retry** in the popup. Still failing → Prism → Settings → Browser integration → **Repair**, then restart the browser. |
+| The browser couldn’t start the Prism helper | This can happen even while Prism is running. Check Browser integration → **Repair**, then fully quit and restart the browser. If it persists, browser diagnostics can distinguish a missing Windows `ComSpec` environment variable from other launch failures; ask your Windows administrator before changing environment settings. |
 | Downloads still go to the browser | Make sure *Capture downloads* is on in the popup; check the file type is in Settings → File types (e.g. images are not captured by default); `blob:` downloads (some web apps) can't be handed over. |
 | No **Download video** button | Hover the video; check *Show video button* in the extension options; reload the page after installing. |
 | The store says Prism is already added, but it's the old copy | Remove the copy you added by hand (see *Added Prism by hand before?*), then add it from the store. |

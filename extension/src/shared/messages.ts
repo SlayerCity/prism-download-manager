@@ -3,7 +3,7 @@ import type { ElementSource, MediaItem } from './media';
 import type { BatchKind, VideoStream } from './protocol';
 import type { StoredState } from './settings';
 
-export type ConnectionState = 'unknown' | 'connected' | 'app_down' | 'host_missing' | 'error';
+export type ConnectionState = 'unknown' | 'connected' | 'app_down' | 'host_missing' | 'host_start_failed' | 'error';
 
 export interface ConnectionInfo {
   state: ConnectionState;

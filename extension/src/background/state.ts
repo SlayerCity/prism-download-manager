@@ -80,6 +80,9 @@ export function markFailure(err: NativeError): void {
     case 'host_forbidden':
       state = 'host_missing';
       break;
+    case 'host_start_failed':
+      state = 'host_start_failed';
+      break;
     case 'app_not_running':
     case 'app_unreachable':
     case 'timeout':

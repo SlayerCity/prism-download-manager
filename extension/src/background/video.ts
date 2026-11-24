@@ -69,6 +69,8 @@ function noticeFor(err: NativeError): string {
     case 'host_missing':
     case 'host_forbidden':
       return 'Browser integration is not installed — open Prism › Settings › Browser integration.';
+    case 'host_start_failed':
+      return 'The browser couldn’t start the Prism helper — showing streams found on this page.';
     case 'app_not_running':
     case 'app_unreachable':
       return "Prism isn't running — showing streams found on this page.";
