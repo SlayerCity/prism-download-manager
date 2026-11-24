@@ -11,7 +11,8 @@
 //! The env var `PRISM_DATA_DIR` overrides all of the above (used by tests and
 //! dev setups; the app core must honour it too). Next, a `portable.txt` next to the
 //! executable switches to `<exe dir>/data` (the Windows portable zip ships the host next
-//! to `prism.exe`), exactly like the app core.
+//! to `prism.exe`), exactly like the app core. Optional `DATA_DIR` marker entries allow
+//! nested package layouts such as the PortableApps-style build.
 //!
 //! Files inside the data dir:
 //!
@@ -76,12 +77,35 @@ pub fn resolve_data_dir(
 /// Marker file next to the executables that turns on portable mode.
 pub const PORTABLE_MARKER: &str = "portable.txt";
 
-/// Portable mode: `<exe dir>/data` when `portable.txt` sits next to `exe`. Must match
-/// `prism_core::paths`, or the host looks for `ipc.json` where the portable app never
-/// writes it and can't find the running app.
+/// Portable mode: `<exe dir>/data` by default, or the `DATA_DIR` relative path in the
+/// marker. Must match `prism_core::paths`, or the host cannot find the app's `ipc.json`.
 pub fn portable_data_dir(exe: &Path) -> Option<PathBuf> {
+    marker_target(exe, "DATA_DIR", "data")
+}
+
+/// Resolve a portable marker value relative to the executable directory. Legacy markers
+/// may contain explanatory prose; only an explicit KEY=value line changes the path.
+pub fn marker_target(exe: &Path, key: &str, fallback: &str) -> Option<PathBuf> {
     let dir = exe.parent()?;
-    dir.join(PORTABLE_MARKER).exists().then(|| dir.join("data"))
+    let marker = dir.join(PORTABLE_MARKER);
+    if !marker.exists() {
+        return None;
+    }
+    let text = std::fs::read_to_string(&marker).unwrap_or_default();
+    let target = text
+        .lines()
+        .find_map(|line| {
+            line.trim()
+                .trim_start_matches('\u{feff}')
+                .strip_prefix(&format!("{key}="))
+        })
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(fallback));
+    Some(if target.is_absolute() {
+        target
+    } else {
+        dir.join(target)
+    })
 }
 
 /// The Prism app data dir for the current user (see module docs).
@@ -278,5 +302,19 @@ mod tests {
         assert_eq!(portable_data_dir(&host), None);
         std::fs::write(dir.path().join(PORTABLE_MARKER), "portable").unwrap();
         assert_eq!(portable_data_dir(&host), Some(dir.path().join("data")));
+    }
+
+    #[test]
+    fn portable_marker_can_point_into_paf_data_folder() {
+        let root = tempfile::tempdir().unwrap();
+        let app = root.path().join("App").join("Prism");
+        std::fs::create_dir_all(&app).unwrap();
+        let host = app.join(crate::HOST_BINARY_NAME);
+        std::fs::write(
+            app.join(PORTABLE_MARKER),
+            "DATA_DIR=../../Data\nDOWNLOADS_DIR=../../Data/Downloads\n",
+        )
+        .unwrap();
+        assert_eq!(portable_data_dir(&host), Some(app.join("../../Data")));
     }
 }

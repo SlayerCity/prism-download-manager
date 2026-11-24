@@ -56,11 +56,17 @@ Outputs (in `target/release/bundle/`):
 | Windows | `nsis/Prism_<ver>_x64-setup.exe`, `msi/Prism_<ver>_x64_en-US.msi` |
 | Linux | `deb/Prism_<ver>_amd64.deb`, `rpm/Prism-<ver>-1.x86_64.rpm`, `appimage/Prism_<ver>_amd64.AppImage` |
 
-Windows portable zip (after `tauri:build`):
+Windows portable packages (after `tauri:build` and building the extension):
 
 ```powershell
-./scripts/make-portable.ps1          # -> packaging/out/Prism-<ver>-windows-x64-portable.zip
+./scripts/make-portable.ps1          # standalone portable zip
+./scripts/make-portable-paf.ps1      # PAF-layout directory/zip in packaging/out/
 ```
+
+The PAF-layout package uses `App/Prism`, `App/AppInfo`, and `Data`; its launcher routes
+settings and downloads into the movable `Data` folder. It is not an official PortableApps.com
+release or installer. The PAF build requires the matching Windows Rust target and release
+artifacts.
 
 Building only some bundles: `npx tauri build --bundles nsis` (or `msi`, `deb`, `rpm`, `appimage`).
 
