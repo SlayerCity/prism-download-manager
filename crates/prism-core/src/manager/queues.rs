@@ -316,11 +316,17 @@ impl Core {
     fn admit(&self) {
         // Counting free slots and starting the items is one step: `start_queue` and the 1 s
         // tick can admit at the same moment and would otherwise both fill the same slots.
+        let _rt = crate::rt::enter();
         let _admission = self.0.admission.lock();
+        self.start_waiting();
         let to_start: Vec<String> = {
             let st = self.0.state.lock();
             let mut out = Vec::new();
+            let mut global_free = st.global_free_slots();
             for q in st.queues.iter().filter(|q| q.running) {
+                if global_free == 0 {
+                    break;
+                }
                 let active = st
                     .items
                     .values()
@@ -329,7 +335,9 @@ impl Core {
                             && (i.status.is_active() || st.jobs.contains_key(&i.id))
                     })
                     .count();
-                let free = (q.max_concurrent as usize).saturating_sub(active);
+                let free = (q.max_concurrent as usize)
+                    .saturating_sub(active)
+                    .min(global_free);
                 if free == 0 {
                     continue;
                 }
@@ -340,15 +348,19 @@ impl Core {
                         i.queue_id.as_deref() == Some(&q.id)
                             && i.status == Status::Queued
                             && !i.trashed
+                            && !st.jobs.contains_key(&i.id)
                     })
                     .collect();
                 waiting.sort_by_key(|i| i.position);
+                global_free -= waiting.len().min(free);
                 out.extend(waiting.into_iter().take(free).map(|i| i.id.clone()));
             }
             out
         };
-        if !to_start.is_empty() {
-            self.start_items(&to_start);
+        for id in to_start {
+            if let Err(e) = self.start_item(&id) {
+                self.report_start_error(&id, e);
+            }
         }
     }
 

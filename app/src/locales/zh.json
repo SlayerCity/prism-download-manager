@@ -511,6 +511,8 @@
   "Connections per download": "每个下载的连接数",
   "Prism splits files into this many segments (work-stealing keeps all busy)": "Prism 会将文件拆分为相应数量的分段（任务窃取机制让所有连接保持忙碌）",
   "Maximum connections": "最大连接数",
+  "Maximum simultaneous downloads": "最大同时下载数",
+  "Across all downloads and queues. Set to 0 for no global limit.": "适用于所有下载和队列。设为 0 可取消全局限制。",
   "Retries before failing": "失败前的重试次数",
   "Exponential back-off up to 30 s between attempts": "两次尝试之间指数退避，最长 30 秒",
   "Retries": "重试次数",

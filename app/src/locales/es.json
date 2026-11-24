@@ -537,6 +537,8 @@
   "Connections per download": "Conexiones por descarga",
   "Prism splits files into this many segments (work-stealing keeps all busy)": "Prism divide los archivos en este número de segmentos (el robo de trabajo los mantiene todos ocupados)",
   "Maximum connections": "Máximo de conexiones",
+  "Maximum simultaneous downloads": "Máximo de descargas simultáneas",
+  "Across all downloads and queues. Set to 0 for no global limit.": "Se aplica a todas las descargas y colas. Usa 0 para desactivar el límite global.",
   "Retries before failing": "Reintentos antes de fallar",
   "Exponential back-off up to 30 s between attempts": "Espera exponencial de hasta 30 s entre intentos",
   "Retries": "Reintentos",

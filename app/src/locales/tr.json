@@ -524,6 +524,8 @@
   "Connections per download": "İndirme başına bağlantı",
   "Prism splits files into this many segments (work-stealing keeps all busy)": "Prism dosyaları bu sayıda parçaya böler (work-stealing sayesinde hepsi meşgul kalır)",
   "Maximum connections": "Azami bağlantı",
+  "Maximum simultaneous downloads": "Azami eşzamanlı indirme sayısı",
+  "Across all downloads and queues. Set to 0 for no global limit.": "Tüm indirmeler ve kuyruklar için geçerlidir. Genel sınırı kaldırmak için 0 girin.",
   "Retries before failing": "Yeniden deneme sayısı",
   "Exponential back-off up to 30 s between attempts": "Denemeler arasında üstel bekleme (en fazla 30 sn)",
   "Retries": "Yeniden denemeler",

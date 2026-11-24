@@ -207,6 +207,8 @@ pub struct Downloads {
     pub use_category_folders: bool,
     pub default_connections: u8,
     pub max_connections: u8,
+    /// Global job count cap (zero leaves only the existing per-queue limits).
+    pub max_simultaneous_downloads: u8,
     pub conflict: ConflictAction,
     pub max_retries: u32,
     /// Global speed limit in bytes/s used when the limiter is switched on.
@@ -226,6 +228,7 @@ impl Default for Downloads {
             use_category_folders: true,
             default_connections: 8,
             max_connections: 32,
+            max_simultaneous_downloads: 0,
             conflict: ConflictAction::Ask,
             max_retries: 20,
             speed_limit: 5 * 1024 * 1024,
@@ -582,15 +585,21 @@ mod portable_download_tests {
             )
             .unwrap()
         };
-        assert!(encode(&settings, Some(&default))["downloads"]
-            .get("defaultDir")
-            .is_none());
-        assert!(encode(&settings, None)["downloads"]
-            .get("defaultDir")
-            .is_some());
-        assert!(serde_json::to_value(&settings).unwrap()["downloads"]
-            .get("defaultDir")
-            .is_some());
+        assert!(
+            encode(&settings, Some(&default))["downloads"]
+                .get("defaultDir")
+                .is_none()
+        );
+        assert!(
+            encode(&settings, None)["downloads"]
+                .get("defaultDir")
+                .is_some()
+        );
+        assert!(
+            serde_json::to_value(&settings).unwrap()["downloads"]
+                .get("defaultDir")
+                .is_some()
+        );
         settings.downloads.default_dir = PathBuf::from("custom");
         assert_eq!(
             encode(&settings, Some(&default))["downloads"]["defaultDir"],

@@ -517,6 +517,8 @@
   "Connections per download": "Koneksi per unduhan",
   "Prism splits files into this many segments (work-stealing keeps all busy)": "Prism membagi file menjadi segmen sebanyak ini (work-stealing membuat semuanya tetap sibuk)",
   "Maximum connections": "Koneksi maksimum",
+  "Maximum simultaneous downloads": "Jumlah maksimum unduhan serentak",
+  "Across all downloads and queues. Set to 0 for no global limit.": "Berlaku untuk semua unduhan dan antrean. Atur ke 0 untuk menonaktifkan batas global.",
   "Retries before failing": "Percobaan ulang sebelum gagal",
   "Exponential back-off up to 30 s between attempts": "Jeda eksponensial hingga 30 detik antarpercobaan",
   "Retries": "Percobaan ulang",

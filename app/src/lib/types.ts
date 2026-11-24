@@ -213,6 +213,7 @@ export interface Settings {
     useCategoryFolders: boolean;
     defaultConnections: number;
     maxConnections: number;
+    maxSimultaneousDownloads: number;
     conflict: ConflictAction;
     maxRetries: number;
     speedLimit: number;

@@ -550,6 +550,8 @@
   "Connections per download": "Připojení na stahování",
   "Prism splits files into this many segments (work-stealing keeps all busy)": "Prism rozdělí soubor na tolik segmentů (work-stealing udrží všechna připojení vytížená)",
   "Maximum connections": "Maximum připojení",
+  "Maximum simultaneous downloads": "Maximum souběžných stahování",
+  "Across all downloads and queues. Set to 0 for no global limit.": "Platí pro všechna stahování a fronty. Hodnota 0 vypne celkový limit.",
   "Retries before failing": "Počet opakování před selháním",
   "Exponential back-off up to 30 s between attempts": "Exponenciální prodleva mezi pokusy, nejvýše 30 s",
   "Retries": "Opakování",

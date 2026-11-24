@@ -101,6 +101,50 @@ async fn wait_paused(core: &Core, id: &str) -> DownloadItem {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn global_cap_covers_explicit_and_queued_downloads() {
+    let server = TestServer::start(ServerConfig::default()).await.unwrap();
+    let tmp = tempfile::tempdir().unwrap();
+    let core = core_in(tmp.path()).await;
+    assert_eq!(core.settings().downloads.max_simultaneous_downloads, 0);
+    core.update_settings(&serde_json::json!({
+        "downloads": {"maxSimultaneousDownloads": 1, "defaultConnections": 1}
+    }))
+    .unwrap();
+    let mut rx = core.subscribe();
+    let item = |name: &str, size| NewItem {
+        url: server.url(&format!("/file/{name}.bin?size={size}&throttle=524288")),
+        ..Default::default()
+    };
+    let direct = core
+        .add_items(
+            vec![
+                item("first", 2 << 20),
+                item("pause", 128),
+                item("next", 2 << 20),
+            ],
+            StartMode::Now,
+        )
+        .unwrap();
+    let queue = core
+        .add_items(vec![item("in_queue", 128)], StartMode::Queue("main".into()))
+        .unwrap();
+    core.start_queue("main");
+    assert_eq!(core.active_count(), 1);
+    wait_downloaded(&core, &direct[0].id, 1).await;
+    assert_eq!(core.item(&direct[1].id).unwrap().status, Status::Queued);
+    assert_eq!(core.item(&direct[2].id).unwrap().status, Status::Queued);
+    assert_eq!(core.item(&queue[0].id).unwrap().status, Status::Queued);
+    core.pause_items(&[direct[1].id.clone()]);
+    wait_completed(&mut rx, &direct[0].id).await;
+    wait_downloaded(&core, &direct[2].id, 1).await;
+    assert_eq!(core.active_count(), 1);
+    assert_eq!(core.item(&queue[0].id).unwrap().status, Status::Queued);
+    wait_completed(&mut rx, &direct[2].id).await;
+    wait_completed(&mut rx, &queue[0].id).await;
+    assert_eq!(core.item(&direct[1].id).unwrap().status, Status::Paused);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn add_download_and_verify_content() {
     let server = TestServer::start(ServerConfig::default()).await.unwrap();
     let tmp = tempfile::tempdir().unwrap();

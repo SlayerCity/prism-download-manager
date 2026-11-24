@@ -287,6 +287,9 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
             <Row title={t("Maximum connections")}>
               <NumberField value={s.downloads.maxConnections} min={1} max={64} label={t("Maximum connections")} onCommit={(v) => save({ downloads: { maxConnections: v } })} width={90} />
             </Row>
+            <Row title={t("Maximum simultaneous downloads")} hint={t("Across all downloads and queues. Set to 0 for no global limit.")}>
+              <NumberField value={s.downloads.maxSimultaneousDownloads ?? 0} min={0} max={64} label={t("Maximum simultaneous downloads")} onCommit={(v) => save({ downloads: { maxSimultaneousDownloads: v } })} width={90} />
+            </Row>
             <Row title={t("Retries before failing")} hint={t("Exponential back-off up to 30 s between attempts")}>
               <NumberField value={s.downloads.maxRetries} min={0} max={999} label={t("Retries")} onCommit={(v) => save({ downloads: { maxRetries: v } })} width={90} />
             </Row>

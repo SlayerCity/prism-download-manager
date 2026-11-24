@@ -106,7 +106,20 @@ pub(crate) struct State {
     pub dirty: HashSet<String>,
     /// Queues that were running in the previous tick (to detect "queue finished").
     pub queue_was_busy: HashSet<String>,
+    /// Explicit starts waiting on the global cap, in request order.
+    pub waiting_for_slot: VecDeque<String>,
     pub last_schedule_tick: chrono::NaiveDateTime,
+}
+
+impl State {
+    fn global_free_slots(&self) -> usize {
+        let cap = usize::from(self.settings.downloads.max_simultaneous_downloads.min(64));
+        if cap == 0 {
+            usize::MAX
+        } else {
+            cap.saturating_sub(self.jobs.len())
+        }
+    }
 }
 
 pub(crate) struct Inner {
@@ -117,7 +130,7 @@ pub(crate) struct Inner {
     pub video: prism_video::VideoService,
     pub torrent: tokio::sync::OnceCell<prism_torrent::TorrentEngine>,
     pub queue_limiters: Mutex<HashMap<String, Arc<prism_engine::RateLimiter>>>,
-    /// Held while queue admission counts free slots and starts items (see `admit`).
+    /// Serializes explicit and scheduled starts so either sees the other’s allocated slots.
     pub admission: Mutex<()>,
     pub outcomes: mpsc::UnboundedSender<JobOutcome>,
     pub data_dir: PathBuf,
@@ -216,6 +229,7 @@ impl Core {
             speed_history: HashMap::new(),
             dirty: HashSet::new(),
             queue_was_busy: HashSet::new(),
+            waiting_for_slot: VecDeque::new(),
             last_schedule_tick: chrono::Local::now().naive_local(),
         };
         let core = Core(Arc::new(Inner {
@@ -369,6 +383,7 @@ impl Core {
 
     pub fn update_settings(&self, patch: &serde_json::Value) -> Result<Settings> {
         let settings = {
+            let _admission = self.0.admission.lock();
             let mut st = self.0.state.lock();
             let mut s = st.settings.clone();
             s.apply_patch(patch).context("invalid settings")?;
@@ -544,16 +559,70 @@ impl Core {
 
     // ----- start / pause / delete --------------------------------------------------------------
 
-    /// Start items immediately (bypassing queue limits), like IDM's "Resume".
+    /// Explicit starts bypass per-queue limits like IDM's Resume, but respect the global cap.
     pub fn start_items(&self, ids: &[String]) {
         let _rt = crate::rt::enter();
+        let _admission = self.0.admission.lock();
+        self.start_waiting();
         for id in ids {
-            if let Err(e) = self.start_item(id) {
-                tracing::warn!("start {id}: {e:#}");
-                self.with_item(id, |i| {
-                    i.status = Status::Failed;
-                    i.error = Some(format!("{e:#}"));
-                });
+            if let Err(e) = self.start_or_wait(id) {
+                self.report_start_error(id, e);
+            }
+        }
+    }
+
+    fn report_start_error(&self, id: &str, e: anyhow::Error) {
+        tracing::warn!("start {id}: {e:#}");
+        self.with_item(id, |i| {
+            i.status = Status::Failed;
+            i.error = Some(format!("{e:#}"));
+        });
+    }
+
+    fn start_or_wait(&self, id: &str) -> Result<()> {
+        {
+            let mut st = self.0.state.lock();
+            let item = st.items.get(id).ok_or_else(|| anyhow!("unknown item"))?;
+            if item.trashed || item.status == Status::Completed || st.jobs.contains_key(id) {
+                return Ok(());
+            }
+            if st.waiting_for_slot.iter().any(|waiting| waiting == id) {
+                return Ok(());
+            }
+            if st.global_free_slots() > 0 {
+                drop(st);
+                return self.start_item(id);
+            }
+            st.waiting_for_slot.push_back(id.to_string());
+        }
+        self.with_item(id, |i| {
+            i.status = Status::Queued;
+            i.error = None;
+        });
+        Ok(())
+    }
+
+    /// Called under admission lock before admitting scheduled queues.
+    fn start_waiting(&self) {
+        loop {
+            let next = {
+                let mut st = self.0.state.lock();
+                if st.global_free_slots() == 0 {
+                    return;
+                }
+                st.waiting_for_slot.pop_front().map(|id| {
+                    let eligible = st
+                        .items
+                        .get(&id)
+                        .is_some_and(|i| !i.trashed && i.status == Status::Queued);
+                    (id, eligible)
+                })
+            };
+            let Some((id, eligible)) = next else {
+                return;
+            };
+            if eligible && let Err(e) = self.start_item(&id) {
+                self.report_start_error(&id, e);
             }
         }
     }
@@ -584,9 +653,11 @@ impl Core {
     }
 
     pub fn pause_items(&self, ids: &[String]) {
+        let _admission = self.0.admission.lock();
         for id in ids {
             let job_exists = {
-                let st = self.0.state.lock();
+                let mut st = self.0.state.lock();
+                st.waiting_for_slot.retain(|waiting| waiting != id);
                 if let Some(job) = st.jobs.get(id) {
                     job.pause();
                     true
@@ -783,7 +854,14 @@ impl Core {
             i.finished_at = None;
             i.trashed = false;
         });
-        self.start_item(id)
+        let _admission = self.0.admission.lock();
+        self.0
+            .state
+            .lock()
+            .waiting_for_slot
+            .retain(|waiting| waiting != id);
+        self.start_waiting();
+        self.start_or_wait(id)
     }
 
     pub fn item_details(&self, id: &str) -> Option<ItemDetails> {
@@ -1109,7 +1187,14 @@ impl Core {
             st.items
                 .values()
                 .filter(|i| !i.trashed && (i.status.is_active() || i.status == Status::Queued))
+                .filter(|i| !st.waiting_for_slot.contains(&i.id))
                 .map(|i| (i.id.clone(), i.status == Status::Queued))
+                .chain(st.waiting_for_slot.iter().filter_map(|id| {
+                    st.items
+                        .get(id)
+                        .filter(|i| !i.trashed && i.status == Status::Queued)
+                        .map(|_| (id.clone(), false))
+                }))
                 .collect()
         };
         if let Ok(json) = serde_json::to_vec(&running) {
