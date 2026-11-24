@@ -2,7 +2,7 @@
 
 Scope: all 45 issues open in the live November 24, 2026 snapshot (including #118–#120). Each has a disposition below. The branch fixes or partially addresses some issues; the other issues are not resolved.
 
-The latest code commits include `40b198d` (Prism-version BitTorrent identity), `153da73` (clarify after-queue actions), `3230845` (Windows tray icon contrast), `b44d8bc` (per-torrent rate caps), and `c97fbfe` (opt-in UPnP forwarding). The fork branch is `work/prism-backlog`; changes are confined to the owner’s fork, not upstream. The UPnP option has not been verified against a compatible router.
+The latest code commits include `40b198d` (Prism-version BitTorrent identity), `153da73` (clarify after-queue actions), `3230845` (Windows tray icon contrast), `b44d8bc` (per-torrent rate caps), `c97fbfe` (opt-in UPnP forwarding), and `63941e2` (session sharing ratio in torrent details). The fork branch is `work/prism-backlog`; changes are confined to the owner’s fork, not upstream. The UPnP option has not been verified against a compatible router.
 
 | Upstream issue | State | Work or next verification |
 | --- | --- | --- |
