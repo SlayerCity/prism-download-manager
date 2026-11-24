@@ -118,6 +118,8 @@ export interface StoredState {
 }
 
 export const STATE_KEY = 'prism.state';
+// Extension-only preference: it must not override capture rules synchronized from the app.
+export const COMPACT_VIDEO_BUTTON_KEY = 'prism.compactVideoButton';
 
 export function defaultState(): StoredState {
   return { settings: { ...DEFAULT_SETTINGS }, paused: false, settingsSource: 'app' };

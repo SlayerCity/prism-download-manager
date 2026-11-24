@@ -1,7 +1,7 @@
 import { api, sendInternal } from '../shared/api';
 import { prismMark } from '../shared/icons';
 import type { CaptureSettings } from '../shared/protocol';
-import { DEFAULT_SETTINGS, STATE_KEY, type StoredState, normalizeState } from '../shared/settings';
+import { COMPACT_VIDEO_BUTTON_KEY, DEFAULT_SETTINGS, STATE_KEY, type StoredState, normalizeState } from '../shared/settings';
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const form = $<HTMLFormElement>('form');
@@ -45,8 +45,23 @@ function read(): Partial<CaptureSettings> {
   };
 }
 
+const compactVideoButton = $<HTMLInputElement>('compactVideoButton');
+compactVideoButton.addEventListener('change', async () => {
+  const checked = compactVideoButton.checked;
+  compactVideoButton.disabled = true;
+  try {
+    await api.storage.local.set({ [COMPACT_VIDEO_BUTTON_KEY]: checked });
+  } catch {
+    compactVideoButton.checked = !checked;
+    setStatus('Could not save compact video button preference.', 'bad');
+  } finally {
+    compactVideoButton.disabled = false;
+  }
+});
+
 async function load(): Promise<void> {
-  const r = await api.storage.local.get(STATE_KEY);
+  const r = await api.storage.local.get([STATE_KEY, COMPACT_VIDEO_BUTTON_KEY]);
+  compactVideoButton.checked = r[COMPACT_VIDEO_BUTTON_KEY] === true;
   const st = normalizeState(r[STATE_KEY]);
   fill(st.settings, st);
 }

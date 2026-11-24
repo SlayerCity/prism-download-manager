@@ -35,6 +35,8 @@ export const VIDEO_BUTTON_CSS = `
 }
 .pill:focus-visible { box-shadow: 0 0 0 3px rgba(140,160,255,.55); }
 .pill .label { font-weight: 600; }
+.compact .pill { width: 32px; padding: 0; justify-content: center; }
+.compact .pill .label, .compact .pill .chev { display: none; }
 .pill .chev { opacity: .7; display: inline-flex; transition: transform .15s ease; }
 .pill[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .pill.done { border-color: rgba(79,224,163,.55); }

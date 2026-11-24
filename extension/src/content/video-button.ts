@@ -142,6 +142,7 @@ export class VideoButton {
   private overUi = false;
   private menuOpen = false;
   private enabled = false;
+  private compact = false;
   private videoSites: string[] = [];
   private prefetchTimer: ReturnType<typeof setTimeout> | undefined;
   private restPrefetch: Promise<void> | undefined;
@@ -150,6 +151,14 @@ export class VideoButton {
   private scanQueued = false;
   /** The video under the last right-click (for the context menu's "Download with Prism"). */
   private contextVideo: { v: HTMLVideoElement; at: number } | null = null;
+
+  setCompact(on: boolean): void {
+    this.compact = on;
+    if (this.host) {
+      this.wrap.classList.toggle('compact', on);
+      this.position();
+    }
+  }
 
   setVideoSites(sites: string[]): void {
     this.videoSites = sites;
@@ -211,6 +220,8 @@ export class VideoButton {
     document.removeEventListener('contextmenu', this.onContextMenu, true);
     document.removeEventListener('yt-navigate-finish', this.onNavigate);
     window.removeEventListener('popstate', this.onNavigate);
+    const nav = (window as unknown as { navigation?: EventTarget }).navigation;
+    nav?.removeEventListener('navigatesuccess', this.onNavigate);
     this.hide(true);
     this.host?.remove();
     this.host = null;
@@ -266,9 +277,9 @@ export class VideoButton {
       root.append(style);
     }
     this.wrap = document.createElement('div');
-    this.wrap.className = 'wrap';
+    this.wrap.className = this.compact ? 'wrap compact' : 'wrap';
     this.wrap.innerHTML = `
-      <button class="pill glass" type="button" aria-haspopup="menu" aria-expanded="false" title="Download this video with Prism">
+      <button class="pill glass" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Download this video with Prism" title="Download this video with Prism">
         ${prismMark(18)}<span class="label">Download</span><span class="chev">${icons.chevronDown(14)}</span>
       </button>
       <div class="menu glass" role="menu"></div>`;
