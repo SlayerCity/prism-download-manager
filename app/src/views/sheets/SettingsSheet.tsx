@@ -215,7 +215,22 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
           </Group>
           <Group title={t("Windows")}>
             <Toggle title={t("Show the Download File dialog")} hint={t("Off = new downloads start immediately with default settings")} value={s.general.showCaptureDialog} onChange={(v) => save({ general: { showCaptureDialog: v } })} />
-            <Toggle title={t("Open a progress window for new downloads")} value={s.general.showProgressWindow} onChange={(v) => save({ general: { showProgressWindow: v } })} />
+            <Row title={t("Open a progress window for new downloads")}>
+              <Select
+                label={t("Open a progress window for new downloads")}
+                value={!s.general.showProgressWindow ? "never" : s.general.progressWindowOnlyWhenMainHidden ? "hidden" : "always"}
+                onChange={(mode) => save({ general: {
+                  showProgressWindow: mode !== "never",
+                  progressWindowOnlyWhenMainHidden: mode === "hidden",
+                } })}
+                options={[
+                  { value: "never", label: t("Never") },
+                  { value: "always", label: t("Always") },
+                  { value: "hidden", label: t("When the main window is hidden") },
+                ]}
+                width={230}
+              />
+            </Row>
             <Toggle title={t("Show the completion dialog")} value={s.general.showCompletionDialog} onChange={(v) => save({ general: { showCompletionDialog: v } })} />
           </Group>
           <Group title={t("Deleting")}>

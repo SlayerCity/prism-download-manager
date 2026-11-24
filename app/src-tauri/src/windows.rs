@@ -300,6 +300,15 @@ pub fn close_progress(app: &AppHandle, id: &str) {
     }
 }
 
+/// Close auto-opened progress popups without touching manually opened download details.
+pub fn close_automatic_progress_windows(app: &AppHandle) {
+    for (label, window) in app.webview_windows() {
+        if label.starts_with("progress-") {
+            let _ = window.close();
+        }
+    }
+}
+
 fn toggle(app: &AppHandle, kind: &str) -> tauri::Result<bool> {
     if let Some(w) = app.get_webview_window(kind) {
         w.close()?;

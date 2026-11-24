@@ -188,6 +188,28 @@ fn subtitles_and_audio_conversion_in_accelerated_plan() {
 }
 
 #[test]
+fn subtitle_sidecars_do_not_request_embedding_on_either_route() {
+    let v = video("synthetic_hdr.json");
+    let c = v.choices.iter().find(|c| c.height == Some(1080)).unwrap();
+    let o = OutputOptions {
+        embed_subtitles: false,
+        write_subtitles: true,
+        sub_langs: vec!["en".into()],
+        ..opts()
+    };
+    let ctx = RequestContext::default();
+    let Plan::Accelerated(p) = plan(&v, c, &o, &ctx, None, false, 8) else {
+        panic!("expected accelerated plan");
+    };
+    assert!(p.streams.iter().any(|s| s.role == StreamRole::Subtitle));
+    assert!(p.post.write_subtitles);
+    assert!(!p.post.embed_subtitles);
+    let job = plan_ytdlp(&v, c, &o, &ctx, 8, "test".into());
+    assert!(job.args.iter().any(|arg| arg == "--write-subs"));
+    assert!(!job.args.iter().any(|arg| arg == "--embed-subs"));
+}
+
+#[test]
 fn ytdlp_args_video() {
     let v = video("synthetic_hdr.json");
     let c = v.choices.iter().find(|c| c.hdr).unwrap();

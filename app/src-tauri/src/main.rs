@@ -146,6 +146,15 @@ fn main() {
             Ok(())
         })
         .on_window_event(|window, event| {
+            if window.label() == "main"
+                && matches!(event, WindowEvent::Focused(true))
+                && window.try_state::<Core>().is_some_and(|core| {
+                    let general = core.settings().general;
+                    general.show_progress_window && general.progress_window_only_when_main_hidden
+                })
+            {
+                windows::close_automatic_progress_windows(window.app_handle());
+            }
             // Windows switched between light and dark: with the theme following it, the Mica
             // behind the window switches too (it was picked only when the window opened).
             if window.label() == "main"
@@ -549,8 +558,11 @@ fn maybe_open_progress_window(
     item: &prism_core::model::DownloadItem,
 ) {
     if item.status.is_active() {
-        if settings.general.show_progress_window
-            && !in_model_queue(item)
+        if !in_model_queue(item)
+            && settings.general.should_open_progress_window(
+                settings.general.progress_window_only_when_main_hidden
+                    && windows::main_is_open(app),
+            )
             && opened_progress.insert(item.id.clone())
             && let Err(e) = windows::open_progress(app, &item.id)
         {

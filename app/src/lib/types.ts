@@ -183,6 +183,7 @@ export interface Settings {
     closeToTray: boolean;
     showCaptureDialog: boolean;
     showProgressWindow: boolean;
+    progressWindowOnlyWhenMainHidden: boolean;
     showCompletionDialog: boolean;
     notifications: boolean;
     confirmDelete: boolean;

@@ -53,6 +53,8 @@ pub struct General {
     pub show_capture_dialog: bool,
     /// Show the per-download progress window when a download starts.
     pub show_progress_window: bool,
+    /// Suppress automatic progress popups while the main window is visible.
+    pub progress_window_only_when_main_hidden: bool,
     pub show_completion_dialog: bool,
     pub notifications: bool,
     pub confirm_delete: bool,
@@ -70,6 +72,12 @@ pub struct General {
     pub hide_dock_icon: bool,
 }
 
+impl General {
+    pub fn should_open_progress_window(&self, main_visible: bool) -> bool {
+        self.show_progress_window && (!self.progress_window_only_when_main_hidden || !main_visible)
+    }
+}
+
 impl Default for General {
     fn default() -> Self {
         Self {
@@ -78,6 +86,7 @@ impl Default for General {
             close_to_tray: true,
             show_capture_dialog: true,
             show_progress_window: false,
+            progress_window_only_when_main_hidden: false,
             show_completion_dialog: true,
             notifications: true,
             confirm_delete: true,
@@ -505,6 +514,21 @@ mod tests {
         assert_eq!(s.downloads.default_connections, 16);
         assert_eq!(s.downloads.max_connections, 32);
         assert!(s.capture.extensions.iter().any(|e| e == "zip"));
+    }
+
+    #[test]
+    fn progress_popup_modes_preserve_the_legacy_default() {
+        let mut s: Settings =
+            serde_json::from_str(r#"{"general":{"showProgressWindow":true}}"#).unwrap();
+        assert!(s.general.should_open_progress_window(true));
+        assert!(s.general.should_open_progress_window(false));
+        s.apply_patch(&serde_json::json!({"general":{"progressWindowOnlyWhenMainHidden":true}}))
+            .unwrap();
+        assert!(!s.general.should_open_progress_window(true));
+        assert!(s.general.should_open_progress_window(false));
+        s.general.show_progress_window = false;
+        assert!(!s.general.should_open_progress_window(true));
+        assert!(!s.general.should_open_progress_window(false));
     }
 
     #[test]
