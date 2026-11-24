@@ -156,6 +156,48 @@ pub(crate) struct Inner {
 #[derive(Clone)]
 pub struct Core(pub(crate) Arc<Inner>);
 
+fn should_keep_torrent(
+    hash: &str,
+    active: &std::collections::HashSet<String>,
+    finished: &std::collections::HashSet<String>,
+    unknown: bool,
+    seed_completed: bool,
+) -> bool {
+    active.contains(hash)
+        || (seed_completed && finished.contains(hash))
+        || (unknown && !finished.contains(hash))
+}
+
+#[cfg(test)]
+mod torrent_retention_tests {
+    use super::should_keep_torrent;
+    use std::collections::HashSet;
+
+    #[test]
+    fn completed_torrents_are_retained_only_when_seeding_is_enabled() {
+        let active = HashSet::from(["active".to_string()]);
+        let finished = HashSet::from(["complete".to_string()]);
+        assert!(should_keep_torrent(
+            "active", &active, &finished, false, false
+        ));
+        assert!(!should_keep_torrent(
+            "complete", &active, &finished, false, false
+        ));
+        assert!(should_keep_torrent(
+            "complete", &active, &finished, false, true
+        ));
+        assert!(!should_keep_torrent(
+            "other", &active, &finished, false, true
+        ));
+        assert!(should_keep_torrent(
+            "other", &active, &finished, true, false
+        ));
+        assert!(!should_keep_torrent(
+            "complete", &active, &finished, true, false
+        ));
+    }
+}
+
 impl Core {
     /// Open storage, restore state and start background services.
     pub async fn start(opts: CoreOptions) -> Result<Self> {
@@ -1161,7 +1203,8 @@ impl Core {
         let settings = self.settings();
         let default_dir = settings.downloads.default_dir;
         let public_trackers = settings.torrent.public_trackers;
-        let keep = self.torrents_to_keep();
+        let seed_completed = settings.torrent.seed_completed;
+        let keep = self.torrents_to_keep(seed_completed);
         let engine = self
             .0
             .torrent
@@ -1185,11 +1228,13 @@ impl Core {
         Ok(engine)
     }
 
-    /// Which saved torrents the session should load again: the ones of downloads that aren't
-    /// finished. A finished torrent loaded again holds its files open and brings deleted ones
-    /// back (#82). Torrents no download knows are dropped too, unless an unfinished torrent's
-    /// hash isn't known yet (it might be that one).
-    fn torrents_to_keep(&self) -> impl Fn(&str) -> bool + Send + Sync + 'static {
+    /// Which saved torrents the session should load again: unfinished downloads, plus finished
+    /// ones when seeding is enabled. Retained finished torrents hold files open and can restore
+    /// missing data after restart. Unknown hashes stay until unfinished items resolve.
+    fn torrents_to_keep(
+        &self,
+        seed_completed: bool,
+    ) -> impl Fn(&str) -> bool + Send + Sync + 'static {
         let mut active = std::collections::HashSet::new();
         let mut finished = std::collections::HashSet::new();
         let mut unknown = false;
@@ -1208,7 +1253,7 @@ impl Core {
                 (None, true) => {}
             }
         }
-        move |hash: &str| active.contains(hash) || (unknown && !finished.contains(hash))
+        move |hash: &str| should_keep_torrent(hash, &active, &finished, unknown, seed_completed)
     }
 
     fn start_clipboard_monitor(&self) {

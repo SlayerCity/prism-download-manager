@@ -248,6 +248,8 @@ impl Default for Downloads {
 pub struct TorrentSettings {
     /// Extra trackers to append to public torrents. Private torrents never receive these.
     pub public_trackers: Vec<String>,
+    /// Keep completed torrents active for seeding, including after Prism restarts.
+    pub seed_completed: bool,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -610,6 +612,20 @@ mod tests {
         assert!(s.capture.extensions.iter().any(|e| e == "png"));
         assert!(s.capture.mime_types.iter().any(|m| m == "image/"));
         assert!(s.torrent.public_trackers.is_empty());
+        assert!(
+            !s.torrent.seed_completed,
+            "seeding stays opt-in for older settings"
+        );
+    }
+
+    #[test]
+    fn completed_torrent_seeding_setting_roundtrips_as_opt_in() {
+        let mut s = Settings::default();
+        s.apply_patch(&serde_json::json!({"torrent": {"seedCompleted": true}}))
+            .unwrap();
+        assert!(s.torrent.seed_completed);
+        let encoded = serde_json::to_value(&s).unwrap();
+        assert_eq!(encoded["torrent"]["seedCompleted"], true);
     }
 
     #[test]

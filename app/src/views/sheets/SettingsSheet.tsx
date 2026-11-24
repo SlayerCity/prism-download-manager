@@ -303,7 +303,10 @@ function SectionBody({ id, s }: { id: string; s: Settings }) {
     case "torrent":
       return (
         <>
-          <p className="lead">{t("Settings for public BitTorrent downloads.")}</p>
+          <p className="lead">{t("Settings for BitTorrent downloads.")}</p>
+          <Group title={t("Seeding")}>
+            <Toggle title={t("Keep completed torrents seeding")} hint={t("Restart Prism after changing this. Active seeds hold files open and can restore deleted data.")} value={s.torrent.seedCompleted} onChange={(v) => save({ torrent: { seedCompleted: v } })} />
+          </Group>
           <Group title={t("Public trackers")}>
             <Row title={t("Append trackers to public torrents")} hint={t("One HTTP, HTTPS or UDP tracker URL per line. Private torrents are excluded. Restart Prism after changing this list.")} align="start">
               <ListField value={s.torrent.publicTrackers} onCommit={(v) => save({ torrent: { publicTrackers: v } })} label={t("Public tracker URLs")} placeholder="udp://tracker.example:6969/announce" rows={5} />

@@ -226,6 +226,8 @@ export interface Settings {
   torrent: {
     /** Extra trackers appended to public torrents; private torrents are excluded. */
     publicTrackers: string[];
+    /** Keep completed torrents active for seeding across restarts. */
+    seedCompleted: boolean;
   };
   connection: {
     userAgent: string;

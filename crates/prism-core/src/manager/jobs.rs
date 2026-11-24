@@ -1589,13 +1589,15 @@ impl TorrentJob {
                             .save_dir
                             .join(p.name.clone().unwrap_or_else(|| item.file_name.clone())),
                     };
-                    // Personal use: stop seeding once complete. The torrent leaves the session
-                    // (its files stay): only pausing it kept the files open, and the session
-                    // loaded it again at the next start and brought deleted files back (#82).
-                    if engine.remove(&hash, false).await.is_err() {
-                        let _ = engine.pause(&hash).await;
+                    // Seeding is opt-in because active torrents keep files open and can restore
+                    // missing data after a restart. The setting is sampled at completion; restart
+                    // after changing it to apply the choice to already-finished torrents.
+                    if !core.settings().torrent.seed_completed {
+                        if engine.remove(&hash, false).await.is_err() {
+                            let _ = engine.pause(&hash).await;
+                        }
+                        *self.hash.lock() = None;
                     }
-                    *self.hash.lock() = None;
                     return Ok(Some((path, p.total)));
                 }
                 if p.state == prism_torrent::TorrentState::Error {
