@@ -55,6 +55,29 @@ jobs:
           npm ci --prefix extension
       - name: Build extension
         run: npm run build --prefix extension
+      - name: Check for Firefox signing credentials
+        id: amo
+        if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v')
+        env:
+          AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
+          AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: |
+          if [ -n "$AMO_API_KEY" ] && [ -n "$AMO_API_SECRET" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Firefox XPI signing skipped: configure AMO_API_KEY and AMO_API_SECRET to enable it."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Sign Firefox extension for self-distribution
+        if: runner.os == 'Linux' && startsWith(github.ref, 'refs/tags/v') && steps.amo.outputs.available == 'true'
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+        run: >-
+          npx --yes web-ext@10.7.0 sign
+          --source-dir extension/build/firefox
+          --artifacts-dir "$GITHUB_WORKSPACE/extension/signed"
+          --channel unlisted
       - name: Build sidecar
         run: node scripts/build-sidecar.mjs --target ${{ matrix.target }}
       - name: Build app
@@ -126,6 +149,7 @@ jobs:
             target/${{ matrix.target }}/release/bundle/**/*.app.tar.gz
             target/${{ matrix.target }}/release/bundle/**/*.sig
             packaging/out/*.zip
+            extension/signed/*.xpi
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v5
         if: runner.os == 'Linux'
@@ -151,7 +175,7 @@ jobs:
         run: |
           mkdir -p out
           find artifacts -type f \( -name '*.exe' -o -name '*.msi' -o -name '*.dmg' -o -name '*.deb' \
-            -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.zip' -o -name '*.app.tar.gz' \) -exec cp {} out/ \;
+            -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.zip' -o -name '*.xpi' -o -name '*.app.tar.gz' \) -exec cp {} out/ \;
           # Manifest for the in-app updater (signatures come from the .sig files).
           python3 scripts/make-latest-json.py artifacts "${GITHUB_REF_NAME}" docs/RELEASE_NOTES.md > latest.json
           cat latest.json

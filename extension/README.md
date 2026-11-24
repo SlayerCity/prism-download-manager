@@ -259,6 +259,11 @@ testing with a real browser.
 
 ## Limitations
 
+* The release workflow can produce a Mozilla-signed, unlisted Firefox XPI for self-distribution.
+  On a version tag, it does this only when the repository has both `AMO_API_KEY` and
+  `AMO_API_SECRET` Actions secrets configured; otherwise it uploads the unsigned Firefox ZIP as
+  before. These are Mozilla Add-ons API credentials, not a listing/publication approval. The XPI
+  is uploaded to the GitHub release only after AMO signing succeeds.
 * Firefox build: compiles, passes `web-ext lint` (0 errors), same features, but has not been run
   end-to-end here. The blocking-webRequest path only handles `Content-Disposition: attachment`
   responses; other matches go through `downloads.onCreated` + cancel (a download entry flashes).
